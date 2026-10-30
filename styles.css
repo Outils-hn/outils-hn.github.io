@@ -3,7 +3,7 @@
 :root {
   --bg: #F1F0EC; --card: #FAFAF8; --muted-bg: #E8E7E2; --line: #E0DFD9; --input: #D3D2CB;
   --ink: #1F2026; --muted: #5D6068; --primary: #1F2026; --on-primary: #FFFFFF;
-  --danger: #B42318; --ok: #15803D; --warn: #9A5B00; --info: #1D4ED8;
+  --danger: #B42318; --ok: #15803D; --warn: #7A4700; --info: #1D4ED8;
   --radius: 10px;
   --sans: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "Geist Mono", ui-monospace, Consolas, monospace;
