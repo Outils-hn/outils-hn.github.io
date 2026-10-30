@@ -1,0 +1,26 @@
+OK 8 applis sur l'accueil
+OK dans l'ordre alphabétique
+OK carte Masse : « 1 en cours »
+OK lien Strate
+OK menu : 2 retours ouverts
+OK accessibilité accueil : 0 problème(s)
+OK Retours : 2 ouverts par défaut (le fait est masqué)
+OK en cours d'abord
+OK « Tous les statuts » : 3
+OK filtre Bugs
+OK recherche sans accents
+OK « Moi aussi » compté une fois
+OK accessibilité retours : 0 problème(s)
+OK depuis Masse : formulaire ouvert
+OK appli pré-remplie
+OK retours déjà signalés pour Masse affichés
+OK version et page jointes
+OK texte trop court : rien n'est envoyé
+OK envoyé avec appli, type, version, page et prénom
+OK merci + visible dans la liste
+OK champ piège : envoi d'un robot ignoré
+OK admin : mauvais mot de passe
+OK admin : bouton « Traiter » sur les retours
+OK statut changé en « Prévu »
+OK réponse visible par tous
+OK accessibilité sombre : 0 problème(s)
