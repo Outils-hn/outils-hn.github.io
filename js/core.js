@@ -19,9 +19,9 @@ export const APPLIS = [
     texte: "Débit des profilés en barres avec le minimum de chutes, liste de coupe en PDF." },
   { nom: "Masse", role: "Poids des éléments", url: "https://masse-hn.lovable.app", couleur: "#9A4A3A",
     texte: "Poids des éléments de façade à partir de leurs composants, fiches et listes de livraison." },
-  { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://hnaegellen-hub.github.io/Strate/", couleur: "#D4A20B",
+  { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://outils-hn.github.io/Strate/", couleur: "#D4A20B",
     texte: "Combinaisons de panneaux isolants pour atteindre l'épaisseur dessinée, et commande." },
-  { nom: "Trame", role: "Répartition de perçages", url: "https://trame-hn.lovable.app", couleur: "#0E9F6E",
+  { nom: "Trame", role: "Répartition de perçages", url: "https://outils-hn.github.io/Trame/", couleur: "#0E9F6E",
     texte: "Entraxes et répartition des perçages : nombre d'intervalles, entraxe fixe ou maximal." },
 ];
 
