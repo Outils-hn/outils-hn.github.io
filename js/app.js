@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, compter, filtrerRetours, fmtDate, lireLien, termine } from "./core.js?v=1.1";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, compter, filtrerRetours, fmtDate, lireLien, termine } from "./core.js?v=1.2";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);

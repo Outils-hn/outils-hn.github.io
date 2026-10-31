@@ -7,17 +7,17 @@ export const BASE_KEY =
 
 /** Les applis de la famille, dans l'ordre alphabetique (meme liste que les selecteurs). */
 export const APPLIS = [
-  { nom: "Access", role: "Annuaire fournisseurs", url: "https://access-hn.lovable.app", couleur: "#C2255C",
+  { nom: "Access", role: "Annuaire fournisseurs", url: "https://outils-hn.github.io/Access/", couleur: "#C2255C",
     texte: "Sites et sites CAO des fournisseurs par domaine, avec les accès du bureau et les vôtres." },
-  { nom: "Check", role: "Notes & tâches", url: "https://check-hn.lovable.app", couleur: "#4338CA",
+  { nom: "Check", role: "Notes & tâches", url: "https://outils-hn.github.io/Check/", couleur: "#4338CA",
     texte: "Notes perso et notes d'équipe par projet, échéances, « Pour moi » et rapport PDF." },
-  { nom: "Format", role: "Débit de panneaux", url: "https://format-hn.lovable.app", couleur: "#FF4D00",
+  { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00",
     texte: "Calepinage des panneaux dans les formats fournisseurs pour estimer la matière à commander." },
-  { nom: "Index", role: "Fiches techniques", url: "https://index-hn.lovable.app", couleur: "#6D4AFF",
+  { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF",
     texte: "Bibliothèque des fiches techniques fournisseurs, par catégorie et par chantier." },
-  { nom: "Linear", role: "Mise en barre", url: "https://linear-hn.lovable.app", couleur: "#2B50FF",
+  { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
     texte: "Débit des profilés en barres avec le minimum de chutes, liste de coupe en PDF." },
-  { nom: "Masse", role: "Poids des éléments", url: "https://masse-hn.lovable.app", couleur: "#9A4A3A",
+  { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A",
     texte: "Poids des éléments de façade à partir de leurs composants, fiches et listes de livraison." },
   { nom: "Strate", role: "Épaisseurs d'isolation", url: "https://outils-hn.github.io/Strate/", couleur: "#D4A20B",
     texte: "Combinaisons de panneaux isolants pour atteindre l'épaisseur dessinée, et commande." },

@@ -1,5 +1,9 @@
 # Journal des versions — Accueil
 
+## 1.2 — 31 octobre 2026
+
+- Cartes des applis : toutes pointent vers GitHub Pages (`https://outils-hn.github.io/<Appli>/`) à la place des adresses Lovable.
+
 ## 1.1 — 31 octobre 2026
 
 - Le site est publié à la racine de GitHub Pages : `https://outils-hn.github.io/` (dépôt renommé `outils-hn.github.io` après le renommage du compte en `outils-hn`).
