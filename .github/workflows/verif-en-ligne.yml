@@ -1,0 +1,32 @@
+# Verification des applis EN LIGNE (outils-hn.github.io) : captures + rapport,
+# publies sur la branche « captures/verif-en-ligne ». Ne modifie aucun site.
+name: Verif en ligne
+
+on:
+  push:
+    branches: [verif-en-ligne]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  verif:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm i --no-save playwright@1.48.2 && npx playwright install --with-deps chromium
+      - name: Ouvrir les sites et capturer
+        run: node e2e/en-ligne.mjs out
+      - name: Publier les captures
+        if: always()
+        run: |
+          cd out
+          git init -q -b "captures/verif-en-ligne"
+          git config user.name "github-actions"; git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "Verif en ligne (${GITHUB_SHA::7})"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/captures/verif-en-ligne"
