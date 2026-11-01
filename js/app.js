@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.3";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.4";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -141,22 +141,22 @@ function rendreRetours() {
   }).join("");
 }
 
-// Texte d'une puce : echappe, puis met en forme les `extraits de code`
-const puce = (t) => esc(t).replace(/`([^`]+)`/g, "<code>$1</code>");
-
 function rendreNouveautes() {
   const liste = $("#listeNouveautes");
   if (!journauxCharges) { liste.innerHTML = `<li class="vide">Chargement…</li>`; return; }
   const tout = fusionnerJournaux(journaux, filtreJournal.app);
   const manque = indisponibles.length ? `Journal indisponible pour : ${indisponibles.join(", ")}.` : "";
-  $("#resumeNouveautes").textContent = tout.length ? `${tout.length} version${tout.length > 1 ? "s" : ""}${filtreJournal.app === "toutes" ? " pour toutes les applis" : ` de ${filtreJournal.app}`}.${manque ? " " + manque : ""}` : manque;
-  if (!tout.length) { liste.innerHTML = `<li class="vide">${manque || "Aucune version à afficher."}</li>`; $("#plusNouveautes").hidden = true; return; }
+  $("#resumeNouveautes").textContent = tout.length ? `Ce qui a changé dans les applis, du plus récent au plus ancien.${manque ? " " + manque : ""}` : manque;
+  if (!tout.length) {
+    liste.innerHTML = `<li class="vide">${filtreJournal.app === "toutes" ? "Rien de nouveau pour l'instant." : `Rien de nouveau pour ${esc(filtreJournal.app)} pour l'instant.`} Les prochains changements visibles seront annoncés ici.</li>`;
+    $("#plusNouveautes").hidden = true; return;
+  }
   liste.innerHTML = tout.slice(0, nbAffiches).map((e) => `<li class="nouveaute panel">
     <div class="meta">
       <span class="tag" style="--c:${couleur(e.app)}"><span class="p"></span>${esc(e.app)}</span>
       <strong>v${esc(e.version)}</strong>${e.dateTexte ? `<span>${esc(e.dateTexte)}</span>` : ""}
     </div>
-    ${e.notes.length ? `<ul class="notes">${e.notes.map((n) => `<li>${puce(n)}</li>`).join("")}</ul>` : ""}
+    <p class="phrase">${esc(e.nouveaute)}</p>
   </li>`).join("");
   $("#plusNouveautes").hidden = tout.length <= nbAffiches;
 }
@@ -320,7 +320,8 @@ document.querySelectorAll("[data-fermer]").forEach((b) => b.addEventListener("cl
 $("#aproposBtn").addEventListener("click", () => $("#dApropos").showModal());
 $("#themeBtn").addEventListener("click", () => {
   const sombre = document.documentElement.classList.toggle("dark");
-  try { localStorage.setItem("accueil-theme", sombre ? "dark" : "light"); } catch { /* bloque */ }
+  // « outils-theme » : reglage commun a toutes les applis (meme site) ; « accueil-theme » : l'ancienne cle, gardee
+  try { localStorage.setItem("accueil-theme", sombre ? "dark" : "light"); localStorage.setItem("outils-theme", sombre ? "dark" : "light"); } catch { /* bloque */ }
 });
 window.addEventListener("hashchange", () => { rendre(); window.scrollTo(0, 0); });
 

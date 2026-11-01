@@ -45,13 +45,14 @@ const JOURNAL = `# Journal des versions — Masse
 
 ## 2.4 — 31 octobre 2026
 
+- Nouveauté : une phrase simple pour tout le monde.
 - Première puce avec \`code\`.
 - Seconde puce
   qui continue sur la ligne suivante.
 
 ## 2.3 — 1er septembre 2026
 
-- Ancienne version.
+- Nouveauté : l'ancienne version.
 
 ## 1.0
 
@@ -70,13 +71,15 @@ test("lecture d'un CHANGELOG", () => {
   assert.equal(j[0].date, "2026-10-31");
   assert.equal(j[0].dateTexte, "31 octobre 2026");
   assert.deepEqual(j[0].notes, ["Première puce avec `code`.", "Seconde puce qui continue sur la ligne suivante."]);
+  assert.equal(j[0].nouveaute, "une phrase simple pour tout le monde.");
+  assert.equal(j[2].nouveaute, "");
   assert.equal(j[2].date, null);
   assert.deepEqual(lireJournal(""), []);
   assert.deepEqual(lireJournal("pas un journal"), []);
 });
-test("journaux fusionnes : recents d'abord, sans date a la fin", () => {
-  const j = { Masse: lireJournal(JOURNAL), Check: lireJournal("## 2.5 — 31 octobre 2026\n\n- a\n\n## 2.4 — 20 octobre 2026\n\n- b\n") };
-  assert.deepEqual(fusionnerJournaux(j).map((e) => `${e.app} ${e.version}`), ["Check 2.5", "Masse 2.4", "Check 2.4", "Masse 2.3", "Masse 1.0"]);
+test("journaux fusionnes : seulement les versions avec une Nouveaute, recentes d'abord", () => {
+  const j = { Masse: lireJournal(JOURNAL), Check: lireJournal("## 2.5 — 31 octobre 2026\n\n- Nouveauté : a\n\n## 2.4.1 — 25 octobre 2026\n\n- correctif technique\n\n## 2.4 — 20 octobre 2026\n\n- Nouveauté : b\n") };
+  assert.deepEqual(fusionnerJournaux(j).map((e) => `${e.app} ${e.version}`), ["Check 2.5", "Masse 2.4", "Check 2.4", "Masse 2.3"]);
   assert.deepEqual(fusionnerJournaux(j, "Check").map((e) => e.version), ["2.5", "2.4"]);
   assert.deepEqual(fusionnerJournaux(j, "Index"), []);
 });

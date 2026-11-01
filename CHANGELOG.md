@@ -1,5 +1,13 @@
 # Journal des versions — Accueil
 
+Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
+
+## 1.4 — 1er novembre 2026
+
+- Nouveauté : le mode clair ou sombre que tu choisis dans une appli est repris dans toutes les autres.
+- La page « Nouveautés » n'affiche plus que cette phrase pour chaque version, au lieu du détail technique ; les versions sans changement visible n'y figurent plus.
+- Le réglage du thème est partagé avec les autres applis (clé `outils-theme`, ancienne clé `accueil-theme` conservée).
+
 ## 1.3 — 1er novembre 2026
 
 - Nouvelle page « Nouveautés » : les versions de toutes les applis au même endroit, de la plus récente à la plus ancienne, avec un filtre par appli. Elle lit le `CHANGELOG.md` de chaque appli.
