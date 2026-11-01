@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, compter, filtrerRetours, fmtDate, lireLien, termine } from "./core.js?v=1.2";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.3";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -34,6 +34,28 @@ const lien = lireLien(location.search);
 let votes = new Set();
 try { votes = new Set(JSON.parse(localStorage.getItem(VOTES) || "[]")); } catch { /* stockage bloque */ }
 
+// Journaux des versions (CHANGELOG de chaque appli) : { nom: entrees[] } ; indisponibles = applis dont la lecture a echoue
+let journaux = {};
+let indisponibles = [];
+let journauxCharges = false;
+let nbAffiches = 30;
+const filtreJournal = { app: "toutes" };
+
+async function chargerJournaux() {
+  const lots = await Promise.allSettled(APPLIS.map(async (a) => {
+    const r = await fetch(adresseJournal(a.nom));
+    if (!r.ok) throw new Error(String(r.status));
+    return [a.nom, lireJournal(await r.text())];
+  }));
+  journaux = {}; indisponibles = [];
+  lots.forEach((l, i) => {
+    if (l.status === "fulfilled" && l.value[1].length) journaux[l.value[0]] = l.value[1];
+    else indisponibles.push(APPLIS[i].nom);
+  });
+  journauxCharges = true;
+  rendre();
+}
+
 async function charger() {
   try {
     retours = await api("/rest/v1/retours?select=*&order=created_at.desc&limit=500");
@@ -54,25 +76,27 @@ function toast(msg) {
 }
 
 // ---------- Vues ----------
-function vue() { return location.hash === "#retours" ? "retours" : "applis"; }
+function vue() { return location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
 
 function rendre() {
   const v = vue();
   $("#applis").hidden = v !== "applis";
   $("#retours").hidden = v !== "retours";
+  $("#nouveautes").hidden = v !== "nouveautes";
   document.querySelectorAll("[data-nav]").forEach((a) => (a.dataset.nav === v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   const c = compter(retours);
   $("#navCompte").textContent = charge && c.ouverts ? `· ${c.ouverts}` : "";
-  document.title = v === "retours" ? "Idées & bugs — Accueil" : "Accueil — les outils du bureau d'études";
+  document.title = v === "retours" ? "Idées & bugs — Accueil" : v === "nouveautes" ? "Nouveautés — Accueil" : "Accueil — les outils du bureau d'études";
   rendreApplis();
   rendreRetours();
+  rendreNouveautes();
 }
 
 function rendreApplis() {
   $("#grille").innerHTML = APPLIS.map((a) => {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     return `<li><a class="carte" href="${a.url}" style="--c:${a.couleur}">
-      <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}</span>
+      <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}</span>
       <span class="role">${esc(a.role)}</span>
       <p class="texte">${esc(a.texte)}</p>
       <span class="ouvrir">Ouvrir ${esc(a.nom)} →</span>
@@ -116,6 +140,29 @@ function rendreRetours() {
     </li>`;
   }).join("");
 }
+
+// Texte d'une puce : echappe, puis met en forme les `extraits de code`
+const puce = (t) => esc(t).replace(/`([^`]+)`/g, "<code>$1</code>");
+
+function rendreNouveautes() {
+  const liste = $("#listeNouveautes");
+  if (!journauxCharges) { liste.innerHTML = `<li class="vide">Chargement…</li>`; return; }
+  const tout = fusionnerJournaux(journaux, filtreJournal.app);
+  const manque = indisponibles.length ? `Journal indisponible pour : ${indisponibles.join(", ")}.` : "";
+  $("#resumeNouveautes").textContent = tout.length ? `${tout.length} version${tout.length > 1 ? "s" : ""}${filtreJournal.app === "toutes" ? " pour toutes les applis" : ` de ${filtreJournal.app}`}.${manque ? " " + manque : ""}` : manque;
+  if (!tout.length) { liste.innerHTML = `<li class="vide">${manque || "Aucune version à afficher."}</li>`; $("#plusNouveautes").hidden = true; return; }
+  liste.innerHTML = tout.slice(0, nbAffiches).map((e) => `<li class="nouveaute panel">
+    <div class="meta">
+      <span class="tag" style="--c:${couleur(e.app)}"><span class="p"></span>${esc(e.app)}</span>
+      <strong>v${esc(e.version)}</strong>${e.dateTexte ? `<span>${esc(e.dateTexte)}</span>` : ""}
+    </div>
+    ${e.notes.length ? `<ul class="notes">${e.notes.map((n) => `<li>${puce(n)}</li>`).join("")}</ul>` : ""}
+  </li>`).join("");
+  $("#plusNouveautes").hidden = tout.length <= nbAffiches;
+}
+$("#fAppNouveautes").insertAdjacentHTML("beforeend", APPLIS.map((a) => `<option value="${a.nom}">${a.nom}</option>`).join(""));
+$("#fAppNouveautes").addEventListener("change", (e) => { filtreJournal.app = e.target.value; nbAffiches = 30; rendreNouveautes(); });
+$("#plusNouveautes").addEventListener("click", () => { nbAffiches += 30; rendreNouveautes(); });
 
 // ---------- Filtres ----------
 $("#fApp").insertAdjacentHTML("beforeend", APPLIS.map((a) => `<option value="${a.nom}">${a.nom}</option>`).join("") + `<option value="Accueil">Accueil</option>`);
@@ -172,11 +219,25 @@ function ouvrirNouveau({ app, type } = {}) {
   try { $("#nNom").value = localStorage.getItem("accueil-prenom") || ""; } catch { /* stockage bloque */ }
   if (app) $("#nApp").value = app;
   if (type) dN.querySelector(`input[name=type][value=${type}]`).checked = true;
-  similaires(); contexte();
+  similaires(); contexte(); compteur();
   dN.showModal();
   $("#nTexte").focus();
 }
 $("#nApp").addEventListener("change", () => { similaires(); contexte(); });
+
+// Compteur de caracteres sous la description : devient visible pres de la limite
+function compteur() {
+  const t = $("#nTexte"), n = t.value.length, max = t.maxLength;
+  $("#nCompteur").textContent = texteCompteur(n, max);
+  $("#nCompteur").classList.toggle("proche", n >= max * 0.9);
+}
+$("#nTexte").addEventListener("input", () => { compteur(); $("#nErreur").textContent = ""; });
+// Description trop courte : message sous le formulaire (au lieu de la seule bulle du navigateur)
+$("#nTexte").addEventListener("invalid", (e) => {
+  e.preventDefault();
+  $("#nErreur").textContent = `Décrivez un peu plus : au moins ${e.target.minLength} caractères.`;
+  e.target.focus();
+});
 $("#nouveauBtn").addEventListener("click", () => ouvrirNouveau({ app: filtres.app !== "toutes" ? filtres.app : undefined }));
 $("#formNouveau").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -265,6 +326,7 @@ window.addEventListener("hashchange", () => { rendre(); window.scrollTo(0, 0); }
 
 majAdmin();
 rendre();
+chargerJournaux();
 charger().then(() => {
   // Arrivee depuis le bouton « Suggestion / bug » d'une appli : page Retours filtree, formulaire ouvert
   if (lien.ouvrir) {
