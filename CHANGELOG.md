@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 1.4.1 — 1er novembre 2026
+
+- Page « Nouveautés » : la phrase de chaque version commence par une majuscule (correction d'affichage, aucune Nouveauté à annoncer).
+
 ## 1.4 — 1er novembre 2026
 
 - Nouveauté : le mode clair ou sombre que tu choisis dans une appli est repris dans toutes les autres.

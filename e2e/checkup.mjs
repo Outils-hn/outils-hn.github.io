@@ -92,6 +92,7 @@ try {
   await p.getByRole("link", { name: "Nouveautés" }).click(); await p.waitForTimeout(400);
   ok((await p.locator(".nouveaute").count()) === 2, "Nouveautés : 2 versions (Check 2.5, Masse 2.4) ; Masse 2.3, sans phrase « Nouveauté », est masquée");
   ok(!(await p.locator("#listeNouveautes").textContent()).includes("technique"), "Nouveautés : aucun détail technique affiché");
+  ok((await p.locator(".nouveaute .phrase").first().textContent()).startsWith("Dernière version de Check"), "Nouveautés : la phrase commence par une majuscule");
   ok((await p.locator(".nouveaute").first().textContent()).includes("Check") && (await p.locator(".nouveaute").nth(1).textContent()).includes("Masse"), "Nouveautés : les plus récentes d'abord");
   ok((await p.locator("#resumeNouveautes").textContent()).includes("indisponible"), "Nouveautés : les applis sans journal sont signalées");
   await shot(p, "06-nouveautes");
