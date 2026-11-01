@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.4";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.4.1";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -156,7 +156,7 @@ function rendreNouveautes() {
       <span class="tag" style="--c:${couleur(e.app)}"><span class="p"></span>${esc(e.app)}</span>
       <strong>v${esc(e.version)}</strong>${e.dateTexte ? `<span>${esc(e.dateTexte)}</span>` : ""}
     </div>
-    <p class="phrase">${esc(e.nouveaute)}</p>
+    <p class="phrase">${esc(e.nouveaute.charAt(0).toUpperCase() + e.nouveaute.slice(1))}</p>
   </li>`).join("");
   $("#plusNouveautes").hidden = tout.length <= nbAffiches;
 }
