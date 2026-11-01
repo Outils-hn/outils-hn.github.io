@@ -22,7 +22,17 @@ const etat = {
   ],
   envois: [], admin: [],
 };
+// CHANGELOG simules des applis (Strate n'en a pas : 404, pour verifier que la page n'en souffre pas)
+const JOURNAUX = {
+  masse: "# Journal\n\n## 2.4 — 31 octobre 2026\n\n- Valeurs impossibles refusées avec `message`.\n\n## 2.3 — 20 octobre 2026\n\n- Ancienne version de Masse.\n",
+  check: "# Journal\n\n## 2.5 — 31 octobre 2026\n\n- Dernière version de Check.\n",
+};
 async function brancher(ctx) {
+  await ctx.route("https://raw.githubusercontent.com/**", async (r) => {
+    const nom = new URL(r.request().url()).pathname.split("/")[2];
+    if (!JOURNAUX[nom]) return r.fulfill({ status: 404, contentType: "text/plain", body: "404: Not Found" });
+    return r.fulfill({ status: 200, contentType: "text/plain", headers: { "access-control-allow-origin": "*" }, body: JOURNAUX[nom] });
+  });
   await ctx.route(`${SB}/**`, async (r) => {
     const req = r.request(); const u = new URL(req.url());
     const json = (b, s = 200) => r.fulfill({ status: s, contentType: "application/json", body: JSON.stringify(b) });
@@ -73,8 +83,22 @@ try {
   ok(await p.locator(".carte", { hasText: "Masse" }).getByText("1 en cours").isVisible(), "carte Masse : « 1 en cours »");
   ok((await p.locator(".carte", { hasText: "Strate" }).getAttribute("href")) === "https://outils-hn.github.io/Strate/", "lien Strate");
   ok((await p.locator("#navCompte").textContent()).includes("2"), "menu : 2 retours ouverts");
+  ok((await p.locator(".carte", { hasText: "Masse" }).locator(".version").textContent()) === "v2.4", "carte Masse : version v2.4 lue dans son CHANGELOG");
+  ok((await p.locator(".carte .version").count()) === 2, "seules les applis avec un CHANGELOG affichent une version (Strate : aucune, sans erreur)");
   await shot(p, "01-accueil");
   await axe(p, "accueil");
+
+  // Nouveautes
+  await p.getByRole("link", { name: "Nouveautés" }).click(); await p.waitForTimeout(400);
+  ok((await p.locator(".nouveaute").count()) === 3, "Nouveautés : 3 versions (Check 2.5, Masse 2.4, Masse 2.3)");
+  ok((await p.locator(".nouveaute").first().textContent()).includes("Check") && (await p.locator(".nouveaute").nth(1).textContent()).includes("Masse"), "Nouveautés : les plus récentes d'abord");
+  ok(await p.locator(".nouveaute code").first().isVisible(), "Nouveautés : extrait de code mis en forme");
+  ok((await p.locator("#resumeNouveautes").textContent()).includes("indisponible"), "Nouveautés : les applis sans journal sont signalées");
+  await shot(p, "06-nouveautes");
+  await axe(p, "nouveautés");
+  await p.locator("#fAppNouveautes").selectOption("Masse");
+  ok((await p.locator(".nouveaute").count()) === 2, "Nouveautés : filtre par appli");
+  await p.locator("#fAppNouveautes").selectOption("toutes");
 
   await p.getByRole("link", { name: /Idées & bugs/ }).click(); await p.waitForTimeout(300);
   ok((await p.locator(".retour").count()) === 2, "Retours : 2 ouverts par défaut (le fait est masqué)");
@@ -100,9 +124,16 @@ try {
   ok(await p2.locator("#similaires").getByText("Déjà signalé pour Masse").isVisible(), "retours déjà signalés pour Masse affichés");
   ok((await p2.locator("#nContexte").textContent()).includes("v2.0 · page /materiaux"), "version et page jointes");
   await p2.locator("#dNouveau .choix").getByText("Bug", { exact: true }).click();
+  ok((await p2.locator("#nCompteur").textContent()) === "0 / 2'000", "compteur de caractères à zéro");
   await p2.locator("#nTexte").fill("ok");
+  ok((await p2.locator("#nCompteur").textContent()) === "2 / 2'000", "compteur : 2 / 2'000");
   await p2.getByRole("button", { name: "Envoyer" }).click(); await p2.waitForTimeout(400);
   ok(etat.envois.length === 0 && await p2.locator("#dNouveau").evaluate((d) => d.open), "texte trop court : rien n'est envoyé");
+  ok((await p2.locator("#nErreur").textContent()).includes("au moins 5 caractères"), "texte trop court : message « au moins 5 caractères » sous le formulaire");
+  await p2.locator("#nTexte").fill("x".repeat(1900));
+  ok((await p2.locator("#nCompteur").getAttribute("class")).includes("proche"), "compteur : mis en évidence près de la limite");
+  await p2.locator("#nTexte").fill("y".repeat(2500));
+  ok((await p2.locator("#nTexte").inputValue()).length === 2000 || (await p2.locator("#nCompteur").textContent()) === "2'000 / 2'000", "limite de 2'000 caractères");
   await p2.locator("#nTexte").fill("La densité de l'acier inox ne s'enregistre pas");
   await p2.locator("#nNom").fill("Julie");
   await shot(p2, "03-formulaire");

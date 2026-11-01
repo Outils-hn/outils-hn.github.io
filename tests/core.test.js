@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { APPLIS, compter, filtrerRetours, fmtDate, lireLien } from "../js/core.js";
+import { APPLIS, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireDate, lireJournal, lireLien, texteCompteur } from "../js/core.js";
 
 const r = (o) => ({ id: "x", app: "Masse", type: "idee", texte: "", nom: "", reponse: "", statut: "nouveau", moi_aussi: 0, created_at: "2026-10-20T08:00:00Z", ...o });
 const liste = [
@@ -39,4 +39,49 @@ test("lien depuis une appli", () => {
   assert.deepEqual(lireLien("?app=Masse&type=bug&v=2.0&page=/materiaux"), { app: "Masse", type: "bug", version: "2.0", page: "/materiaux", ouvrir: true });
   assert.deepEqual(lireLien("?app=Inconnue"), { app: null, type: null, version: "", page: "", ouvrir: false });
   assert.deepEqual(lireLien("?nouveau"), { app: null, type: null, version: "", page: "", ouvrir: true });
+});
+
+const JOURNAL = `# Journal des versions — Masse
+
+## 2.4 — 31 octobre 2026
+
+- Première puce avec \`code\`.
+- Seconde puce
+  qui continue sur la ligne suivante.
+
+## 2.3 — 1er septembre 2026
+
+- Ancienne version.
+
+## 1.0
+
+- Sans date.
+`;
+test("dates en francais", () => {
+  assert.equal(lireDate("31 octobre 2026"), "2026-10-31");
+  assert.equal(lireDate("1er février 2026"), "2026-02-01");
+  assert.equal(lireDate("28 août 2026"), "2026-08-28");
+  assert.equal(lireDate("pas une date"), null);
+  assert.equal(lireDate(undefined), null);
+});
+test("lecture d'un CHANGELOG", () => {
+  const j = lireJournal(JOURNAL);
+  assert.deepEqual(j.map((e) => e.version), ["2.4", "2.3", "1.0"]);
+  assert.equal(j[0].date, "2026-10-31");
+  assert.equal(j[0].dateTexte, "31 octobre 2026");
+  assert.deepEqual(j[0].notes, ["Première puce avec `code`.", "Seconde puce qui continue sur la ligne suivante."]);
+  assert.equal(j[2].date, null);
+  assert.deepEqual(lireJournal(""), []);
+  assert.deepEqual(lireJournal("pas un journal"), []);
+});
+test("journaux fusionnes : recents d'abord, sans date a la fin", () => {
+  const j = { Masse: lireJournal(JOURNAL), Check: lireJournal("## 2.5 — 31 octobre 2026\n\n- a\n\n## 2.4 — 20 octobre 2026\n\n- b\n") };
+  assert.deepEqual(fusionnerJournaux(j).map((e) => `${e.app} ${e.version}`), ["Check 2.5", "Masse 2.4", "Check 2.4", "Masse 2.3", "Masse 1.0"]);
+  assert.deepEqual(fusionnerJournaux(j, "Check").map((e) => e.version), ["2.5", "2.4"]);
+  assert.deepEqual(fusionnerJournaux(j, "Index"), []);
+});
+test("adresse du journal et compteur", () => {
+  assert.equal(adresseJournal("Masse"), "https://raw.githubusercontent.com/Outils-hn/masse/main/CHANGELOG.md");
+  assert.equal(texteCompteur(0, 2000), "0 / 2'000");
+  assert.equal(texteCompteur(1874, 2000), "1'874 / 2'000");
 });

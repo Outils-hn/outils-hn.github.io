@@ -73,3 +73,50 @@ export function lireLien(search) {
   const page = (p.get("page") ?? "").slice(0, 300);
   return { app, type, version, page, ouvrir: p.has("nouveau") || !!app };
 }
+
+// ---------- Nouveautes : lecture des CHANGELOG des applis ----------
+const MOIS = ["janvier", "fevrier", "mars", "avril", "mai", "juin", "juillet", "aout", "septembre", "octobre", "novembre", "decembre"];
+
+/** Adresse du CHANGELOG d'une appli : le depot porte le nom de l'appli en minuscules, sur la branche main. */
+export const adresseJournal = (nom) => `https://raw.githubusercontent.com/Outils-hn/${nom.toLowerCase()}/main/CHANGELOG.md`;
+
+/** « 31 octobre 2026 » -> « 2026-10-31 » (null si le texte n'est pas une date). */
+export function lireDate(texte) {
+  const m = sansAccents(texte).match(/(\d{1,2})(?:er)?\s+([a-z]+)\s+(\d{4})/);
+  const mois = m ? MOIS.indexOf(m[2]) : -1;
+  if (mois < 0) return null;
+  return `${m[3]}-${String(mois + 1).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+}
+
+/**
+ * Lit un CHANGELOG au format « ## 2.4 — 31 octobre 2026 » suivi de puces.
+ * Renvoie les versions dans l'ordre du fichier (la plus recente d'abord) : { version, date, dateTexte, notes[] }.
+ */
+export function lireJournal(md) {
+  const entrees = []; let cur = null;
+  for (const l of String(md ?? "").split(/\r?\n/)) {
+    const h = l.match(/^##\s+v?(\d+(?:\.\d+)*)\s*(?:[—–-]\s*(.+?))?\s*$/);
+    if (h) { cur = { version: h[1], date: lireDate(h[2]), dateTexte: h[2] ?? "", notes: [] }; entrees.push(cur); continue; }
+    if (!cur) continue;
+    if (/^\s*[-*]\s+/.test(l)) cur.notes.push(l.replace(/^\s*[-*]\s+/, "").trim());
+    else if (cur.notes.length && /^\s{2,}\S/.test(l)) cur.notes[cur.notes.length - 1] += " " + l.trim(); // suite d'une puce
+  }
+  return entrees;
+}
+
+/**
+ * Toutes les versions de toutes les applis en une liste : les plus recentes d'abord
+ * (les versions sans date a la fin) ; a date egale, la derniere version de chaque appli passe avant les precedentes. journaux = { nom d'appli: entrees[] }.
+ */
+export function fusionnerJournaux(journaux, app = "toutes") {
+  const tout = [];
+  for (const [nom, entrees] of Object.entries(journaux)) {
+    if (app !== "toutes" && nom !== app) continue;
+    entrees.forEach((e, i) => tout.push({ app: nom, rang: i, ...e }));
+  }
+  return tout.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "") || a.rang - b.rang || a.app.localeCompare(b.app));
+}
+
+/** Texte du compteur sous la description : milliers a la suisse (2'000), identique dans tous les navigateurs. */
+const milliers = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+export const texteCompteur = (n, max) => `${milliers(n)} / ${milliers(max)}`;
