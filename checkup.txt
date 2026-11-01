@@ -1,0 +1,42 @@
+OK 8 applis sur l'accueil
+OK dans l'ordre alphabétique
+OK carte Masse : « 1 en cours »
+OK lien Strate
+OK menu : 2 retours ouverts
+OK carte Masse : version v2.4 lue dans son CHANGELOG
+OK seules les applis avec un CHANGELOG affichent une version (Strate : aucune, sans erreur)
+OK accessibilité accueil : 0 problème(s)
+OK Nouveautés : 2 versions (Check 2.5, Masse 2.4) ; Masse 2.3, sans phrase « Nouveauté », est masquée
+OK Nouveautés : aucun détail technique affiché
+OK Nouveautés : la phrase commence par une majuscule
+OK Nouveautés : les plus récentes d'abord
+OK Nouveautés : les applis sans journal sont signalées
+OK accessibilité nouveautés : 0 problème(s)
+OK Nouveautés : filtre par appli
+OK Nouveautés : message clair quand une appli n'a rien de nouveau
+OK Retours : 2 ouverts par défaut (le fait est masqué)
+OK en cours d'abord
+OK « Tous les statuts » : 3
+OK filtre Bugs
+OK recherche sans accents
+OK « Moi aussi » compté une fois
+OK accessibilité retours : 0 problème(s)
+OK depuis Masse : formulaire ouvert
+OK appli pré-remplie
+OK retours déjà signalés pour Masse affichés
+OK version et page jointes
+OK compteur de caractères à zéro
+OK compteur : 2 / 2'000
+OK texte trop court : rien n'est envoyé
+OK texte trop court : message « au moins 5 caractères » sous le formulaire
+OK compteur : mis en évidence près de la limite
+OK limite de 2'000 caractères
+OK envoyé avec appli, type, version, page et prénom
+OK merci + visible dans la liste
+OK champ piège : envoi d'un robot ignoré
+OK admin : mauvais mot de passe
+OK admin : bouton « Traiter » sur les retours
+OK statut changé en « Prévu »
+OK réponse visible par tous
+OK thème : le choix est écrit dans le réglage commun « outils-theme »
+OK accessibilité sombre : 0 problème(s)
