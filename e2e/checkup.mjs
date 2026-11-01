@@ -24,8 +24,8 @@ const etat = {
 };
 // CHANGELOG simules des applis (Strate n'en a pas : 404, pour verifier que la page n'en souffre pas)
 const JOURNAUX = {
-  masse: "# Journal\n\n## 2.4 — 31 octobre 2026\n\n- Valeurs impossibles refusées avec `message`.\n\n## 2.3 — 20 octobre 2026\n\n- Ancienne version de Masse.\n",
-  check: "# Journal\n\n## 2.5 — 31 octobre 2026\n\n- Dernière version de Check.\n",
+  masse: "# Journal\n\n## 2.4 — 31 octobre 2026\n\n- Nouveauté : les valeurs impossibles sont refusées avec un message clair.\n- Détail technique pour le développeur.\n\n## 2.3 — 20 octobre 2026\n\n- Changement technique sans phrase pour l'équipe.\n",
+  check: "# Journal\n\n## 2.5 — 31 octobre 2026\n\n- Nouveauté : dernière version de Check.\n",
 };
 async function brancher(ctx) {
   await ctx.route("https://raw.githubusercontent.com/**", async (r) => {
@@ -90,14 +90,16 @@ try {
 
   // Nouveautes
   await p.getByRole("link", { name: "Nouveautés" }).click(); await p.waitForTimeout(400);
-  ok((await p.locator(".nouveaute").count()) === 3, "Nouveautés : 3 versions (Check 2.5, Masse 2.4, Masse 2.3)");
+  ok((await p.locator(".nouveaute").count()) === 2, "Nouveautés : 2 versions (Check 2.5, Masse 2.4) ; Masse 2.3, sans phrase « Nouveauté », est masquée");
+  ok(!(await p.locator("#listeNouveautes").textContent()).includes("technique"), "Nouveautés : aucun détail technique affiché");
   ok((await p.locator(".nouveaute").first().textContent()).includes("Check") && (await p.locator(".nouveaute").nth(1).textContent()).includes("Masse"), "Nouveautés : les plus récentes d'abord");
-  ok(await p.locator(".nouveaute code").first().isVisible(), "Nouveautés : extrait de code mis en forme");
   ok((await p.locator("#resumeNouveautes").textContent()).includes("indisponible"), "Nouveautés : les applis sans journal sont signalées");
   await shot(p, "06-nouveautes");
   await axe(p, "nouveautés");
   await p.locator("#fAppNouveautes").selectOption("Masse");
-  ok((await p.locator(".nouveaute").count()) === 2, "Nouveautés : filtre par appli");
+  ok((await p.locator(".nouveaute").count()) === 1, "Nouveautés : filtre par appli");
+  await p.locator("#fAppNouveautes").selectOption("Access");
+  ok((await p.locator("#listeNouveautes").textContent()).includes("Rien de nouveau pour Access"), "Nouveautés : message clair quand une appli n'a rien de nouveau");
   await p.locator("#fAppNouveautes").selectOption("toutes");
 
   await p.getByRole("link", { name: /Idées & bugs/ }).click(); await p.waitForTimeout(300);
@@ -165,6 +167,9 @@ try {
   await p.locator("#dTraiter").getByRole("button", { name: "Enregistrer" }).click(); await p.waitForTimeout(800);
   ok(etat.admin.at(-1)?.p_statut === "prevu", "statut changé en « Prévu »");
   ok(await p.getByText("Prévu pour Format 2.1").isVisible(), "réponse visible par tous");
+
+  await p.locator("#themeBtn").click();
+  ok(await p.evaluate(() => localStorage.getItem("outils-theme")) === "dark", "thème : le choix est écrit dans le réglage commun « outils-theme »");
 
   const p3 = await page({ dark: true });
   await p3.goto(URL0 + "#retours"); await p3.waitForLoadState("networkidle"); await p3.waitForTimeout(400);

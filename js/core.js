@@ -90,16 +90,21 @@ export function lireDate(texte) {
 
 /**
  * Lit un CHANGELOG au format « ## 2.4 — 31 octobre 2026 » suivi de puces.
- * Renvoie les versions dans l'ordre du fichier (la plus recente d'abord) : { version, date, dateTexte, notes[] }.
+ * Renvoie les versions dans l'ordre du fichier (la plus recente d'abord) :
+ * { version, date, dateTexte, notes[], nouveaute } ; « nouveaute » = la phrase de la puce « Nouveauté : … »
+ * (ecrite en langage courant, c'est la seule chose que la page Nouveautes affiche), ou "" s'il n'y en a pas.
  */
 export function lireJournal(md) {
   const entrees = []; let cur = null;
   for (const l of String(md ?? "").split(/\r?\n/)) {
     const h = l.match(/^##\s+v?(\d+(?:\.\d+)*)\s*(?:[—–-]\s*(.+?))?\s*$/);
-    if (h) { cur = { version: h[1], date: lireDate(h[2]), dateTexte: h[2] ?? "", notes: [] }; entrees.push(cur); continue; }
+    if (h) { cur = { version: h[1], date: lireDate(h[2]), dateTexte: h[2] ?? "", notes: [], nouveaute: "" }; entrees.push(cur); continue; }
     if (!cur) continue;
-    if (/^\s*[-*]\s+/.test(l)) cur.notes.push(l.replace(/^\s*[-*]\s+/, "").trim());
-    else if (cur.notes.length && /^\s{2,}\S/.test(l)) cur.notes[cur.notes.length - 1] += " " + l.trim(); // suite d'une puce
+    if (/^\s*[-*]\s+/.test(l)) {
+      const note = l.replace(/^\s*[-*]\s+/, "").trim();
+      const n = note.match(/^nouveaut[eé]\s*:\s*(.+)$/i);
+      if (n) cur.nouveaute = n[1].trim(); else cur.notes.push(note);
+    } else if (cur.notes.length && /^\s{2,}\S/.test(l)) cur.notes[cur.notes.length - 1] += " " + l.trim(); // suite d'une puce
   }
   return entrees;
 }
@@ -112,7 +117,8 @@ export function fusionnerJournaux(journaux, app = "toutes") {
   const tout = [];
   for (const [nom, entrees] of Object.entries(journaux)) {
     if (app !== "toutes" && nom !== app) continue;
-    entrees.forEach((e, i) => tout.push({ app: nom, rang: i, ...e }));
+    // Seules les versions avec une phrase « Nouveauté : … » concernent les utilisateurs
+    entrees.forEach((e, i) => { if (e.nouveaute) tout.push({ app: nom, rang: i, ...e }); });
   }
   return tout.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? "") || a.rang - b.rang || a.app.localeCompare(b.app));
 }
