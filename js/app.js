@@ -269,7 +269,7 @@ function lireSession() { try { const s = JSON.parse(localStorage.getItem(CLE_SES
 function ecrireSession(s) { try { if (s) localStorage.setItem(CLE_SESSION, JSON.stringify(s)); else localStorage.removeItem(CLE_SESSION); } catch { /* bloque */ } }
 function majCompte() {
   const s = lireSession();
-  $("#etatCompte").textContent = s ? `Connecté · ${s.user?.email ?? ""}` : "Lecture seule";
+  $("#etatCompte").textContent = s ? (s.user?.email ?? "") : "Lecture seule";
   $("#etatCompte").classList.toggle("on", !!s);
   $("#compteBtn").textContent = s ? "Se déconnecter" : "Se connecter";
 }
