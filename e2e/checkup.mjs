@@ -43,6 +43,7 @@ async function brancher(ctx) {
       if (corps.email !== ADMIN.email || corps.password !== ADMIN.mdp) return json({ error: "invalid_grant", error_description: "Invalid login credentials" }, 400);
       return json({ access_token: "tok-admin", expires_in: 3600, user: { id: ADMIN.id, email: ADMIN.email } });
     }
+    if (u.pathname === "/rest/v1/rpc/is_approved") return json(true);
     if (u.pathname === "/rest/v1/rpc/is_admin") return json(tok === "tok-admin");
     if (u.pathname === "/rest/v1/rpc/retour_envoyer") {
       const p = corps.p; etat.envois.push(p);
@@ -151,6 +152,19 @@ try {
   await p2.locator("input[name=site]").evaluate((i) => (i.value = "http://spam"));
   await p2.getByRole("button", { name: "Envoyer" }).click(); await p2.waitForTimeout(400);
   ok(etat.envois.length === n, "champ piège : envoi d'un robot ignoré");
+
+  // Compte Index : « Se connecter » en haut de page, connexion partagee (cle de stockage d'Index)
+  ok((await p.locator("#etatCompte").innerText()) === "Lecture seule" && (await p.locator("#compteBtn").innerText()) === "Se connecter", "Bandeau : « Lecture seule » + Se connecter");
+  await p.locator("#compteBtn").click();
+  await p.locator("#formConnexion [name=email]").fill(ADMIN.email); await p.locator("#formConnexion [name=mdp]").fill("mauvais");
+  await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
+  ok(/incorrect/.test(await p.locator("#cErreur").innerText()), "Connexion : mauvais mot de passe refuse avec un message clair");
+  await p.locator("#formConnexion [name=mdp]").fill(ADMIN.mdp);
+  await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
+  ok((await p.locator("#etatCompte").innerText()) === `Connecté · ${ADMIN.email}`, "Connexion : « Connecté · email » en haut de page");
+  ok(!!(await p.evaluate(() => localStorage.getItem("sb-ngfzwfbraqkdcocdcmib-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
+  await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
+  ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
 
   // Administration
   await p.getByRole("button", { name: "Administration" }).click();

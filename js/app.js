@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.4.1";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.5";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -263,6 +263,35 @@ $("#formNouveau").addEventListener("submit", async (e) => {
   } finally { $("#nEnvoyer").disabled = false; }
 });
 
+// ---------- Compte Index (connexion partagee avec toutes les applis : meme site, meme cle de stockage) ----------
+const CLE_SESSION = "sb-ngfzwfbraqkdcocdcmib-auth-token";
+function lireSession() { try { const s = JSON.parse(localStorage.getItem(CLE_SESSION)); return s && s.access_token ? s : null; } catch { return null; } }
+function ecrireSession(s) { try { if (s) localStorage.setItem(CLE_SESSION, JSON.stringify(s)); else localStorage.removeItem(CLE_SESSION); } catch { /* bloque */ } }
+function majCompte() {
+  const s = lireSession();
+  $("#etatCompte").textContent = s ? `Connecté · ${s.user?.email ?? ""}` : "Lecture seule";
+  $("#etatCompte").classList.toggle("on", !!s);
+  $("#compteBtn").textContent = s ? "Se déconnecter" : "Se connecter";
+}
+const dC = $("#dConnexion");
+$("#compteBtn").addEventListener("click", () => {
+  if (lireSession()) { ecrireSession(null); majCompte(); toast("Déconnecté."); return; }
+  $("#formConnexion").reset(); $("#cErreur").textContent = ""; dC.showModal();
+});
+$("#formConnexion").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = new FormData(e.target);
+  try {
+    const s = await api("/auth/v1/token?grant_type=password", { methode: "POST", corps: { email: String(f.get("email")).trim(), password: f.get("mdp") } });
+    ecrireSession({ ...s, expires_at: s.expires_at ?? Math.floor(Date.now() / 1000) + (s.expires_in ?? 3600) });
+    dC.close(); majCompte();
+  } catch (err) {
+    $("#cErreur").textContent = err.status === 400 ? "Email ou mot de passe incorrect." : horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message;
+  }
+});
+// Connexion ou deconnexion faite dans une autre appli / un autre onglet
+window.addEventListener("storage", (e) => { if (e.key === CLE_SESSION) majCompte(); });
+
 // ---------- Administration ----------
 const dA = $("#dAdmin");
 $("#adminBtn").addEventListener("click", () => {
@@ -326,6 +355,7 @@ $("#themeBtn").addEventListener("click", () => {
 window.addEventListener("hashchange", () => { rendre(); window.scrollTo(0, 0); });
 
 majAdmin();
+majCompte();
 rendre();
 chargerJournaux();
 charger().then(() => {

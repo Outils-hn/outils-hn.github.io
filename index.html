@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="styles.css?v=1.4.1">
+<link rel="stylesheet" href="styles.css?v=1.5">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='2' y='2' width='8' height='8' fill='%231f2026'/%3E%3Crect x='12' y='2' width='8' height='8' fill='%23C2255C'/%3E%3Crect x='2' y='12' width='8' height='8' fill='%236D4AFF'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%230E9F6E'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -35,6 +35,8 @@
       <a href="#retours" class="nav" data-nav="retours">Idées &amp; bugs <span class="compte" id="navCompte"></span></a>
       <a href="#nouveautes" class="nav" data-nav="nouveautes">Nouveautés</a>
     </nav>
+    <span class="etat-compte" id="etatCompte"></span>
+    <button class="btn" id="compteBtn" type="button">Se connecter</button>
     <button class="icone" id="themeBtn" type="button" aria-label="Basculer le thème">
       <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
     </button>
@@ -95,7 +97,7 @@
 </main>
 
 <footer>
-  Accueil v1.4.1 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026 · <button type="button" id="adminBtn">Administration</button>
+  Accueil v1.5 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026 · <button type="button" id="adminBtn">Administration</button>
 </footer>
 
 <!-- Nouveau retour -->
@@ -144,6 +146,22 @@
   </form>
 </dialog>
 
+<!-- Connexion avec le compte Index (partagee avec les autres applis) -->
+<dialog id="dConnexion" aria-labelledby="dc-titre">
+  <form id="formConnexion" method="dialog">
+    <h3 id="dc-titre">Connexion</h3>
+    <p class="aide">Avec votre compte Index : mêmes email et mot de passe. La connexion vaut pour toutes les applis.</p>
+    <label class="bloc">Email <input name="email" type="email" class="champ" autocomplete="username" required></label>
+    <label class="bloc">Mot de passe <input name="mdp" type="password" class="champ" autocomplete="current-password" required></label>
+    <p class="erreur" id="cErreur" role="alert"></p>
+    <p class="aide">Pas encore de compte ? <a href="https://outils-hn.github.io/Index/auth" target="_blank" rel="noopener noreferrer">Créez-le dans Index</a> (un collègue doit ensuite le valider).</p>
+    <div class="actions">
+      <button type="button" class="btn" data-fermer>Annuler</button>
+      <button type="submit" class="btn primaire">Se connecter</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Traiter un retour (admin) -->
 <dialog id="dTraiter" aria-labelledby="dt-titre">
   <form id="formTraiter" method="dialog">
@@ -167,7 +185,7 @@
 <dialog id="dApropos" aria-labelledby="dp-titre">
   <form method="dialog">
     <h3 id="dp-titre" class="petit">À propos</h3>
-    <p class="gros">Accueil <span class="aide">Version 1.4.1</span></p>
+    <p class="gros">Accueil <span class="aide">Version 1.5</span></p>
     <p>Conçu et développé par Hugo N.</p>
     <p class="aide">Point d'entrée des outils du bureau d'études façade, et suivi des idées et bugs signalés par l'équipe.</p>
     <div class="actions"><button class="btn primaire">Fermer</button></div>
@@ -175,6 +193,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/app.js?v=1.4.1"></script>
+<script type="module" src="js/app.js?v=1.5"></script>
 </body>
 </html>
