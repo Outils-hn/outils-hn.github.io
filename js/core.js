@@ -8,11 +8,11 @@ export const BASE_KEY =
 /** Les applis de la famille, dans l'ordre alphabetique (meme liste que les selecteurs). */
 export const APPLIS = [
   { nom: "Access", role: "Annuaire fournisseurs", url: "https://outils-hn.github.io/Access/", couleur: "#C2255C",
-    texte: "Sites et sites CAO des fournisseurs par domaine, avec les accès du bureau et les vôtres." },
+    texte: "Sites des fournisseurs par domaine, avec les accès du bureau et les vôtres." },
   { nom: "Check", role: "Notes & tâches", url: "https://outils-hn.github.io/Check/", couleur: "#4338CA",
     texte: "Notes perso et notes d'équipe par projet, échéances, « Pour moi » et rapport PDF." },
   { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00",
-    texte: "Calepinage des panneaux dans les formats fournisseurs pour estimer la matière à commander." },
+    texte: "Calepinage de panneaux aux formats fournisseurs pour estimer la matière." },
   { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF",
     texte: "Bibliothèque des fiches techniques fournisseurs, par catégorie et par chantier." },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
