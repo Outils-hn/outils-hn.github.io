@@ -161,7 +161,7 @@ try {
   ok(/incorrect/.test(await p.locator("#cErreur").innerText()), "Connexion : mauvais mot de passe refuse avec un message clair");
   await p.locator("#formConnexion [name=mdp]").fill(ADMIN.mdp);
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
-  ok((await p.locator("#etatCompte").innerText()) === `Connecté · ${ADMIN.email}`, "Connexion : « Connecté · email » en haut de page");
+  ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-ngfzwfbraqkdcocdcmib-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
