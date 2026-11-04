@@ -284,7 +284,7 @@ $("#formConnexion").addEventListener("submit", async (e) => {
   try {
     const s = await api("/auth/v1/token?grant_type=password", { methode: "POST", corps: { email: String(f.get("email")).trim(), password: f.get("mdp") } });
     ecrireSession({ ...s, expires_at: s.expires_at ?? Math.floor(Date.now() / 1000) + (s.expires_in ?? 3600) });
-    dC.close(); majCompte();
+    $("#cErreur").textContent = ""; dC.close(); majCompte();
   } catch (err) {
     $("#cErreur").textContent = err.status === 400 ? "Email ou mot de passe incorrect." : horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message;
   }
