@@ -2,6 +2,11 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 1.8 — 5 novembre 2026
+
+- Nouveauté : un onglet « Statistiques » apparaît pour le concepteur seulement : nombre de comptes (par rôle, en attente), de fiches Index à vérifier, de fournisseurs, de notes, et ce qui a été ajouté sur 30 jours dans chaque appli. Ce sont de simples totaux, aucun contenu n'est montré.
+- Un script SQL est à lancer une fois dans Supabase (`supabase/stats-accueil.sql`) : sans lui, l'onglet reste caché.
+
 ## 1.7 — 4 novembre 2026
 
 - Nouveauté : textes raccourcis sur les cartes Access et Format de l'Accueil, pour que toutes les cartes aient la même hauteur.

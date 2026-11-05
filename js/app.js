@@ -26,6 +26,7 @@ const rpc = (nom, args, jeton) => api(`/rest/v1/rpc/${nom}`, { methode: "POST", 
 const horsLigne = (e) => /fetch|network|Load failed/i.test(e?.message ?? "");
 
 // ---------- Etat ----------
+let stats = null; // totaux reserves au concepteur (null = onglet cache)
 let retours = [];
 let charge = false;
 let erreurChargement = null;
@@ -76,20 +77,55 @@ function toast(msg) {
 }
 
 // ---------- Vues ----------
-function vue() { return location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
+function vue() { return location.hash === "#statistiques" && stats ? "statistiques" : location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
 
 function rendre() {
   const v = vue();
   $("#applis").hidden = v !== "applis";
   $("#retours").hidden = v !== "retours";
+  $("#statistiques").hidden = v !== "statistiques";
+  $("#navStats").hidden = !stats;
   $("#nouveautes").hidden = v !== "nouveautes";
   document.querySelectorAll("[data-nav]").forEach((a) => (a.dataset.nav === v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   const c = compter(retours);
   $("#navCompte").textContent = charge && c.ouverts ? `· ${c.ouverts}` : "";
   document.title = v === "retours" ? "Idées & bugs — Accueil" : v === "nouveautes" ? "Nouveautés — Accueil" : "Accueil — les outils du bureau d'études";
+  document.title = v === "statistiques" ? "Statistiques — Accueil" : document.title;
   rendreApplis();
+  rendreStats();
   rendreRetours();
   rendreNouveautes();
+}
+
+/** Statistiques : onglet visible seulement si la base repond (fonction reservee au concepteur). */
+async function chargerStats() {
+  const s = lireSession();
+  const avant = !!stats;
+  try { stats = s ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
+  if (avant !== !!stats || stats) rendre();
+}
+function rendreStats() {
+  if (!stats) { $("#statsContenu").innerHTML = ""; return; }
+  const c = stats.comptes, r = stats.retours, n = (x) => Number(x).toLocaleString("fr-CH");
+  const idx = stats.applis.find((a) => a.nom === "Index");
+  const haut = [
+    ["Comptes", n(c.total), `${n(c.valides)} validé${c.valides > 1 ? "s" : ""}, ${n(c.attente)} en attente`],
+    ["Fiches Index", n(idx?.total ?? 0), `${n(idx?.a_verifier ?? 0)} à vérifier ou périmée${(idx?.a_verifier ?? 0) > 1 ? "s" : ""}`],
+    ["Fournisseurs Access", n(stats.applis.find((a) => a.nom === "Access")?.total ?? 0), "dans l'annuaire"],
+    ["Retours (idées & bugs)", n(r.total), `${n(r.nouveaux)} pas encore lu${r.nouveaux > 1 ? "s" : ""}`],
+  ].map(([l, v, d]) => `<div class="stat"><span class="lib">${esc(l)}</span><span class="val">${esc(v)}</span><span class="det">${esc(d)}</span></div>`).join("");
+  const objets = { Index: "fiches techniques", Access: "fournisseurs", Check: "notes", Masse: "matériaux et éléments", Format: "matériaux de la bibliothèque", Strate: "produits du catalogue" };
+  const lignes = stats.applis.map((a) => `<tr><td><span class="pastille-c" style="--c:${couleur(a.nom)}"></span><b>${esc(a.nom)}</b></td><td>${esc(objets[a.nom] ?? "")}</td><td class="num">${n(a.total)}</td><td class="num">${a.mois > 0 ? "+" : ""}${n(a.mois)}</td></tr>`).join("");
+  const max = Math.max(1, c.concepteur, c.administrateur, c.dessinateur);
+  const barres = [["Concepteur", c.concepteur], ["Administrateur", c.administrateur], ["Dessinateur", c.dessinateur]]
+    .map(([l, v]) => `<div class="barre"><div class="l"><span>${l}</span><span>${n(v)}</span></div><div class="f"><i style="width:${Math.round(v / max * 100)}%"></i></div></div>`).join("");
+  const derniers = stats.derniers.map((d) => `<div class="derniers"><span>${esc(d.email ?? "")}</span><span>${esc(fmtDate(d.le))}</span></div>`).join("") || `<p class="det">Aucun compte.</p>`;
+  $("#statsContenu").innerHTML = `<div class="stats-haut">${haut}</div>
+    <div class="stats-bas">
+      <div class="bloc tableau"><h3>Contenu par appli</h3><table><thead><tr><th>Appli</th><th>Ce qu'on compte</th><th class="num">Total</th><th class="num">Sur 30 jours</th></tr></thead><tbody>${lignes}</tbody></table></div>
+      <div class="lateral"><div class="bloc"><h3>Comptes par rôle</h3>${barres}</div><div class="bloc"><h3>Derniers comptes</h3>${derniers}</div></div>
+    </div>
+    <p class="stats-note">Pas de suivi de connexions ni d'usage pour l'instant : seulement ce qui est déjà enregistré.</p>`;
 }
 
 function rendreApplis() {
@@ -272,6 +308,7 @@ function majCompte() {
   $("#etatCompte").textContent = s ? (s.user?.email ?? "") : "Lecture seule";
   $("#etatCompte").classList.toggle("on", !!s);
   $("#compteBtn").textContent = s ? "Se déconnecter" : "Se connecter";
+  chargerStats();
 }
 const dC = $("#dConnexion");
 $("#compteBtn").addEventListener("click", () => {

@@ -43,6 +43,13 @@ async function brancher(ctx) {
       if (corps.email !== ADMIN.email || corps.password !== ADMIN.mdp) return json({ error: "invalid_grant", error_description: "Invalid login credentials" }, 400);
       return json({ access_token: "tok-admin", expires_in: 3600, user: { id: ADMIN.id, email: ADMIN.email } });
     }
+    if (u.pathname === "/rest/v1/rpc/stats_accueil") {
+      if (tok !== "tok-admin") return json({ message: "Reserve au concepteur" }, 400);
+      return json({ comptes: { total: 14, valides: 12, attente: 2, concepteur: 1, administrateur: 2, dessinateur: 9 },
+        derniers: [{ email: "a@exemple.ch", le: new Date().toISOString() }],
+        retours: { total: 6, nouveaux: 2 },
+        applis: [{ nom: "Index", total: 312, mois: 18, a_verifier: 41 }, { nom: "Access", total: 58, mois: 7 }, { nom: "Check", total: 240, mois: 64 }, { nom: "Masse", total: 95, mois: 11 }, { nom: "Format", total: 34, mois: 2 }, { nom: "Strate", total: 120, mois: 0 }] });
+    }
     if (u.pathname === "/rest/v1/rpc/is_approved") return json(true);
     if (u.pathname === "/rest/v1/rpc/is_admin") return json(tok === "tok-admin");
     if (u.pathname === "/rest/v1/rpc/retour_envoyer") {
@@ -163,8 +170,17 @@ try {
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
   ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-ngfzwfbraqkdcocdcmib-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
+  // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
+  await p.waitForTimeout(400);
+  ok(await p.locator("#navStats").isVisible(), "Statistiques : onglet visible pour le concepteur");
+  await p.locator("#navStats").click(); await p.waitForTimeout(300);
+  ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle"), "Statistiques : totaux affichés");
+  await shot(p, "06b-statistiques");
+  await axe(p, "statistiques");
+  await p.getByRole("link", { name: "Applis" }).click(); await p.waitForTimeout(200);
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
+  ok(!(await p.locator("#navStats").isVisible()), "Statistiques : onglet cache sans connexion");
 
   // Administration
   await p.getByRole("button", { name: "Administration" }).click();
