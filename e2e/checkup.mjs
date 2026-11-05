@@ -39,6 +39,9 @@ async function brancher(ctx) {
     const tok = (req.headers()["authorization"] || "").replace("Bearer ", "");
     const corps = req.postData() ? JSON.parse(req.postData()) : {};
     if (u.pathname === "/rest/v1/retours") return json(etat.retours);
+    if (u.pathname === "/auth/v1/token" && u.searchParams.get("grant_type") === "refresh_token") {
+      return corps.refresh_token === "ref-ok" ? json({ access_token: "tok-admin", refresh_token: "ref-ok", expires_in: 3600, user: { id: ADMIN.id, email: ADMIN.email } }) : json({ error: "invalid_grant" }, 400);
+    }
     if (u.pathname === "/auth/v1/token") {
       if (corps.email !== ADMIN.email || corps.password !== ADMIN.mdp) return json({ error: "invalid_grant", error_description: "Invalid login credentials" }, 400);
       return json({ access_token: "tok-admin", expires_in: 3600, user: { id: ADMIN.id, email: ADMIN.email } });
@@ -181,6 +184,11 @@ try {
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
   ok(!(await p.locator("#navStats").isVisible()), "Statistiques : onglet cache sans connexion");
+  // Session perimee (plus d'une heure) : l'Accueil la renouvelle et l'onglet apparait quand meme
+  await p.evaluate((u) => localStorage.setItem("sb-ngfzwfbraqkdcocdcmib-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
+  await p.reload(); await p.waitForTimeout(800);
+  ok(await p.locator("#navStats").isVisible(), "Statistiques : session expirée renouvelée, onglet visible");
+  await p.evaluate(() => localStorage.removeItem("sb-ngfzwfbraqkdcocdcmib-auth-token")); await p.reload(); await p.waitForTimeout(400);
 
   // Administration
   await p.getByRole("button", { name: "Administration" }).click();

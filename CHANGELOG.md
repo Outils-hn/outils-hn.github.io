@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 1.9 — 5 novembre 2026
+
+- Nouveauté : l'onglet « Statistiques » s'affiche aussi quand la connexion date de plus d'une heure : l'Accueil renouvelle tout seul la connexion, comme les autres applis.
+
 ## 1.8 — 5 novembre 2026
 
 - Nouveauté : un onglet « Statistiques » apparaît pour le concepteur seulement : nombre de comptes (par rôle, en attente), de fiches Index à vérifier, de fournisseurs, de notes, et ce qui a été ajouté sur 30 jours dans chaque appli. Ce sont de simples totaux, aucun contenu n'est montré.

@@ -98,8 +98,21 @@ function rendre() {
 }
 
 /** Statistiques : onglet visible seulement si la base repond (fonction reservee au concepteur). */
+/** Jeton encore valable : sinon on le renouvelle avec le jeton de renouvellement (la session est partagee avec Index, qui le fait aussi). */
+async function sessionFraiche() {
+  let s = lireSession();
+  if (!s) return null;
+  if (s.refresh_token && (s.expires_at ?? 0) < Math.floor(Date.now() / 1000) + 60) {
+    try {
+      const n = await api("/auth/v1/token?grant_type=refresh_token", { methode: "POST", corps: { refresh_token: s.refresh_token } });
+      s = { ...s, ...n, expires_at: n.expires_at ?? Math.floor(Date.now() / 1000) + (n.expires_in ?? 3600) };
+      ecrireSession(s);
+    } catch { s = lireSession(); /* Index l'a peut-etre deja renouvele */ }
+  }
+  return s;
+}
 async function chargerStats() {
-  const s = lireSession();
+  const s = await sessionFraiche();
   const avant = !!stats;
   try { stats = s ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
   if (avant !== !!stats || stats) rendre();
