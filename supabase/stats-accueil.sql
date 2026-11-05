@@ -25,7 +25,7 @@ begin
         'mois', (select count(*) from products where deleted_at is null and created_at >= j30),
         'a_verifier', (select count(*) from products where deleted_at is null and coalesce(verified_at, updated_at) < now() - interval '12 months')),
       jsonb_build_object('nom', 'Access', 'total', (select count(*) from access_fournisseurs),
-        'mois', (select count(*) from access_fournisseurs where created_at >= j30)),
+        'mois', (select count(*) from access_fournisseurs where updated_at >= j30)),
       jsonb_build_object('nom', 'Check', 'total', (select count(*) from check_notes where supprime_le is null),
         'mois', (select count(*) from check_notes where supprime_le is null and created_at >= j30)),
       jsonb_build_object('nom', 'Masse', 'total', (select count(*) from materials where deleted_at is null) + (select count(*) from elements where deleted_at is null),
