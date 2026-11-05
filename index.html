@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="styles.css?v=1.7">
+<link rel="stylesheet" href="styles.css?v=1.8">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect x='2' y='2' width='8' height='8' fill='%231f2026'/%3E%3Crect x='12' y='2' width='8' height='8' fill='%23C2255C'/%3E%3Crect x='2' y='12' width='8' height='8' fill='%236D4AFF'/%3E%3Crect x='12' y='12' width='8' height='8' fill='%230E9F6E'/%3E%3C/svg%3E">
 </head>
 <body>
@@ -34,6 +34,7 @@
       <a href="#applis" class="nav" data-nav="applis">Applis</a>
       <a href="#retours" class="nav" data-nav="retours">Idées &amp; bugs <span class="compte" id="navCompte"></span></a>
       <a href="#nouveautes" class="nav" data-nav="nouveautes">Nouveautés</a>
+      <a href="#statistiques" class="nav" data-nav="statistiques" id="navStats" hidden>Statistiques</a>
     </nav>
     <span class="etat-compte" id="etatCompte"></span>
     <button class="btn" id="compteBtn" type="button">Se connecter</button>
@@ -50,6 +51,14 @@
       <p>Chaque appli garde ses propres données. Une idée, un bug ? <a href="#retours" id="lienRetours">Dites-le ici</a>.</p>
     </div>
     <ul class="grille" id="grille"></ul>
+  </section>
+
+  <section id="statistiques" aria-labelledby="t-stats" hidden>
+    <div class="titre">
+      <h2 id="t-stats">Statistiques</h2>
+      <p>Visible par le concepteur seulement. Des totaux tirés des données déjà enregistrées, à jour à chaque ouverture.</p>
+    </div>
+    <div id="statsContenu"></div>
   </section>
 
   <section id="retours" aria-labelledby="t-retours" hidden>
@@ -97,7 +106,7 @@
 </main>
 
 <footer>
-  Accueil v1.7 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026 · <button type="button" id="adminBtn">Administration</button>
+  Accueil v1.8 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026 · <button type="button" id="adminBtn">Administration</button>
 </footer>
 
 <!-- Nouveau retour -->
@@ -185,7 +194,7 @@
 <dialog id="dApropos" aria-labelledby="dp-titre">
   <form method="dialog">
     <h3 id="dp-titre" class="petit">À propos</h3>
-    <p class="gros">Accueil <span class="aide">Version 1.7</span></p>
+    <p class="gros">Accueil <span class="aide">Version 1.8</span></p>
     <p>Conçu et développé par Hugo N.</p>
     <p class="aide">Point d'entrée des outils du bureau d'études façade, et suivi des idées et bugs signalés par l'équipe.</p>
     <div class="actions"><button class="btn primaire">Fermer</button></div>
@@ -193,6 +202,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/app.js?v=1.7"></script>
+<script type="module" src="js/app.js?v=1.8"></script>
 </body>
 </html>

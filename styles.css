@@ -145,3 +145,29 @@ footer button:hover { color: var(--ink); text-decoration: underline; }
 
 @media (max-width: 960px) { .grille { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (prefers-reduced-motion: reduce) { .carte { transition: none; } .carte:hover { transform: none; } }
+
+/* Statistiques (concepteur) */
+.stats-haut { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 2px; }
+.stat .lib { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.stat .val { font-size: 32px; font-weight: 600; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat .det { font-size: 13px; color: var(--muted); }
+.stats-bas { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+.stats-bas > .bloc { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; min-width: 0; }
+.stats-bas .bloc h3 { margin: 0 0 12px; font-size: 15px; font-weight: 600; }
+.stats-bas .tableau { flex: 999 1 520px; overflow-x: auto; }
+.stats-bas .lateral { flex: 1 1 260px; display: flex; flex-direction: column; gap: 14px; background: none !important; border: 0 !important; padding: 0 !important; }
+.stats-bas .lateral .bloc { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+.stats-bas table { width: 100%; border-collapse: collapse; min-width: 420px; }
+.stats-bas th { text-align: left; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 6px 8px; }
+.stats-bas td { border-top: 1px solid var(--line); padding: 9px 8px; font-variant-numeric: tabular-nums; }
+.stats-bas .num { text-align: right; }
+.stats-bas .pastille-c { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; background: var(--c); }
+.barre { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.barre .l { display: flex; justify-content: space-between; }
+.barre .f { height: 8px; border-radius: 4px; background: var(--muted-bg); }
+.barre .f i { display: block; height: 8px; border-radius: 4px; background: var(--ink); }
+.derniers { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; }
+.derniers span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.derniers span:last-child { color: var(--muted); white-space: nowrap; }
+.stats-note { margin-top: 16px; font-size: 13px; color: var(--muted); }
