@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=1.5";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.0";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -27,6 +27,12 @@ const horsLigne = (e) => /fetch|network|Load failed/i.test(e?.message ?? "");
 
 // ---------- Etat ----------
 let stats = null; // totaux reserves au concepteur (null = onglet cache)
+// Applis en apercu (Joint) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
+// (meme site pour toutes les applis) pour que leurs menus montrent aussi l'appli ; il est remis a jour a chaque visite de l'Accueil.
+const CLE_APERCU = "outils-apercu";
+let apercu = false;
+try { apercu = localStorage.getItem(CLE_APERCU) === "1"; } catch { /* stockage bloque */ }
+const visibles = () => APPLIS.filter((a) => !a.apercu || apercu);
 let retours = [];
 let charge = false;
 let erreurChargement = null;
@@ -43,7 +49,8 @@ let nbAffiches = 30;
 const filtreJournal = { app: "toutes" };
 
 async function chargerJournaux() {
-  const lots = await Promise.allSettled(APPLIS.map(async (a) => {
+  const liste = visibles();
+  const lots = await Promise.allSettled(liste.map(async (a) => {
     const r = await fetch(adresseJournal(a.nom));
     if (!r.ok) throw new Error(String(r.status));
     return [a.nom, lireJournal(await r.text())];
@@ -51,7 +58,7 @@ async function chargerJournaux() {
   journaux = {}; indisponibles = [];
   lots.forEach((l, i) => {
     if (l.status === "fulfilled" && l.value[1].length) journaux[l.value[0]] = l.value[1];
-    else indisponibles.push(APPLIS[i].nom);
+    else indisponibles.push(liste[i].nom);
   });
   journauxCharges = true;
   rendre();
@@ -115,6 +122,10 @@ async function chargerStats() {
   const s = await sessionFraiche();
   const avant = !!stats;
   try { stats = s ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
+  const avantApercu = apercu;
+  apercu = !!stats;
+  try { if (apercu) localStorage.setItem(CLE_APERCU, "1"); else localStorage.removeItem(CLE_APERCU); } catch { /* bloque */ }
+  if (avantApercu !== apercu) { remplirListes(); if (apercu && journauxCharges) chargerJournaux(); }
   if (avant !== !!stats || stats) rendre();
 }
 function rendreStats() {
@@ -142,7 +153,7 @@ function rendreStats() {
 }
 
 function rendreApplis() {
-  $("#grille").innerHTML = APPLIS.map((a) => {
+  $("#grille").innerHTML = visibles().map((a) => {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     return `<li><a class="carte" href="${a.url}" style="--c:${a.couleur}">
       <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}</span>
@@ -209,12 +220,20 @@ function rendreNouveautes() {
   </li>`).join("");
   $("#plusNouveautes").hidden = tout.length <= nbAffiches;
 }
-$("#fAppNouveautes").insertAdjacentHTML("beforeend", APPLIS.map((a) => `<option value="${a.nom}">${a.nom}</option>`).join(""));
 $("#fAppNouveautes").addEventListener("change", (e) => { filtreJournal.app = e.target.value; nbAffiches = 30; rendreNouveautes(); });
 $("#plusNouveautes").addEventListener("click", () => { nbAffiches += 30; rendreNouveautes(); });
 
 // ---------- Filtres ----------
-$("#fApp").insertAdjacentHTML("beforeend", APPLIS.map((a) => `<option value="${a.nom}">${a.nom}</option>`).join("") + `<option value="Accueil">Accueil</option>`);
+// Listes d'applis (filtres et formulaire) : refaites quand le drapeau « apercu » change
+const optionsApplis = () => visibles().map((a) => `<option value="${a.nom}">${a.nom}</option>`).join("");
+function remplirListes() {
+  for (const [id, debut, fin] of [["#fAppNouveautes", 1, ""], ["#fApp", 1, `<option value="Accueil">Accueil</option>`], ["#nApp", 0, `<option value="Accueil">Accueil (cette page)</option>`]]) {
+    const el = $(id), v = el.value;
+    while (el.options.length > debut) el.remove(el.options.length - 1);
+    el.insertAdjacentHTML("beforeend", optionsApplis() + fin);
+    if ([...el.options].some((o) => o.value === v)) el.value = v;
+  }
+}
 $("#fType").addEventListener("click", (e) => {
   const b = e.target.closest("button[data-v]"); if (!b) return;
   filtres.type = b.dataset.v;
@@ -248,7 +267,7 @@ $("#liste").addEventListener("click", async (e) => {
 
 // ---------- Nouveau retour ----------
 const dN = $("#dNouveau");
-$("#nApp").innerHTML = APPLIS.map((a) => `<option value="${a.nom}">${a.nom}</option>`).join("") + `<option value="Accueil">Accueil (cette page)</option>`;
+remplirListes();
 
 function similaires() {
   const app = $("#nApp").value;

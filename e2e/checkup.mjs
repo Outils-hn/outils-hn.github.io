@@ -184,10 +184,16 @@ try {
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
   ok(!(await p.locator("#navStats").isVisible()), "Statistiques : onglet cache sans connexion");
+  // Joint (en preparation) : visible seulement pour le concepteur, et le drapeau partage avec les menus des applis retombe a la deconnexion
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Linear,Masse,Strate,Trame", "Joint : carte absente sans compte concepteur");
+  ok(!(await p.evaluate(() => localStorage.getItem("outils-apercu"))), "Joint : drapeau d'apercu absent sans compte concepteur");
   // Session perimee (plus d'une heure) : l'Accueil la renouvelle et l'onglet apparait quand meme
   await p.evaluate((u) => localStorage.setItem("sb-ngfzwfbraqkdcocdcmib-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
   ok(await p.locator("#navStats").isVisible(), "Statistiques : session expirée renouvelée, onglet visible");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Strate,Trame", "Joint : carte visible pour le concepteur, dans l'ordre alphabétique");
+  ok((await p.evaluate(() => localStorage.getItem("outils-apercu"))) === "1", "Joint : drapeau d'apercu pose pour les menus des autres applis");
+  ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour pour le concepteur");
   await p.evaluate(() => localStorage.removeItem("sb-ngfzwfbraqkdcocdcmib-auth-token")); await p.reload(); await p.waitForTimeout(400);
 
   // Administration
