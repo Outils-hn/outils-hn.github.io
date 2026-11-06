@@ -13,8 +13,9 @@ const liste = [
 const F = { type: "tous", app: "toutes", statut: "ouverts", q: "" };
 const ids = (l) => l.map((x) => x.id);
 
-test("8 applis dans l'ordre alphabetique", () => {
-  assert.equal(APPLIS.length, 8);
+test("9 applis dans l'ordre alphabetique, Joint en apercu", () => {
+  assert.equal(APPLIS.length, 9);
+  assert.deepEqual(APPLIS.filter((a) => a.apercu).map((a) => a.nom), ["Joint"]);
   assert.deepEqual(APPLIS.map((a) => a.nom), [...APPLIS.map((a) => a.nom)].sort());
 });
 test("ouverts : en cours, puis les plus demandes, puis les plus recents", () => assert.deepEqual(ids(filtrerRetours(liste, F)), ["c", "b", "d"]));

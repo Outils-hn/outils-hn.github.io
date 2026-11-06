@@ -5,7 +5,8 @@ export const BASE_URL = "https://ngfzwfbraqkdcocdcmib.supabase.co";
 export const BASE_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZnp3ZmJyYXFrZGNvY2RjbWliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2Mzg2NTcsImV4cCI6MjA5NTIxNDY1N30.Ikovcm4eWkLvPO_PvkI8C8DJebBT011Rz87k_EYFdbU";
 
-/** Les applis de la famille, dans l'ordre alphabetique (meme liste que les selecteurs). */
+/** Les applis de la famille, dans l'ordre alphabetique (meme liste que les selecteurs).
+ *  apercu: true = appli en preparation, visible seulement pour le concepteur (voir « apercu » dans app.js). */
 export const APPLIS = [
   { nom: "Access", role: "Annuaire fournisseurs", url: "https://outils-hn.github.io/Access/", couleur: "#C2255C",
     texte: "Sites des fournisseurs par domaine, avec les accès du bureau et les vôtres." },
@@ -15,6 +16,8 @@ export const APPLIS = [
     texte: "Calepinage de panneaux aux formats fournisseurs pour estimer la matière." },
   { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF",
     texte: "Bibliothèque des fiches techniques fournisseurs, par catégorie et par chantier." },
+  { nom: "Joint", role: "Espace entre deux éléments", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285", apercu: true,
+    texte: "Espace à laisser entre deux éléments (alu, acier, inox, verre) selon la dilatation et la température." },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
     texte: "Débit des profilés en barres avec le minimum de chutes, liste de coupe en PDF." },
   { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A",
