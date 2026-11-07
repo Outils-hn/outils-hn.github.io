@@ -16,7 +16,7 @@ export const APPLIS = [
     texte: "Calepinage de panneaux aux formats fournisseurs pour estimer la matière." },
   { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF",
     texte: "Bibliothèque des fiches techniques fournisseurs, par catégorie et par chantier." },
-  { nom: "Joint", role: "Espace entre deux éléments", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285", apercu: true,
+  { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285", apercu: true,
     texte: "Espace à laisser entre deux éléments (alu, acier, inox, verre) selon la dilatation et la température." },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
     texte: "Débit des profilés en barres avec le minimum de chutes, liste de coupe en PDF." },
