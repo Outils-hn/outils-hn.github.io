@@ -2,6 +2,11 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.1 — 7 novembre 2026
+
+- Nouveauté : Joint (espace à laisser entre deux éléments) et Membrane (colle et rouleaux d'étanchéité) rejoignent la liste des applis, visibles pour toute l'équipe.
+- Les cartes sont réorganisées sur 5 colonnes (2 rangées de 5), 2 colonnes sur les écrans moyens.
+
 ## 2.0 — 6 novembre 2026
 
 - Joint (espace à laisser entre deux éléments) est ajouté à la liste des applis, mais reste en préparation : sa carte, son nom dans les menus et ses nouveautés ne s'affichent que pour le concepteur. Aucune Nouveauté à annoncer à l'équipe pour l'instant.

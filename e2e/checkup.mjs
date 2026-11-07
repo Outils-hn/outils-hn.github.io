@@ -89,8 +89,8 @@ const axe = async (p, nom) => {
 try {
   const p = await page();
   await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
-  ok((await p.locator(".carte").count()) === 8, "8 applis sur l'accueil");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Linear,Masse,Strate,Trame", "dans l'ordre alphabétique");
+  ok((await p.locator(".carte").count()) === 10, "10 applis sur l'accueil");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "dans l'ordre alphabétique");
   ok(await p.locator(".carte", { hasText: "Masse" }).getByText("1 en cours").isVisible(), "carte Masse : « 1 en cours »");
   ok((await p.locator(".carte", { hasText: "Strate" }).getAttribute("href")) === "https://outils-hn.github.io/Strate/", "lien Strate");
   ok((await p.locator("#navCompte").textContent()).includes("2"), "menu : 2 retours ouverts");
@@ -185,15 +185,15 @@ try {
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
   ok(!(await p.locator("#navStats").isVisible()), "Statistiques : onglet cache sans connexion");
   // Joint (en preparation) : visible seulement pour le concepteur, et le drapeau partage avec les menus des applis retombe a la deconnexion
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Linear,Masse,Strate,Trame", "Joint : carte absente sans compte concepteur");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "Joint et Membrane : cartes visibles sans compte");
   ok(!(await p.evaluate(() => localStorage.getItem("outils-apercu"))), "Joint : drapeau d'apercu absent sans compte concepteur");
   // Session perimee (plus d'une heure) : l'Accueil la renouvelle et l'onglet apparait quand meme
   await p.evaluate((u) => localStorage.setItem("sb-ngfzwfbraqkdcocdcmib-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
   ok(await p.locator("#navStats").isVisible(), "Statistiques : session expirée renouvelée, onglet visible");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Strate,Trame", "Joint : carte visible pour le concepteur, dans l'ordre alphabétique");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "Joint et Membrane : cartes visibles aussi pour le concepteur");
   ok((await p.evaluate(() => localStorage.getItem("outils-apercu"))) === "1", "Joint : drapeau d'apercu pose pour les menus des autres applis");
-  ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour pour le concepteur");
+  ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");
   await p.evaluate(() => localStorage.removeItem("sb-ngfzwfbraqkdcocdcmib-auth-token")); await p.reload(); await p.waitForTimeout(400);
 
   // Administration
