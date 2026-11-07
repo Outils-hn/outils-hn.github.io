@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.2 — 7 novembre 2026
+
+- Correction : le texte de l'écran de connexion est raccourci pour tenir sur une ligne.
+
 ## 2.1 — 7 novembre 2026
 
 - Nouveauté : Joint (espace à laisser entre deux éléments) et Membrane (colle et rouleaux d'étanchéité) rejoignent la liste des applis, visibles pour toute l'équipe.
