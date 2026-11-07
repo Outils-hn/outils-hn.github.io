@@ -27,7 +27,7 @@ const horsLigne = (e) => /fetch|network|Load failed/i.test(e?.message ?? "");
 
 // ---------- Etat ----------
 let stats = null; // totaux reserves au concepteur (null = onglet cache)
-// Applis en apercu (Joint) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
+// Applis en apercu (aucune pour l'instant ; champ « apercu: true » dans core.js) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
 // (meme site pour toutes les applis) pour que leurs menus montrent aussi l'appli ; il est remis a jour a chaque visite de l'Accueil.
 const CLE_APERCU = "outils-apercu";
 let apercu = false;
