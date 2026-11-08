@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.3 — 8 novembre 2026
+
+- Nouveauté : un onglet « Tableau de bord » réunit la gestion des applis : comptes (valider, nommer un administrateur, retirer un accès), historique des modifications avec bouton « Annuler », et statistiques pour le concepteur. Chacun voit ce que son rôle permet ; le nombre de comptes en attente s'affiche dans le menu.
+
 ## 2.2 — 7 novembre 2026
 
 - Correction : le texte de l'écran de connexion est raccourci pour tenir sur une ligne.

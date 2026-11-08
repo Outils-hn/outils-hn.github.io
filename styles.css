@@ -171,3 +171,20 @@ footer button:hover { color: var(--ink); text-decoration: underline; }
 .derniers span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .derniers span:last-child { color: var(--muted); white-space: nowrap; }
 .stats-note { margin-top: 16px; font-size: 13px; color: var(--muted); }
+
+/* Tableau de bord : comptes et historique */
+.gestion-bloc { margin-bottom: 28px; }
+.gestion-bloc h3 { margin: 0 0 10px; font-size: 16px; font-weight: 600; }
+.gestion-bloc h3 .aide { font-weight: 400; margin-left: 6px; }
+.gestion-bloc .ligne { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.gestion-bloc .ligne h3 { margin: 0; }
+.gestion { list-style: none; margin: 0; padding: 0; }
+.gestion li { display: flex; align-items: flex-start; gap: 12px; padding: 12px 18px; border-top: 1px solid var(--line); font-size: 14px; }
+.gestion li:first-child { border-top: 0; }
+.gestion li.fait { opacity: .6; }
+.gestion .corps { flex: 1; min-width: 0; }
+.gestion .corps .l1 { overflow-wrap: anywhere; }
+.gestion .corps .l2 { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.gestion .boutons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.gestion .btn { padding: 4px 10px; font-size: 12px; }
+.gestion .vide { color: var(--muted); }
