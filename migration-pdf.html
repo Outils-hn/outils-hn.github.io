@@ -54,7 +54,7 @@ document.getElementById("f").addEventListener("submit", async (e) => {
         const src = await fetch(ANCIEN.url + "/storage/v1/object/public/" + BUCKET + "/" + chemin(p));
         if (!src.ok) throw new Error("introuvable dans l'ancien projet (" + src.status + ")");
         const blob = await src.blob();
-        const up = await fetch(NOUVEAU.url + "/storage/v1/object/" + BUCKET + "/" + chemin(p), { method: "POST", headers: { apikey: NOUVEAU.cle, Authorization: "Bearer " + s.access_token, "x-upsert": "true", "Content-Type": blob.type || "application/pdf" }, body: blob });
+        const up = await fetch(NOUVEAU.url + "/storage/v1/object/" + BUCKET + "/" + chemin(p), { method: "POST", headers: { apikey: NOUVEAU.cle, Authorization: "Bearer " + s.access_token, "Content-Type": blob.type || "application/pdf" }, body: blob });
         if (!up.ok) throw new Error("envoi refusé (" + up.status + ") " + (await up.text()).slice(0, 120));
         copies++; log(`${i + 1}/${chemins.length} copié : ${nom}`, "ok");
       } catch (err) { echecs++; log(`${i + 1}/${chemins.length} ÉCHEC : ${nom} — ${err.message}`, "err"); }
