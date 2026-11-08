@@ -5,7 +5,7 @@ import fs from "node:fs";
 
 const out = process.argv[2] || "out";
 const URL0 = process.argv[3] || "http://127.0.0.1:8091/";
-const SB = "https://ngfzwfbraqkdcocdcmib.supabase.co";
+const SB = "https://dtxgvwaqjmmffiiohika.supabase.co";
 fs.mkdirSync(out, { recursive: true });
 const lignes = [];
 const ok = (c, m) => { lignes.push(`${c ? "OK" : "ECHEC"} ${m}`); console.log(`${c ? "OK" : "ECHEC"} ${m}`); fs.writeFileSync(`${out}/checkup.txt`, lignes.join("\n") + "\n"); };
@@ -187,7 +187,7 @@ try {
   await p.locator("#formConnexion [name=mdp]").fill(ADMIN.mdp);
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
   ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
-  ok(!!(await p.evaluate(() => localStorage.getItem("sb-ngfzwfbraqkdcocdcmib-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
+  ok(!!(await p.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
   ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : onglet visible pour un compte valide");
@@ -217,13 +217,13 @@ try {
   ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "Joint et Membrane : cartes visibles sans compte");
   ok(!(await p.evaluate(() => localStorage.getItem("outils-apercu"))), "Joint : drapeau d'apercu absent sans compte concepteur");
   // Session perimee (plus d'une heure) : l'Accueil la renouvelle et l'onglet apparait quand meme
-  await p.evaluate((u) => localStorage.setItem("sb-ngfzwfbraqkdcocdcmib-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
+  await p.evaluate((u) => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
   ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : session expirée renouvelée, onglet visible");
   ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "Joint et Membrane : cartes visibles aussi pour le concepteur");
   ok((await p.evaluate(() => localStorage.getItem("outils-apercu"))) === "1", "Joint : drapeau d'apercu pose pour les menus des autres applis");
   ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");
-  await p.evaluate(() => localStorage.removeItem("sb-ngfzwfbraqkdcocdcmib-auth-token")); await p.reload(); await p.waitForTimeout(400);
+  await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
 
   // Administration
   await p.getByRole("button", { name: "Administration" }).click();

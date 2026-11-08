@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.4 — 8 novembre 2026
+
+- Nouveauté : toutes les données des applis sont maintenant hébergées en Suisse. Reconnecte-toi une fois avec ton e-mail et ton mot de passe habituels.
+
 ## 2.3 — 8 novembre 2026
 
 - Nouveauté : un onglet « Tableau de bord » réunit la gestion des applis : comptes (valider, nommer un administrateur, retirer un accès), historique des modifications avec bouton « Annuler », et statistiques pour le concepteur. Chacun voit ce que son rôle permet ; le nombre de comptes en attente s'affiche dans le menu.

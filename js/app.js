@@ -1,5 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
-import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.0";
+import { APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.4";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -14,7 +14,7 @@ try { const a = JSON.parse(sessionStorage.getItem(ADMIN) || "null"); if (a && a.
 async function api(chemin, { methode = "GET", corps, jeton } = {}) {
   const r = await fetch(BASE_URL + chemin, {
     method: methode,
-    headers: { apikey: BASE_KEY, Authorization: `Bearer ${jeton || BASE_KEY}`, "Content-Type": "application/json" },
+    headers: { apikey: BASE_KEY, ...(jeton ? { Authorization: `Bearer ${jeton}` } : {}), "Content-Type": "application/json" },
     body: corps ? JSON.stringify(corps) : undefined,
   });
   const texte = await r.text();
@@ -438,7 +438,7 @@ $("#formNouveau").addEventListener("submit", async (e) => {
 });
 
 // ---------- Compte Index (connexion partagee avec toutes les applis : meme site, meme cle de stockage) ----------
-const CLE_SESSION = "sb-ngfzwfbraqkdcocdcmib-auth-token";
+const CLE_SESSION = "sb-dtxgvwaqjmmffiiohika-auth-token";
 function lireSession() { try { const s = JSON.parse(localStorage.getItem(CLE_SESSION)); return s && s.access_token ? s : null; } catch { return null; } }
 function ecrireSession(s) { try { if (s) localStorage.setItem(CLE_SESSION, JSON.stringify(s)); else localStorage.removeItem(CLE_SESSION); } catch { /* bloque */ } }
 function majCompte() {

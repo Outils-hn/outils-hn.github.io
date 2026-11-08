@@ -1,9 +1,9 @@
 // Accueil : donnees et logique sans affichage (testees par « node --test »).
 
-export const BASE_URL = "https://ngfzwfbraqkdcocdcmib.supabase.co";
+export const BASE_URL = "https://dtxgvwaqjmmffiiohika.supabase.co";
 // Cle publique (« anon ») du projet Index : lecture des retours et envoi par les fonctions controlees.
 export const BASE_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5nZnp3ZmJyYXFrZGNvY2RjbWliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2Mzg2NTcsImV4cCI6MjA5NTIxNDY1N30.Ikovcm4eWkLvPO_PvkI8C8DJebBT011Rz87k_EYFdbU";
+  "sb_publishable_yEWGxFFSLTE1lJRXnFUmpg_dMwa6LxW";
 
 /** Les applis de la famille, dans l'ordre alphabetique (meme liste que les selecteurs).
  *  apercu: true = appli en preparation, visible seulement pour le concepteur (voir « apercu » dans app.js). */
