@@ -20,7 +20,16 @@ const etat = {
     { id: "r2", app: "Format", type: "idee", texte: "Pouvoir choisir l'aluminium anodisé dans les matériaux", nom: "", page: "", version: "", navigateur: "", statut: "nouveau", reponse: "", moi_aussi: 0, created_at: new Date(Date.now() - J).toISOString() },
     { id: "r3", app: "Linear", type: "idee", texte: "Export de la liste de coupe en Excel", nom: "Sarah", page: "", version: "", navigateur: "", statut: "fait", reponse: "", moi_aussi: 4, created_at: new Date(Date.now() - 20 * J).toISOString() },
   ],
-  envois: [], admin: [],
+  envois: [], admin: [], actions: [],
+  comptes: [
+    { id: ADMIN.id, email: ADMIN.email, display_name: "Hugo", approved: true, is_admin: true, role: "concepteur", created_at: new Date().toISOString() },
+    { id: "c2", email: "sarah@exemple.ch", display_name: "Sarah", approved: false, is_admin: false, role: "dessinateur", created_at: new Date().toISOString() },
+    { id: "c3", email: "marc@exemple.ch", display_name: "Marc", approved: true, is_admin: false, role: "dessinateur", created_at: new Date().toISOString() },
+  ],
+  histo: [
+    { id: 12, at: new Date().toISOString(), tbl: "membrane_catalogue", ligne: "unisb", action: "UPDATE", libelle: "SikaMembran Universal SB", auteur_nom: "Marc", diff: { sd: [60, 50] }, annule: false, est_annulation: false, peut_annuler: true },
+    { id: 11, at: new Date().toISOString(), tbl: "products", ligne: "p1", action: "INSERT", libelle: "Fiche test", auteur_nom: "Sarah", diff: null, annule: false, est_annulation: false, peut_annuler: false },
+  ],
 };
 // CHANGELOG simules des applis (Strate n'en a pas : 404, pour verifier que la page n'en souffre pas)
 const JOURNAUX = {
@@ -53,6 +62,12 @@ async function brancher(ctx) {
         retours: { total: 6, nouveaux: 2 },
         applis: [{ nom: "Index", total: 312, mois: 18, a_verifier: 41 }, { nom: "Access", total: 58, mois: 7 }, { nom: "Check", total: 240, mois: 64 }, { nom: "Masse", total: 95, mois: 11 }, { nom: "Format", total: 34, mois: 2 }, { nom: "Strate", total: 120, mois: 0 }] });
     }
+    if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
+    if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
+    if (u.pathname === "/rest/v1/rpc/set_account_approved") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.approved = corps._approved; etat.actions.push(["approved", corps]); return json(null); }
+    if (u.pathname === "/rest/v1/rpc/set_account_admin") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.is_admin = corps._admin; etat.actions.push(["admin", corps]); return json(null); }
+    if (u.pathname === "/rest/v1/rpc/historique_lire") return json(tok === "tok-admin" ? etat.histo.filter((h) => !corps._tbl || h.tbl === corps._tbl) : []);
+    if (u.pathname === "/rest/v1/rpc/historique_annuler") { const h = etat.histo.find((x) => x.id === corps._id); if (h) { h.annule = true; h.peut_annuler = false; } etat.actions.push(["annuler", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/is_approved") return json(true);
     if (u.pathname === "/rest/v1/rpc/is_admin") return json(tok === "tok-admin");
     if (u.pathname === "/rest/v1/rpc/retour_envoyer") {
@@ -175,22 +190,36 @@ try {
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-ngfzwfbraqkdcocdcmib-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
-  ok(await p.locator("#navStats").isVisible(), "Statistiques : onglet visible pour le concepteur");
-  await p.locator("#navStats").click(); await p.waitForTimeout(300);
-  ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle"), "Statistiques : totaux affichés");
-  await shot(p, "06b-statistiques");
-  await axe(p, "statistiques");
+  ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : onglet visible pour un compte valide");
+  ok((await p.locator("#navAttente").innerText()).includes("1"), "Tableau de bord : 1 compte en attente signalé dans le menu");
+  await p.locator("#navTableau").click(); await p.waitForTimeout(500);
+  ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle"), "Tableau de bord : statistiques affichées (concepteur)");
+  ok((await p.locator("#listeComptes li").count()) === 3, "Tableau de bord : 3 comptes listés");
+  await shot(p, "06b-tableau");
+  await axe(p, "tableau de bord");
+  await p.locator("[data-valider=c2]").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c2" && a[1]._approved === true), "Comptes : Valider appelle la base");
+  await p.locator("[data-admin=c3]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "admin" && a[1]._id === "c3" && a[1]._admin === true), "Comptes : Nommer admin (concepteur) appelle la base");
+  await p.locator("[data-retirer=c3]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c3" && a[1]._approved === false), "Comptes : Retirer l'accès demande confirmation puis appelle la base");
+  ok((await p.locator("#listeHist li").count()) === 2 && (await p.locator("#listeHist").innerText()).includes("sd : 60 → 50"), "Historique : 2 lignes, changement lisible");
+  ok((await p.locator("[data-annuler]").count()) === 1, "Historique : bouton Annuler seulement quand c'est permis");
+  await p.locator("[data-annuler='12']").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "annuler" && a[1]._id === 12), "Historique : Annuler appelle la base");
+  await p.locator("#hTbl").selectOption("products"); await p.waitForTimeout(400);
+  ok((await p.locator("#listeHist li").count()) === 1, "Historique : filtre par type");
   await p.getByRole("link", { name: "Applis" }).click(); await p.waitForTimeout(200);
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
-  ok(!(await p.locator("#navStats").isVisible()), "Statistiques : onglet cache sans connexion");
+  ok(!(await p.locator("#navTableau").isVisible()), "Tableau de bord : onglet cache sans connexion");
   // Joint (en preparation) : visible seulement pour le concepteur, et le drapeau partage avec les menus des applis retombe a la deconnexion
   ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "Joint et Membrane : cartes visibles sans compte");
   ok(!(await p.evaluate(() => localStorage.getItem("outils-apercu"))), "Joint : drapeau d'apercu absent sans compte concepteur");
   // Session perimee (plus d'une heure) : l'Accueil la renouvelle et l'onglet apparait quand meme
   await p.evaluate((u) => localStorage.setItem("sb-ngfzwfbraqkdcocdcmib-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
-  ok(await p.locator("#navStats").isVisible(), "Statistiques : session expirée renouvelée, onglet visible");
+  ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : session expirée renouvelée, onglet visible");
   ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "Joint et Membrane : cartes visibles aussi pour le concepteur");
   ok((await p.evaluate(() => localStorage.getItem("outils-apercu"))) === "1", "Joint : drapeau d'apercu pose pour les menus des autres applis");
   ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");

@@ -26,7 +26,13 @@ const rpc = (nom, args, jeton) => api(`/rest/v1/rpc/${nom}`, { methode: "POST", 
 const horsLigne = (e) => /fetch|network|Load failed/i.test(e?.message ?? "");
 
 // ---------- Etat ----------
-let stats = null; // totaux reserves au concepteur (null = onglet cache)
+let stats = null; // totaux reserves au concepteur (null = bloc cache)
+let role = null; // « dessinateur », « administrateur », « concepteur » ; null = pas de compte valide (onglet cache)
+let comptes = []; // liste des comptes (administrateurs) ; vide sinon
+let historique = []; // dernieres modifications des donnees communes
+let histErreur = false;
+const filtreHist = { tbl: "" };
+const estAdmin = () => role === "administrateur" || role === "concepteur";
 // Applis en apercu (aucune pour l'instant ; champ « apercu: true » dans core.js) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
 // (meme site pour toutes les applis) pour que leurs menus montrent aussi l'appli ; il est remis a jour a chaque visite de l'Accueil.
 const CLE_APERCU = "outils-apercu";
@@ -84,27 +90,29 @@ function toast(msg) {
 }
 
 // ---------- Vues ----------
-function vue() { return location.hash === "#statistiques" && stats ? "statistiques" : location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
+function vue() { return (location.hash === "#tableau" || location.hash === "#statistiques") && role ? "tableau" : location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
 
 function rendre() {
   const v = vue();
   $("#applis").hidden = v !== "applis";
   $("#retours").hidden = v !== "retours";
-  $("#statistiques").hidden = v !== "statistiques";
-  $("#navStats").hidden = !stats;
+  $("#tableau").hidden = v !== "tableau";
+  $("#navTableau").hidden = !role;
+  const attente = comptes.filter((c) => !c.approved).length;
+  $("#navAttente").textContent = estAdmin() && attente ? `· ${attente}` : "";
   $("#nouveautes").hidden = v !== "nouveautes";
   document.querySelectorAll("[data-nav]").forEach((a) => (a.dataset.nav === v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   const c = compter(retours);
   $("#navCompte").textContent = charge && c.ouverts ? `· ${c.ouverts}` : "";
   document.title = v === "retours" ? "Idées & bugs — Accueil" : v === "nouveautes" ? "Nouveautés — Accueil" : "Accueil — les outils du bureau d'études";
-  document.title = v === "statistiques" ? "Statistiques — Accueil" : document.title;
+  document.title = v === "tableau" ? "Tableau de bord — Accueil" : document.title;
   rendreApplis();
   rendreStats();
+  rendreGestion();
   rendreRetours();
   rendreNouveautes();
 }
 
-/** Statistiques : onglet visible seulement si la base repond (fonction reservee au concepteur). */
 /** Jeton encore valable : sinon on le renouvelle avec le jeton de renouvellement (la session est partagee avec Index, qui le fait aussi). */
 async function sessionFraiche() {
   let s = lireSession();
@@ -121,13 +129,111 @@ async function sessionFraiche() {
 async function chargerStats() {
   const s = await sessionFraiche();
   const avant = !!stats;
-  try { stats = s ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
+  const avantRole = role;
+  try { role = s ? (await rpc("mon_role", {}, s.access_token)) || null : null; } catch { role = null; }
+  try { stats = s && role === "concepteur" ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
   const avantApercu = apercu;
   apercu = !!stats;
   try { if (apercu) localStorage.setItem(CLE_APERCU, "1"); else localStorage.removeItem(CLE_APERCU); } catch { /* bloque */ }
   if (avantApercu !== apercu) { remplirListes(); if (apercu && journauxCharges) chargerJournaux(); }
-  if (avant !== !!stats || stats) rendre();
+  if (role) chargerGestion(); else { comptes = []; historique = []; }
+  if (avant !== !!stats || avantRole !== role || stats) rendre();
 }
+
+// ---------- Tableau de bord : comptes et historique (fonctions de la base, droits verifies cote base) ----------
+const TABLES = {
+  products: "Fiche", categories: "Famille", suppliers: "Fournisseur", access_domaines: "Access · domaine", access_fournisseurs: "Access · fournisseur",
+  format_materiaux: "Format · matériau", strate_catalogue: "Strate · catalogue", membrane_catalogue: "Membrane · catalogue",
+  materials: "Masse · matériau", elements: "Masse · élément", lists: "Masse · liste",
+};
+const ACTIONS = { INSERT: "Ajout", UPDATE: "Modification", DELETE: "Suppression" };
+const nomCompte = (c) => c.display_name || c.email || "Compte sans nom";
+const quand = (d) => new Date(d).toLocaleString("fr-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+const court = (v) => { const t = v === null || v === undefined ? "vide" : typeof v === "string" ? v || "vide" : JSON.stringify(v); return t.length > 40 ? t.slice(0, 40) + "…" : t; };
+
+async function chargerGestion() {
+  const sess = await sessionFraiche();
+  if (!sess) return;
+  const jeton = sess.access_token;
+  const [c, h] = await Promise.allSettled([
+    estAdmin() ? rpc("list_accounts", {}, jeton) : Promise.resolve([]),
+    rpc("historique_lire", { _tbl: filtreHist.tbl || null, _limite: 100 }, jeton),
+  ]);
+  comptes = c.status === "fulfilled" ? c.value ?? [] : [];
+  histErreur = h.status !== "fulfilled";
+  historique = h.status === "fulfilled" ? h.value ?? [] : [];
+  rendre();
+}
+
+function rendreGestion() {
+  $("#blocStats").hidden = !stats;
+  $("#blocComptes").hidden = !estAdmin();
+  if (!role) return;
+  const moi = lireSession()?.user?.id;
+  const conc = role === "concepteur";
+  const att = comptes.filter((c) => !c.approved).length;
+  $("#resumeComptes").textContent = att ? `${att} en attente de validation` : "";
+  $("#listeComptes").innerHTML = comptes.map((c) => {
+    const etiquette = c.role === "concepteur" ? "Concepteur" : c.is_admin ? "Administrateur" : "Dessinateur";
+    const boutons = !c.approved ? `<button type="button" class="btn primaire" data-valider="${c.id}">Valider</button>`
+      : c.id === moi || c.role === "concepteur" ? ""
+      : `${conc ? `<button type="button" class="btn" data-admin="${c.id}">${c.is_admin ? "Retirer admin" : "Nommer admin"}</button>` : ""}<button type="button" class="btn danger" data-retirer="${c.id}">Retirer l'accès</button>`;
+    return `<li><div class="corps"><div class="l1">${esc(nomCompte(c))}</div>
+      <div class="l2">${c.email ? esc(c.email) + " · " : ""}${c.approved ? etiquette : "En attente"} · créé le ${esc(fmtDate(c.created_at))}</div></div>
+      <div class="boutons">${boutons}</div></li>`;
+  }).join("") || `<li class="vide">Aucun compte.</li>`;
+
+  const sel = $("#hTbl");
+  if (!sel.options.length) sel.innerHTML = `<option value="">Tout</option>` + Object.entries(TABLES).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  $("#listeHist").innerHTML = histErreur
+    ? `<li class="vide">L'historique n'est pas encore installé dans la base (script « historique » à exécuter dans Supabase).</li>`
+    : historique.map((h) => {
+      const champs = h.diff ? Object.entries(h.diff) : [];
+      const type = h.est_annulation ? `Annulation (${ACTIONS[h.action].toLowerCase()})` : ACTIONS[h.action];
+      return `<li class="${h.annule ? "fait" : ""}"><div class="corps">
+        <div class="l1"><b>${esc(h.libelle || "(sans nom)")}</b> <span class="aide">${esc(TABLES[h.tbl] ?? h.tbl)} · ${type}${h.annule ? " · annulée" : ""}</span></div>
+        ${champs.length ? `<div class="l2">${esc(champs.slice(0, 3).map(([k, [a, b]]) => `${k} : ${court(a)} → ${court(b)}`).join(" · "))}${champs.length > 3 ? ` · +${champs.length - 3}` : ""}</div>` : ""}
+        <div class="l2">${esc(h.auteur_nom)} · ${esc(quand(h.at))}</div></div>
+        <div class="boutons">${h.peut_annuler ? `<button type="button" class="btn" data-annuler="${h.id}">Annuler</button>` : ""}</div></li>`;
+    }).join("") || `<li class="vide">Rien à afficher.</li>`;
+}
+
+// Fenetre de confirmation maison (remplace confirm() du navigateur)
+function confirmer(titre, texte, bouton) {
+  return new Promise((resolve) => {
+    const d = $("#dConfirm");
+    $("#dq-titre").textContent = titre; $("#dq-texte").textContent = texte; $("#dq-ok").textContent = bouton;
+    d.returnValue = "";
+    d.addEventListener("close", () => resolve(d.returnValue === "ok"), { once: true });
+    d.showModal();
+  });
+}
+async function actionGestion(nom, args, message) {
+  const sess = await sessionFraiche();
+  try { await rpc(nom, args, sess?.access_token); toast(message); await chargerGestion(); }
+  catch (err) { toast(horsLigne(err) ? "Base injoignable." : err.message); }
+}
+$("#listeComptes").addEventListener("click", async (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const id = b.dataset.valider || b.dataset.admin || b.dataset.retirer;
+  const c = comptes.find((x) => x.id === id); if (!c) return;
+  if (b.dataset.valider) return actionGestion("set_account_approved", { _id: id, _approved: true }, "Compte validé.");
+  if (b.dataset.retirer) {
+    if (await confirmer(`Retirer l'accès de ${nomCompte(c)} ?`, "Le compte pourra encore consulter les applis, mais plus rien modifier.", "Retirer l'accès")) actionGestion("set_account_approved", { _id: id, _approved: false }, "Accès retiré.");
+  } else if (b.dataset.admin) {
+    const retirer = c.is_admin;
+    if (await confirmer(retirer ? `Retirer le rôle d'administrateur de ${nomCompte(c)} ?` : `Nommer ${nomCompte(c)} administrateur ?`,
+      retirer ? "Le compte reste validé : il pourra toujours modifier des données." : "Il pourra valider des comptes et retirer des accès.", retirer ? "Retirer le rôle" : "Nommer administrateur"))
+      actionGestion("set_account_admin", { _id: id, _admin: !retirer }, retirer ? "Rôle d'administrateur retiré." : "Administrateur ajouté.");
+  }
+});
+$("#listeHist").addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-annuler]"); if (!b) return;
+  const h = historique.find((x) => String(x.id) === b.dataset.annuler); if (!h) return;
+  if (await confirmer(`Annuler cette modification de « ${h.libelle || "(sans nom)"} » ?`, "La ligne revient comme elle était avant. L'annulation s'inscrit aussi dans l'historique.", "Annuler la modification"))
+    actionGestion("historique_annuler", { _id: h.id }, "Modification annulée.");
+});
+$("#hTbl").addEventListener("change", (e) => { filtreHist.tbl = e.target.value; chargerGestion(); });
 function rendreStats() {
   if (!stats) { $("#statsContenu").innerHTML = ""; return; }
   const c = stats.comptes, r = stats.retours, n = (x) => Number(x).toLocaleString("fr-CH");
@@ -421,7 +527,7 @@ $("#themeBtn").addEventListener("click", () => {
   // « outils-theme » : reglage commun a toutes les applis (meme site) ; « accueil-theme » : l'ancienne cle, gardee
   try { localStorage.setItem("accueil-theme", sombre ? "dark" : "light"); localStorage.setItem("outils-theme", sombre ? "dark" : "light"); } catch { /* bloque */ }
 });
-window.addEventListener("hashchange", () => { rendre(); window.scrollTo(0, 0); });
+window.addEventListener("hashchange", () => { rendre(); window.scrollTo(0, 0); if (vue() === "tableau") chargerGestion(); });
 
 majAdmin();
 majCompte();
