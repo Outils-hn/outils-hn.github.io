@@ -280,7 +280,7 @@ function rendreStats() {
     ["Fournisseurs Access", n(stats.applis.find((a) => a.nom === "Access")?.total ?? 0), "dans l'annuaire"],
     ["Retours (idées & bugs)", n(r.total), `${n(r.nouveaux)} pas encore lu${r.nouveaux > 1 ? "s" : ""}`],
   ].map(([l, v, d]) => `<div class="stat"><span class="lib">${esc(l)}</span><span class="val">${esc(v)}</span><span class="det">${esc(d)}</span></div>`).join("");
-  const objets = { Index: "fiches techniques", Access: "fournisseurs", Check: "notes", Masse: "matériaux et éléments", Format: "matériaux de la bibliothèque", Strate: "produits du catalogue" };
+  const objets = { Index: "fiches techniques", Access: "fournisseurs", Check: "notes", Masse: "matériaux et éléments", Format: "matériaux de la bibliothèque", Strate: "produits du catalogue", Membrane: "produits et colles du catalogue" };
   const lignes = stats.applis.map((a) => `<tr><td><span class="pastille-c" style="--c:${couleur(a.nom)}"></span><b>${esc(a.nom)}</b></td><td>${esc(objets[a.nom] ?? "")}</td><td class="num">${n(a.total)}</td><td class="num">${a.mois > 0 ? "+" : ""}${n(a.mois)}</td></tr>`).join("");
   const max = Math.max(1, c.concepteur, c.administrateur, c.dessinateur);
   const barres = [["Concepteur", c.concepteur], ["Administrateur", c.administrateur], ["Dessinateur", c.dessinateur]]

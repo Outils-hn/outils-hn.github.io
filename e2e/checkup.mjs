@@ -60,7 +60,7 @@ async function brancher(ctx) {
       return json({ comptes: { total: 14, valides: 12, attente: 2, concepteur: 1, administrateur: 2, dessinateur: 9 },
         derniers: [{ email: "a@exemple.ch", le: new Date().toISOString() }],
         retours: { total: 6, nouveaux: 2 },
-        applis: [{ nom: "Index", total: 312, mois: 18, a_verifier: 41 }, { nom: "Access", total: 58, mois: 7 }, { nom: "Check", total: 240, mois: 64 }, { nom: "Masse", total: 95, mois: 11 }, { nom: "Format", total: 34, mois: 2 }, { nom: "Strate", total: 120, mois: 0 }] });
+        applis: [{ nom: "Index", total: 312, mois: 18, a_verifier: 41 }, { nom: "Access", total: 58, mois: 7 }, { nom: "Check", total: 240, mois: 64 }, { nom: "Masse", total: 95, mois: 11 }, { nom: "Format", total: 34, mois: 2 }, { nom: "Strate", total: 120, mois: 0 }, { nom: "Membrane", total: 6, mois: 6 }] });
     }
     if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
@@ -195,7 +195,7 @@ try {
   ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : onglet visible pour un compte valide");
   ok((await p.locator("#navAttente").innerText()).includes("1"), "Tableau de bord : 1 compte en attente signalé dans le menu");
   await p.locator("#navTableau").click(); await p.waitForTimeout(500);
-  ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle"), "Tableau de bord : statistiques affichées (concepteur)");
+  ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle") && (await p.locator("#statsContenu").innerText()).includes("produits et colles du catalogue"), "Tableau de bord : statistiques affichées (concepteur), Membrane comprise");
   ok((await p.locator("#listeComptes li").count()) === 3, "Tableau de bord : 3 comptes listés");
   await shot(p, "06b-tableau");
   await axe(p, "tableau de bord");
