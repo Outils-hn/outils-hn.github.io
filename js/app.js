@@ -149,7 +149,30 @@ const TABLES = {
 const ACTIONS = { INSERT: "Ajout", UPDATE: "Modification", DELETE: "Suppression" };
 const nomCompte = (c) => c.display_name || c.email || "Compte sans nom";
 const quand = (d) => new Date(d).toLocaleString("fr-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-const court = (v) => { const t = v === null || v === undefined ? "vide" : typeof v === "string" ? v || "vide" : JSON.stringify(v); return t.length > 40 ? t.slice(0, 40) + "…" : t; };
+// Historique lisible : une ligne par champ change, ancienne valeur barree -> nouvelle valeur
+const CHAMPS = {
+  name: "Nom", note: "Note", notes: "Notes", url: "Lien", tags: "Mots-clés", category: "Famille", supplier: "Fournisseur", icon: "Icône",
+  pdf_filename: "PDF", pdf_path: "PDF", verified_at: "Vérifiée le", domain: "Domaine", website: "Site", cad_website: "Site CAO",
+  contact_name: "Contact", contact_email: "E-mail", contact_phone: "Téléphone", mode: "Mode", value: "Valeur", source: "Source",
+  description: "Description", height_mm: "Hauteur (mm)", length_mm: "Longueur (mm)", markup_pct: "Majoration (%)", deleted_at: "Supprimée le",
+};
+const CHAMPS_TECHNIQUES = new Set(["id", "created_at", "created_by", "updated_at"]);
+const champNom = (k) => CHAMPS[k] ?? k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+const valeur = (k, v) => {
+  if (v === null || v === undefined || v === "" || (Array.isArray(v) && !v.length)) return null;
+  let t = Array.isArray(v) ? v.join(", ") : typeof v === "object" ? JSON.stringify(v) : String(v);
+  if (k === "pdf_path") t = t.split("/").pop();
+  if (/_at$/.test(k) && !isNaN(Date.parse(t))) t = fmtDate(t);
+  return t.length > 120 ? t.slice(0, 120) + "…" : t;
+};
+const puce = (k, v, cls) => { const t = valeur(k, v); return t === null ? `<span class="val vide ${cls}">(vide)</span>` : `<span class="val ${cls}">${esc(t)}</span>`; };
+function changements(h) {
+  let champs = h.diff ? Object.entries(h.diff).filter(([k, p]) => !CHAMPS_TECHNIQUES.has(k) && Array.isArray(p)) : [];
+  if (champs.some(([k]) => k === "pdf_filename")) champs = champs.filter(([k]) => k !== "pdf_path"); // meme info : on garde le nom du fichier
+  champs = champs.filter(([k, [a, b]]) => JSON.stringify(a) !== JSON.stringify(b));
+  if (!champs.length) return "";
+  return `<ul class="chg">${champs.map(([k, [a, b]]) => `<li><span class="champ-nom">${esc(champNom(k))}</span>${puce(k, a, "avant")}<span class="fleche" aria-label="devient">→</span>${puce(k, b, "apres")}</li>`).join("")}</ul>`;
+}
 
 async function chargerGestion() {
   const sess = await sessionFraiche();
@@ -188,12 +211,11 @@ function rendreGestion() {
   $("#listeHist").innerHTML = histErreur
     ? `<li class="vide">L'historique n'est pas encore installé dans la base (script « historique » à exécuter dans Supabase).</li>`
     : historique.map((h) => {
-      const champs = h.diff ? Object.entries(h.diff) : [];
       const type = h.est_annulation ? `Annulation (${ACTIONS[h.action].toLowerCase()})` : ACTIONS[h.action];
-      return `<li class="${h.annule ? "fait" : ""}"><div class="corps">
-        <div class="l1"><b>${esc(h.libelle || "(sans nom)")}</b> <span class="aide">${esc(TABLES[h.tbl] ?? h.tbl)} · ${type}${h.annule ? " · annulée" : ""}</span></div>
-        ${champs.length ? `<div class="l2">${esc(champs.slice(0, 3).map(([k, [a, b]]) => `${k} : ${court(a)} → ${court(b)}`).join(" · "))}${champs.length > 3 ? ` · +${champs.length - 3}` : ""}</div>` : ""}
-        <div class="l2">${esc(h.auteur_nom)} · ${esc(quand(h.at))}</div></div>
+      return `<li class="h-${String(h.action).toLowerCase()}${h.annule ? " fait" : ""}"><div class="corps">
+        <div class="l1"><span class="badge-h">${esc(type)}</span> <b>${esc(h.libelle || "(sans nom)")}</b>${h.annule ? ` <span class="aide">annulée</span>` : ""}</div>
+        ${changements(h)}
+        <div class="l2">${esc(TABLES[h.tbl] ?? h.tbl)} · ${esc(h.auteur_nom)} · ${esc(quand(h.at))}</div></div>
         <div class="boutons">${h.peut_annuler ? `<button type="button" class="btn" data-annuler="${h.id}">Annuler</button>` : ""}</div></li>`;
     }).join("") || `<li class="vide">Rien à afficher.</li>`;
 }

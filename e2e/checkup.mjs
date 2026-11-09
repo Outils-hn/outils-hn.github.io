@@ -28,7 +28,7 @@ const etat = {
   ],
   histo: [
     { id: 12, at: new Date().toISOString(), tbl: "membrane_catalogue", ligne: "unisb", action: "UPDATE", libelle: "SikaMembran Universal SB", auteur_nom: "Marc", diff: { sd: [60, 50] }, annule: false, est_annulation: false, peut_annuler: true },
-    { id: 11, at: new Date().toISOString(), tbl: "products", ligne: "p1", action: "INSERT", libelle: "Fiche test", auteur_nom: "Sarah", diff: null, annule: false, est_annulation: false, peut_annuler: false },
+    { id: 11, at: new Date().toISOString(), tbl: "products", ligne: "p1", action: "UPDATE", libelle: "Fiche test", auteur_nom: "Sarah", diff: { pdf_filename: ["fiche-v1.pdf", "fiche-v2.pdf"], pdf_path: ["a/fiche-v1.pdf", "a/fiche-v2.pdf"], updated_at: ["2026-11-01", "2026-11-09"] }, annule: false, est_annulation: false, peut_annuler: false },
   ],
 };
 // CHANGELOG simules des applis (Strate n'en a pas : 404, pour verifier que la page n'en souffre pas)
@@ -203,7 +203,8 @@ try {
   ok(etat.actions.some((a) => a[0] === "admin" && a[1]._id === "c3" && a[1]._admin === true), "Comptes : Nommer admin (concepteur) appelle la base");
   await p.locator("[data-retirer=c3]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c3" && a[1]._approved === false), "Comptes : Retirer l'accès demande confirmation puis appelle la base");
-  ok((await p.locator("#listeHist li").count()) === 2 && (await p.locator("#listeHist").innerText()).includes("sd : 60 → 50"), "Historique : 2 lignes, changement lisible");
+  ok((await p.locator("#listeHist li").count()) === 2 && (await p.locator("#listeHist").innerText()).includes("60"), "Historique : 2 lignes");
+  ok((await p.locator("#listeHist .chg .avant").first().innerText()).length > 0 && (await p.locator("#listeHist li", { hasText: "Fiche test" }).locator(".chg li").count()) === 1 && (await p.locator("#listeHist li", { hasText: "Fiche test" }).locator(".apres").innerText()) === "fiche-v2.pdf", "Historique : un PDF modifié = une seule ligne « PDF : ancien → nouveau », sans champs techniques");
   ok((await p.locator("[data-annuler]").count()) === 1, "Historique : bouton Annuler seulement quand c'est permis");
   await p.locator("[data-annuler='12']").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "annuler" && a[1]._id === 12), "Historique : Annuler appelle la base");
