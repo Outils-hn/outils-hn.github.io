@@ -237,22 +237,12 @@ try {
   ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");
   await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
 
-  // Administration : deja connecte (session commune avec Index) = pas de nouvelle connexion
+  // Administration : plus de bouton ni de connexion separee ; un administrateur connecte (session commune avec Index) peut traiter les retours
+  await p.evaluate(() => { location.hash = "#retours"; }); await p.waitForTimeout(300);
+  ok((await p.locator("[data-traiter]").count()) === 0 && (await p.locator("#adminBtn").count()) === 0, "admin : sans connexion, pas de « Traiter » et plus de bouton Administration");
   await p.evaluate((u) => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-admin", refresh_token: "ref-ok", expires_at: Math.floor(Date.now() / 1000) + 3000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
-  await p.getByRole("button", { name: "Administration" }).click(); await p.waitForTimeout(600);
-  ok(!(await p.locator("#dAdmin").evaluate((d) => d.open)) && (await p.locator("[data-traiter]").count()) > 0, "admin : déjà connecté via Index, aucune nouvelle connexion demandée");
-  await p.getByRole("button", { name: "Se déconnecter de l'administration" }).click(); await p.waitForTimeout(200);
-  await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
-  // Administration
-  await p.getByRole("button", { name: "Administration" }).click();
-  await p.locator("#dAdmin input[name=email]").fill(ADMIN.email);
-  await p.locator("#dAdmin input[name=mdp]").fill("faux");
-  await p.locator("#dAdmin").getByRole("button", { name: "Se connecter" }).click(); await p.waitForTimeout(400);
-  ok(await p.getByText("Email ou mot de passe incorrect.").isVisible(), "admin : mauvais mot de passe");
-  await p.locator("#dAdmin input[name=mdp]").fill(ADMIN.mdp);
-  await p.locator("#dAdmin").getByRole("button", { name: "Se connecter" }).click(); await p.waitForTimeout(600);
-  ok((await p.locator("[data-traiter]").count()) > 0, "admin : bouton « Traiter » sur les retours");
+  ok((await p.locator("[data-traiter]").count()) > 0, "admin : connecté via Index, bouton « Traiter » sur les retours");
   await p.locator('.retour[data-id="r2"] [data-traiter]').click();
   await p.locator("#tStatut").selectOption("prevu");
   await p.locator("#tReponse").fill("Prévu pour Format 2.1");
