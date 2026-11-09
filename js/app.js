@@ -506,8 +506,17 @@ window.addEventListener("storage", (e) => { if (e.key === CLE_SESSION) majCompte
 
 // ---------- Administration ----------
 const dA = $("#dAdmin");
-$("#adminBtn").addEventListener("click", () => {
+/** Compte deja connecte (session commune avec Index) et administrateur : pas besoin de se reconnecter. */
+async function adminDepuisSession() {
+  if (!estAdmin()) return false;
+  const s = await sessionFraiche();
+  if (!s) return false;
+  admin = { token: s.access_token, email: s.user?.email ?? "", partage: true, expire: (s.expires_at ?? 0) * 1000 - 60000 };
+  return true;
+}
+$("#adminBtn").addEventListener("click", async () => {
   if (admin) { admin = null; try { sessionStorage.removeItem(ADMIN); } catch { /* bloque */ } majAdmin(); rendre(); toast("Déconnecté."); return; }
+  if (await adminDepuisSession()) { majAdmin(); location.hash = "#retours"; rendre(); toast("Administration ouverte : « Traiter » sur chaque retour."); return; }
   $("#formAdmin").reset(); $("#aErreur").textContent = ""; dA.showModal();
 });
 function majAdmin() { $("#adminBtn").textContent = admin ? "Se déconnecter de l'administration" : "Administration"; }
@@ -538,6 +547,7 @@ function ouvrirTraiter(id) {
   dT.showModal();
 }
 async function actionAdmin(nom, args) {
+  if (admin?.partage) { const s = await sessionFraiche(); admin = s ? { ...admin, token: s.access_token, expire: (s.expires_at ?? 0) * 1000 - 60000 } : { ...admin, expire: 0 }; }
   if (!admin || admin.expire < Date.now()) { $("#tErreur").textContent = "Session expirée : reconnectez-vous (Administration, en bas de page)."; admin = null; majAdmin(); return false; }
   try {
     const r = await rpc(nom, args, admin.token);

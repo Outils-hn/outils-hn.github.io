@@ -237,6 +237,13 @@ try {
   ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");
   await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
 
+  // Administration : deja connecte (session commune avec Index) = pas de nouvelle connexion
+  await p.evaluate((u) => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-admin", refresh_token: "ref-ok", expires_at: Math.floor(Date.now() / 1000) + 3000, user: u })), { id: ADMIN.id, email: ADMIN.email });
+  await p.reload(); await p.waitForTimeout(800);
+  await p.getByRole("button", { name: "Administration" }).click(); await p.waitForTimeout(600);
+  ok(!(await p.locator("#dAdmin").evaluate((d) => d.open)) && (await p.locator("[data-traiter]").count()) > 0, "admin : déjà connecté via Index, aucune nouvelle connexion demandée");
+  await p.getByRole("button", { name: "Se déconnecter de l'administration" }).click(); await p.waitForTimeout(200);
+  await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
   // Administration
   await p.getByRole("button", { name: "Administration" }).click();
   await p.locator("#dAdmin input[name=email]").fill(ADMIN.email);

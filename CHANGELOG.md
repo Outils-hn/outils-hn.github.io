@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.8 — 9 novembre 2026
+
+- Nouveauté : le bouton « Administration » de l'Accueil s'ouvre directement quand tu es déjà connecté comme administrateur via Index ou le tableau de bord, sans te redemander ton mot de passe.
+
 ## 2.7 — 9 novembre 2026
 
 - Nouveauté : dans l'historique du tableau de bord, le concepteur peut mettre une ligne à la corbeille (🗑), la restaurer, ou vider la corbeille ; les lignes y restent 30 jours au maximum.
