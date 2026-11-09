@@ -188,3 +188,16 @@ footer button:hover { color: var(--ink); text-decoration: underline; }
 .gestion .boutons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
 .gestion .btn { padding: 4px 10px; font-size: 12px; }
 .gestion .vide { color: var(--muted); }
+
+/* Historique lisible */
+.gestion li[class*="h-"] { border-left: 3px solid var(--hc, var(--line)); }
+.gestion li.h-insert { --hc: var(--ok); } .gestion li.h-update { --hc: var(--info); } .gestion li.h-delete { --hc: var(--danger); }
+.badge-h { display: inline-block; font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 999px; margin-right: 4px; color: color-mix(in srgb, var(--hc) 60%, var(--ink)); background: color-mix(in srgb, var(--hc) 14%, transparent); }
+.chg { list-style: none; margin: 6px 0 4px; padding: 0; display: grid; gap: 4px; }
+.gestion .chg li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; padding: 0; border: 0; font-size: 13px; border-left: 0; }
+.chg .champ-nom { min-width: 96px; font-size: 12px; color: var(--muted); }
+.chg .val { padding: 1px 8px; border-radius: 6px; overflow-wrap: anywhere; }
+.chg .avant { color: color-mix(in srgb, var(--danger) 65%, var(--ink)); background: color-mix(in srgb, var(--danger) 10%, transparent); text-decoration: line-through; }
+.chg .apres { color: color-mix(in srgb, var(--ok) 55%, var(--ink)); background: color-mix(in srgb, var(--ok) 12%, transparent); font-weight: 500; }
+.chg .vide { font-style: italic; text-decoration: none; opacity: .75; }
+.chg .fleche { color: var(--muted); }
