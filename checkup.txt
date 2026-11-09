@@ -1,0 +1,71 @@
+OK 10 applis sur l'accueil
+OK dans l'ordre alphabétique
+OK carte Masse : « 1 en cours »
+OK lien Strate
+OK menu : 2 retours ouverts
+OK carte Masse : version v2.4 lue dans son CHANGELOG
+OK seules les applis avec un CHANGELOG affichent une version (Strate : aucune, sans erreur)
+OK accessibilité accueil : 0 problème(s)
+OK Nouveautés : 2 versions (Check 2.5, Masse 2.4) ; Masse 2.3, sans phrase « Nouveauté », est masquée
+OK Nouveautés : aucun détail technique affiché
+OK Nouveautés : la phrase commence par une majuscule
+OK Nouveautés : les plus récentes d'abord
+OK Nouveautés : les applis sans journal sont signalées
+OK accessibilité nouveautés : 0 problème(s)
+OK Nouveautés : filtre par appli
+OK Nouveautés : message clair quand une appli n'a rien de nouveau
+OK Retours : 2 ouverts par défaut (le fait est masqué)
+OK en cours d'abord
+OK « Tous les statuts » : 3
+OK filtre Bugs
+OK recherche sans accents
+OK « Moi aussi » compté une fois
+OK accessibilité retours : 0 problème(s)
+OK depuis Masse : formulaire ouvert
+OK appli pré-remplie
+OK retours déjà signalés pour Masse affichés
+OK version et page jointes
+OK compteur de caractères à zéro
+OK compteur : 2 / 2'000
+OK texte trop court : rien n'est envoyé
+OK texte trop court : message « au moins 5 caractères » sous le formulaire
+OK compteur : mis en évidence près de la limite
+OK limite de 2'000 caractères
+OK envoyé avec appli, type, version, page et prénom
+OK merci + visible dans la liste
+OK champ piège : envoi d'un robot ignoré
+OK Bandeau : « Lecture seule » + Se connecter
+OK Connexion : mauvais mot de passe refuse avec un message clair
+OK Connexion : email seul en haut de page
+OK Connexion : session rangee sous la cle commune a toutes les applis
+OK Tableau de bord : onglet visible pour un compte valide
+OK Tableau de bord : 1 compte en attente signalé dans le menu
+OK Tableau de bord : statistiques affichées (concepteur), Membrane comprise
+OK Tableau de bord : 3 comptes listés
+OK accessibilité tableau de bord : 0 problème(s)
+OK Comptes : Valider appelle la base
+OK Comptes : Nommer admin (concepteur) appelle la base
+OK Comptes : Retirer l'accès demande confirmation puis appelle la base
+OK Historique : 2 lignes
+OK Historique : un PDF modifié = une seule ligne « PDF : ancien → nouveau », sans champs techniques
+OK Historique : bouton Annuler seulement quand c'est permis
+OK Historique : Annuler appelle la base
+OK Historique : filtre par type
+OK Historique : la corbeille retire la ligne de la liste
+OK Corbeille : la ligne y est, avec Restaurer et Vider
+OK Corbeille : Restaurer appelle la base
+OK Historique : la ligne restaurée est revenue
+OK Deconnexion : retour en lecture seule
+OK Tableau de bord : onglet cache sans connexion
+OK Joint et Membrane : cartes visibles sans compte
+OK Joint : drapeau d'apercu absent sans compte concepteur
+OK Tableau de bord : session expirée renouvelée, onglet visible
+OK Joint et Membrane : cartes visibles aussi pour le concepteur
+OK Joint : drapeau d'apercu pose pour les menus des autres applis
+OK Joint : proposé dans le formulaire de retour
+OK admin : sans connexion, pas de « Traiter » et plus de bouton Administration
+OK admin : connecté via Index, bouton « Traiter » sur les retours
+OK statut changé en « Prévu »
+OK réponse visible par tous
+OK thème : le choix est écrit dans le réglage commun « outils-theme »
+OK accessibilité sombre : 0 problème(s)
