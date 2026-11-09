@@ -1,4 +1,4 @@
--- Accueil 1.8 : statistiques, reservees au concepteur. Aucune donnee personnelle : seulement des totaux.
+-- Accueil 1.8 (Membrane ajoutee en 2.10) : statistiques, reservees au concepteur. Aucune donnee personnelle : seulement des totaux.
 -- (Sans ce script l'onglet « Statistiques » reste simplement cache.)
 create or replace function public.stats_accueil() returns jsonb
 language plpgsql stable security definer set search_path = public as $$
@@ -33,7 +33,9 @@ begin
       jsonb_build_object('nom', 'Format', 'total', (select count(*) from format_materiaux where deleted_at is null),
         'mois', (select count(*) from format_materiaux where deleted_at is null and updated_at >= j30)),
       jsonb_build_object('nom', 'Strate', 'total', (select count(*) from strate_catalogue where deleted_at is null),
-        'mois', (select count(*) from strate_catalogue where deleted_at is null and updated_at >= j30)))
+        'mois', (select count(*) from strate_catalogue where deleted_at is null and updated_at >= j30)),
+      jsonb_build_object('nom', 'Membrane', 'total', (select count(*) from membrane_catalogue where deleted_at is null),
+        'mois', (select count(*) from membrane_catalogue where deleted_at is null and updated_at >= j30)))
   ) into r;
   return r;
 end $$;
