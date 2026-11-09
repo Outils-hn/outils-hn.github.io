@@ -66,7 +66,9 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
     if (u.pathname === "/rest/v1/rpc/set_account_approved") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.approved = corps._approved; etat.actions.push(["approved", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/set_account_admin") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.is_admin = corps._admin; etat.actions.push(["admin", corps]); return json(null); }
-    if (u.pathname === "/rest/v1/rpc/historique_lire") return json(tok === "tok-admin" ? etat.histo.filter((h) => !corps._tbl || h.tbl === corps._tbl) : []);
+    if (u.pathname === "/rest/v1/rpc/historique_lire") return json(tok === "tok-admin" ? etat.histo.filter((h) => (!corps._tbl || h.tbl === corps._tbl) && !!h.masque === !!corps._corbeille) : []);
+    if (u.pathname === "/rest/v1/rpc/historique_masquer") { const h = etat.histo.find((x) => x.id === corps._id); if (h) h.masque = corps._masquer; etat.actions.push(["masquer", corps]); return json(null); }
+    if (u.pathname === "/rest/v1/rpc/historique_vider_corbeille") { etat.histo = etat.histo.filter((h) => !h.masque); etat.actions.push(["vider", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/historique_annuler") { const h = etat.histo.find((x) => x.id === corps._id); if (h) { h.annule = true; h.peut_annuler = false; } etat.actions.push(["annuler", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/is_approved") return json(true);
     if (u.pathname === "/rest/v1/rpc/is_admin") return json(tok === "tok-admin");
@@ -210,6 +212,15 @@ try {
   ok(etat.actions.some((a) => a[0] === "annuler" && a[1]._id === 12), "Historique : Annuler appelle la base");
   await p.locator("#hTbl").selectOption("products"); await p.waitForTimeout(400);
   ok((await p.locator("#listeHist > li").count()) === 1, "Historique : filtre par type");
+  await p.locator("#hTbl").selectOption(""); await p.waitForTimeout(300);
+  await p.locator("[data-masquer='11']").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "masquer" && a[1]._id === 11 && a[1]._masquer === true) && (await p.locator("#listeHist > li").count()) === 1, "Historique : la corbeille retire la ligne de la liste");
+  await p.locator("#hCorbeille").click(); await p.waitForTimeout(400);
+  ok((await p.locator("#listeHist > li").count()) === 1 && (await p.locator("[data-restaurer='11']").count()) === 1 && (await p.locator("#hVider").isVisible()), "Corbeille : la ligne y est, avec Restaurer et Vider");
+  await p.locator("[data-restaurer='11']").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "masquer" && a[1]._id === 11 && a[1]._masquer === false), "Corbeille : Restaurer appelle la base");
+  await p.locator("#hCorbeille").click(); await p.waitForTimeout(400);
+  ok((await p.locator("#listeHist > li").count()) === 2, "Historique : la ligne restaurée est revenue");
   await p.getByRole("link", { name: "Applis" }).click(); await p.waitForTimeout(200);
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
   ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");

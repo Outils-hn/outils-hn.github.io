@@ -201,3 +201,5 @@ footer button:hover { color: var(--ink); text-decoration: underline; }
 .chg .apres { color: color-mix(in srgb, var(--ok) 55%, var(--ink)); background: color-mix(in srgb, var(--ok) 12%, transparent); font-weight: 500; }
 .chg .vide { font-style: italic; text-decoration: none; opacity: .75; }
 .chg .fleche { color: var(--muted); }
+.gestion-bloc .outils-hist { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.gestion .btn.icone-sup { padding: 4px 8px; }

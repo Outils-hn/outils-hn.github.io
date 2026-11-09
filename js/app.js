@@ -31,7 +31,7 @@ let role = null; // « dessinateur », « administrateur », « concepteur » ; 
 let comptes = []; // liste des comptes (administrateurs) ; vide sinon
 let historique = []; // dernieres modifications des donnees communes
 let histErreur = false;
-const filtreHist = { tbl: "" };
+const filtreHist = { tbl: "", corbeille: false };
 const estAdmin = () => role === "administrateur" || role === "concepteur";
 // Applis en apercu (aucune pour l'instant ; champ « apercu: true » dans core.js) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
 // (meme site pour toutes les applis) pour que leurs menus montrent aussi l'appli ; il est remis a jour a chaque visite de l'Accueil.
@@ -180,7 +180,7 @@ async function chargerGestion() {
   const jeton = sess.access_token;
   const [c, h] = await Promise.allSettled([
     estAdmin() ? rpc("list_accounts", {}, jeton) : Promise.resolve([]),
-    rpc("historique_lire", { _tbl: filtreHist.tbl || null, _limite: 100 }, jeton),
+    rpc("historique_lire", { _tbl: filtreHist.tbl || null, _limite: 100, ...(filtreHist.corbeille ? { _corbeille: true } : {}) }, jeton),
   ]);
   comptes = c.status === "fulfilled" ? c.value ?? [] : [];
   histErreur = h.status !== "fulfilled";
@@ -216,8 +216,15 @@ function rendreGestion() {
         <div class="l1"><span class="badge-h">${esc(type)}</span> <b>${esc(h.libelle || "(sans nom)")}</b>${h.annule ? ` <span class="aide">annulée</span>` : ""}</div>
         ${changements(h)}
         <div class="l2">${esc(TABLES[h.tbl] ?? h.tbl)} · ${esc(h.auteur_nom)} · ${esc(quand(h.at))}</div></div>
-        <div class="boutons">${h.peut_annuler ? `<button type="button" class="btn" data-annuler="${h.id}">Annuler</button>` : ""}</div></li>`;
-    }).join("") || `<li class="vide">Rien à afficher.</li>`;
+        <div class="boutons">${filtreHist.corbeille ? `<button type="button" class="btn" data-restaurer="${h.id}">Restaurer</button>`
+          : `${h.peut_annuler ? `<button type="button" class="btn" data-annuler="${h.id}">Annuler</button>` : ""}${role === "concepteur" ? `<button type="button" class="btn icone-sup" data-masquer="${h.id}" aria-label="Mettre cette ligne à la corbeille" title="Mettre à la corbeille">🗑</button>` : ""}`}</div></li>`;
+    }).join("") || `<li class="vide">${filtreHist.corbeille ? "La corbeille est vide." : "Rien à afficher."}</li>`;
+  const conc2 = role === "concepteur";
+  $("#hCorbeille").hidden = !conc2;
+  $("#hCorbeille").textContent = filtreHist.corbeille ? "← Retour à l'historique" : "Corbeille";
+  $("#hCorbeille").setAttribute("aria-pressed", String(filtreHist.corbeille));
+  $("#hVider").hidden = !(conc2 && filtreHist.corbeille && historique.length);
+  $("#blocHist h3 .aide").textContent = filtreHist.corbeille ? "supprimées définitivement après 30 jours" : "90 derniers jours";
 }
 
 // Fenetre de confirmation maison (remplace confirm() du navigateur)
@@ -250,10 +257,18 @@ $("#listeComptes").addEventListener("click", async (e) => {
   }
 });
 $("#listeHist").addEventListener("click", async (e) => {
+  const m = e.target.closest("[data-masquer], [data-restaurer]");
+  if (m) return actionGestion("historique_masquer", { _id: Number(m.dataset.masquer || m.dataset.restaurer), _masquer: !!m.dataset.masquer },
+    m.dataset.masquer ? "Ligne mise à la corbeille." : "Ligne restaurée.");
   const b = e.target.closest("[data-annuler]"); if (!b) return;
   const h = historique.find((x) => String(x.id) === b.dataset.annuler); if (!h) return;
   if (await confirmer(`Annuler cette modification de « ${h.libelle || "(sans nom)"} » ?`, "La ligne revient comme elle était avant. L'annulation s'inscrit aussi dans l'historique.", "Annuler la modification"))
     actionGestion("historique_annuler", { _id: h.id }, "Modification annulée.");
+});
+$("#hCorbeille").addEventListener("click", () => { filtreHist.corbeille = !filtreHist.corbeille; chargerGestion(); });
+$("#hVider").addEventListener("click", async () => {
+  if (await confirmer("Vider la corbeille ?", "Les lignes de la corbeille sont supprimées définitivement. Cela ne touche pas aux données des applis.", "Vider la corbeille"))
+    actionGestion("historique_vider_corbeille", {}, "Corbeille vidée.");
 });
 $("#hTbl").addEventListener("change", (e) => { filtreHist.tbl = e.target.value; chargerGestion(); });
 function rendreStats() {

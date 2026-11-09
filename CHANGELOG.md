@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.7 — 9 novembre 2026
+
+- Nouveauté : dans l'historique du tableau de bord, le concepteur peut mettre une ligne à la corbeille (🗑), la restaurer, ou vider la corbeille ; les lignes y restent 30 jours au maximum.
+
 ## 2.6 — 9 novembre 2026
 
 - Nouveauté : l'historique du tableau de bord est plus lisible : chaque modification montre champ par champ ce qui change (ancienne valeur barrée en rouge, nouvelle valeur en vert), avec une pastille de couleur pour Ajout, Modification ou Suppression.
