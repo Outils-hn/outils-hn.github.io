@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.5 — 9 novembre 2026
+
+- Technique : les textes venus de la base (retours, comptes, historique) passent tous par le filtre anti-injection avant d'être affichés, y compris les champs que la base garantit déjà.
+
 ## 2.4 — 8 novembre 2026
 
 - Nouveauté : toutes les données des applis sont maintenant hébergées en Suisse. Reconnecte-toi une fois avec ton e-mail et ton mot de passe habituels.

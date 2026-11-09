@@ -175,9 +175,9 @@ function rendreGestion() {
   $("#resumeComptes").textContent = att ? `${att} en attente de validation` : "";
   $("#listeComptes").innerHTML = comptes.map((c) => {
     const etiquette = c.role === "concepteur" ? "Concepteur" : c.is_admin ? "Administrateur" : "Dessinateur";
-    const boutons = !c.approved ? `<button type="button" class="btn primaire" data-valider="${c.id}">Valider</button>`
+    const boutons = !c.approved ? `<button type="button" class="btn primaire" data-valider="${esc(c.id)}">Valider</button>`
       : c.id === moi || c.role === "concepteur" ? ""
-      : `${conc ? `<button type="button" class="btn" data-admin="${c.id}">${c.is_admin ? "Retirer admin" : "Nommer admin"}</button>` : ""}<button type="button" class="btn danger" data-retirer="${c.id}">Retirer l'accès</button>`;
+      : `${conc ? `<button type="button" class="btn" data-admin="${esc(c.id)}">${c.is_admin ? "Retirer admin" : "Nommer admin"}</button>` : ""}<button type="button" class="btn danger" data-retirer="${esc(c.id)}">Retirer l'accès</button>`;
     return `<li><div class="corps"><div class="l1">${esc(nomCompte(c))}</div>
       <div class="l2">${c.email ? esc(c.email) + " · " : ""}${c.approved ? etiquette : "En attente"} · créé le ${esc(fmtDate(c.created_at))}</div></div>
       <div class="boutons">${boutons}</div></li>`;
@@ -289,19 +289,19 @@ function rendreRetours() {
   }
   liste.innerHTML = vis.map((r) => {
     const vote = votes.has(r.id);
-    return `<li class="retour panel ${termine(r) ? "termine" : ""}" data-id="${r.id}">
+    return `<li class="retour panel ${termine(r) ? "termine" : ""}" data-id="${esc(r.id)}">
       <div class="meta">
-        <span class="tag ${r.type}">${TYPES[r.type]}</span>
+        <span class="tag ${esc(r.type)}">${esc(TYPES[r.type])}</span>
         <span class="tag" style="--c:${couleur(r.app)}"><span class="p"></span>${esc(r.app)}</span>
-        <span>${fmtDate(r.created_at)}${r.nom ? ` · ${esc(r.nom)}` : ""}${r.version ? ` · v${esc(r.version)}` : ""}</span>
+        <span>${esc(fmtDate(r.created_at))}${r.nom ? ` · ${esc(r.nom)}` : ""}${r.version ? ` · v${esc(r.version)}` : ""}</span>
       </div>
       <p class="texte">${esc(r.texte)}</p>
       ${r.reponse ? `<p class="reponse"><strong>Réponse :</strong> ${esc(r.reponse)}</p>` : ""}
       <div class="droite">
-        <span class="statut ${r.statut}">${STATUTS[r.statut]}</span>
-        ${termine(r) ? (r.moi_aussi ? `<span class="aide">${r.moi_aussi} × moi aussi</span>` : "")
-          : `<button type="button" class="moi-aussi" data-moi-aussi="${r.id}" aria-pressed="${vote}" ${vote ? "disabled" : ""} aria-label="Moi aussi : ${r.moi_aussi} personne(s)">Moi aussi${r.moi_aussi ? ` · ${r.moi_aussi}` : ""}</button>`}
-        ${admin ? `<button type="button" class="lien-btn" data-traiter="${r.id}">Traiter</button>` : ""}
+        <span class="statut ${esc(r.statut)}">${esc(STATUTS[r.statut])}</span>
+        ${termine(r) ? (r.moi_aussi ? `<span class="aide">${esc(r.moi_aussi)} × moi aussi</span>` : "")
+          : `<button type="button" class="moi-aussi" data-moi-aussi="${esc(r.id)}" aria-pressed="${vote}" ${vote ? "disabled" : ""} aria-label="Moi aussi : ${esc(r.moi_aussi)} personne(s)">Moi aussi${r.moi_aussi ? ` · ${esc(r.moi_aussi)}` : ""}</button>`}
+        ${admin ? `<button type="button" class="lien-btn" data-traiter="${esc(r.id)}">Traiter</button>` : ""}
       </div>
     </li>`;
   }).join("");
