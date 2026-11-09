@@ -6,10 +6,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const couleur = (app) => APPLIS.find((a) => a.nom === app)?.couleur ?? "#5D6068";
 
 // ---------- Acces a la base (projet Index) ----------
-const ADMIN = "accueil-admin";
 const VOTES = "accueil-moi-aussi";
-let admin = null; // { token, email } quand un administrateur d'Index est connecte
-try { const a = JSON.parse(sessionStorage.getItem(ADMIN) || "null"); if (a && a.expire > Date.now()) admin = a; } catch { /* stockage bloque */ }
 
 async function api(chemin, { methode = "GET", corps, jeton } = {}) {
   const r = await fetch(BASE_URL + chemin, {
@@ -33,6 +30,8 @@ let historique = []; // dernieres modifications des donnees communes
 let histErreur = false;
 const filtreHist = { tbl: "", corbeille: false };
 const estAdmin = () => role === "administrateur" || role === "concepteur";
+/** Un administrateur connecte (session commune avec Index) peut traiter les retours : plus de connexion separee. */
+const admin = () => (estAdmin() ? { email: lireSession()?.user?.email ?? "" } : null);
 // Applis en apercu (aucune pour l'instant ; champ « apercu: true » dans core.js) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
 // (meme site pour toutes les applis) pour que leurs menus montrent aussi l'appli ; il est remis a jour a chaque visite de l'Accueil.
 const CLE_APERCU = "outils-apercu";
@@ -318,7 +317,7 @@ function rendreRetours() {
     return;
   }
   const c = compter(retours);
-  $("#resume").textContent = `${c.ouverts} en cours ou à venir (${c.bugs} bug${c.bugs > 1 ? "s" : ""}, ${c.idees} idée${c.idees > 1 ? "s" : ""}) · ${c.faits} fait${c.faits > 1 ? "s" : ""}${admin ? ` · connecté : ${admin.email}` : ""}`;
+  $("#resume").textContent = `${c.ouverts} en cours ou à venir (${c.bugs} bug${c.bugs > 1 ? "s" : ""}, ${c.idees} idée${c.idees > 1 ? "s" : ""}) · ${c.faits} fait${c.faits > 1 ? "s" : ""}${admin() ? ` · connecté : ${admin().email}` : ""}`;
   const vis = filtrerRetours(retours, filtres);
   if (!vis.length) {
     liste.innerHTML = `<li class="vide">${retours.length ? "Aucun retour ne correspond à ces filtres." : "Aucun retour pour l'instant. Une idée, un bug ? Dites-le avec le bouton ci-dessus."}</li>`;
@@ -338,7 +337,7 @@ function rendreRetours() {
         <span class="statut ${esc(r.statut)}">${esc(STATUTS[r.statut])}</span>
         ${termine(r) ? (r.moi_aussi ? `<span class="aide">${esc(r.moi_aussi)} × moi aussi</span>` : "")
           : `<button type="button" class="moi-aussi" data-moi-aussi="${esc(r.id)}" aria-pressed="${vote}" ${vote ? "disabled" : ""} aria-label="Moi aussi : ${esc(r.moi_aussi)} personne(s)">Moi aussi${r.moi_aussi ? ` · ${esc(r.moi_aussi)}` : ""}</button>`}
-        ${admin ? `<button type="button" class="lien-btn" data-traiter="${esc(r.id)}">Traiter</button>` : ""}
+        ${admin() ? `<button type="button" class="lien-btn" data-traiter="${esc(r.id)}">Traiter</button>` : ""}
       </div>
     </li>`;
   }).join("");
@@ -504,39 +503,7 @@ $("#formConnexion").addEventListener("submit", async (e) => {
 // Connexion ou deconnexion faite dans une autre appli / un autre onglet
 window.addEventListener("storage", (e) => { if (e.key === CLE_SESSION) majCompte(); });
 
-// ---------- Administration ----------
-const dA = $("#dAdmin");
-/** Compte deja connecte (session commune avec Index) et administrateur : pas besoin de se reconnecter. */
-async function adminDepuisSession() {
-  if (!estAdmin()) return false;
-  const s = await sessionFraiche();
-  if (!s) return false;
-  admin = { token: s.access_token, email: s.user?.email ?? "", partage: true, expire: (s.expires_at ?? 0) * 1000 - 60000 };
-  return true;
-}
-$("#adminBtn").addEventListener("click", async () => {
-  if (admin) { admin = null; try { sessionStorage.removeItem(ADMIN); } catch { /* bloque */ } majAdmin(); rendre(); toast("Déconnecté."); return; }
-  if (await adminDepuisSession()) { majAdmin(); location.hash = "#retours"; rendre(); toast("Administration ouverte : « Traiter » sur chaque retour."); return; }
-  $("#formAdmin").reset(); $("#aErreur").textContent = ""; dA.showModal();
-});
-function majAdmin() { $("#adminBtn").textContent = admin ? "Se déconnecter de l'administration" : "Administration"; }
-$("#formAdmin").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const f = new FormData(e.target);
-  try {
-    const s = await api("/auth/v1/token?grant_type=password", { methode: "POST", corps: { email: f.get("email"), password: f.get("mdp") } });
-    const estAdmin = await rpc("is_admin", {}, s.access_token);
-    if (!estAdmin) { $("#aErreur").textContent = "Ce compte n'est pas administrateur d'Index."; return; }
-    admin = { token: s.access_token, email: s.user?.email ?? f.get("email"), expire: Date.now() + (s.expires_in ?? 3600) * 1000 - 60000 };
-    try { sessionStorage.setItem(ADMIN, JSON.stringify(admin)); } catch { /* bloque */ }
-    dA.close(); majAdmin();
-    location.hash = "#retours"; rendre();
-    toast("Administration ouverte : « Traiter » sur chaque retour.");
-  } catch (err) {
-    $("#aErreur").textContent = err.status === 400 ? "Email ou mot de passe incorrect." : horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message;
-  }
-});
-
+// ---------- Traiter les retours (reserve aux administrateurs connectes) ----------
 const dT = $("#dTraiter");
 let enCours = null;
 $("#tStatut").innerHTML = Object.entries(STATUTS).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
@@ -547,10 +514,10 @@ function ouvrirTraiter(id) {
   dT.showModal();
 }
 async function actionAdmin(nom, args) {
-  if (admin?.partage) { const s = await sessionFraiche(); admin = s ? { ...admin, token: s.access_token, expire: (s.expires_at ?? 0) * 1000 - 60000 } : { ...admin, expire: 0 }; }
-  if (!admin || admin.expire < Date.now()) { $("#tErreur").textContent = "Session expirée : reconnectez-vous (Administration, en bas de page)."; admin = null; majAdmin(); return false; }
+  const sess = admin() ? await sessionFraiche() : null;
+  if (!sess) { $("#tErreur").textContent = "Session expirée : reconnecte-toi (bouton « Se connecter » en haut de page)."; return false; }
   try {
-    const r = await rpc(nom, args, admin.token);
+    const r = await rpc(nom, args, sess.access_token);
     if (!r?.ok) { $("#tErreur").textContent = r?.error || "Refusé."; return false; }
     return true;
   } catch (err) { $("#tErreur").textContent = horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message; return false; }
@@ -576,7 +543,6 @@ $("#themeBtn").addEventListener("click", () => {
 });
 window.addEventListener("hashchange", () => { rendre(); window.scrollTo(0, 0); if (vue() === "tableau") chargerGestion(); });
 
-majAdmin();
 majCompte();
 rendre();
 chargerJournaux();
