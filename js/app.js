@@ -131,14 +131,43 @@ async function sessionFraiche() {
   }
   return s;
 }
-/** Notes de Check confiees a la personne connectee, pas reglees : la pastille « pour moi » de la carte Check. */
+/** Notes de Check confiees a la personne connectee, pas reglees : la pastille « pour moi » de la carte Check et le bloc « Aujourd'hui ». */
 let pourMoi = 0;
+let aujourdhui = { notes: [], calculs: [] };
 async function chargerPourMoi(s) {
-  let n = 0;
+  await Promise.resolve(); // laisse finir l'initialisation du module avant de toucher aux constantes plus bas
+  let notes = [], calculs = [];
   try {
-    if (s?.user?.id) n = (await api(`/rest/v1/check_notes?select=id&pour=eq.${encodeURIComponent(s.user.id)}&statut=neq.done&archive=eq.false&supprime_le=is.null&limit=99`, { jeton: s.access_token }))?.length ?? 0;
-  } catch { n = 0; /* base injoignable ou Check pas active : pas de pastille */ }
-  if (n !== pourMoi) { pourMoi = n; rendreApplis(); }
+    if (s?.user?.id) notes = (await api(`/rest/v1/check_notes?select=id,texte,statut,flash,echeance&pour=eq.${encodeURIComponent(s.user.id)}&statut=neq.done&archive=eq.false&supprime_le=is.null&limit=99`, { jeton: s.access_token })) ?? [];
+  } catch { notes = []; /* base injoignable ou Check pas active : pas de pastille */ }
+  try {
+    if (s?.user?.id) calculs = (await api(`/rest/v1/calculs?select=id,app,nom,updated_at&auteur=eq.${encodeURIComponent(s.user.id)}&supprime_le=is.null&order=updated_at.desc&limit=3`, { jeton: s.access_token })) ?? [];
+  } catch { calculs = []; /* table pas encore creee */ }
+  aujourdhui = { notes: trierNotes(notes, jourIso()), calculs };
+  pourMoi = notes.length;
+  rendreApplis();
+}
+
+/** Bloc « Aujourd'hui » : ce qui attend la personne (notes pour elle), ses derniers calculs, son chantier en cours. */
+function rendreAujourdhui() {
+  const zone = $("#aujourdhui");
+  if (!role) { zone.hidden = true; zone.innerHTML = ""; return; }
+  const jour = jourIso();
+  let ch = null;
+  try { const i = JSON.parse(localStorage.getItem("outils-chantier-info") ?? "null"); if (i?.numero && idChantier()) ch = i; } catch { /* rien */ }
+  const notes = aujourdhui.notes.slice(0, 5).map((n) => {
+    const retard = n.echeance && n.echeance < jour;
+    const info = retard ? "en retard" : n.flash ? "urgent" : n.echeance === jour ? "aujourd’hui" : n.echeance ? fmtDate(n.echeance) : "";
+    return `<li><a class="lien-ligne" href="${esc(lienApp("Check"))}?note=${encodeURIComponent(n.id)}">${esc(n.texte)}</a><span class="aide${retard ? " rouge" : ""}">${esc(info)}</span></li>`;
+  }).join("");
+  const calculs = aujourdhui.calculs.map((x) => { const a = x.app === "linear" ? "Linear" : x.app === "format" ? "Format" : "Trame"; return `<li><a class="lien-ligne" href="${esc(lienApp(a))}?calcul=${encodeURIComponent(x.id)}">${esc(x.nom || "Sans nom")}</a><span class="aide">${a}</span></li>`; }).join("");
+  const blocs = [
+    notes && `<div class="panel"><h3 class="dossier-titre">Pour moi <span class="aide">${aujourdhui.notes.length} note${aujourdhui.notes.length > 1 ? "s" : ""} ouverte${aujourdhui.notes.length > 1 ? "s" : ""}</span></h3><ul class="gestion">${notes}</ul></div>`,
+    calculs && `<div class="panel"><h3 class="dossier-titre">Mes derniers calculs partagés</h3><ul class="gestion">${calculs}</ul></div>`,
+    ch && `<div class="panel"><h3 class="dossier-titre">Chantier en cours</h3><ul class="gestion"><li><a class="lien-ligne" href="#chantiers/${encodeURIComponent(idChantier())}">${esc(ch.numero)} · ${esc(ch.nom)}</a><span class="aide">dossier</span></li></ul></div>`,
+  ].filter(Boolean);
+  zone.hidden = blocs.length === 0;
+  zone.innerHTML = blocs.length ? `<h3 class="aujourdhui-titre">Aujourd’hui</h3><div class="dossier-grille">${blocs.join("")}</div>` : "";
 }
 async function chargerStats() {
   const s = await sessionFraiche();
@@ -321,6 +350,7 @@ function rendreStats() {
 }
 
 function rendreApplis() {
+  rendreAujourdhui();
   $("#grille").innerHTML = visibles().map((a) => {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     return `<li><a class="carte" href="${a.url}" style="--c:${a.couleur}">

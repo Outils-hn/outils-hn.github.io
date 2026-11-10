@@ -65,11 +65,12 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/projects") return json(tok === "tok-admin" ? [{ id: "c1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "c2", numero: "25-004", nom: "Hôtel du Lac" }] : []);
     if (u.pathname === "/rest/v1/product_projects") return json(u.searchParams.get("project_id") === "eq.c1" ? [{ product_id: "p1" }] : []);
     if (u.pathname === "/rest/v1/products") return json([{ id: "p1", name: "SikaMembran Outdoor plus", supplier: "Sika", category: "Membranes & Étanchéité" }]);
+    if (u.pathname === "/rest/v1/calculs" && u.searchParams.get("auteur")) return json(tok === "tok-admin" ? [{ id: "k1", app: "format", nom: "Façade Est", updated_at: "2026-11-10T08:00:00Z" }] : []);
     if (u.pathname === "/rest/v1/calculs") return json(u.searchParams.get("chantier_numero") === "eq.24-118" ? [{ id: "k1", app: "linear", nom: "Garde-corps R+2", auteur_email: "hugo@exemple.ch", updated_at: "2026-11-10T08:00:00Z" }] : []);
     if (u.pathname === "/rest/v1/check_projets") return json([{ id: "cp1", numero: "24-118", nom: "Tilleuls" }]);
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("texte")) return json([{ id: "n5", texte: "Confirmer l'entraxe des consoles" }]);
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
-    if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1" }, { id: "n2" }] : []);
+    if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1", texte: "Vérifier les ancrages du R+2", statut: "todo", flash: true, echeance: null }, { id: "n2", texte: "Rappeler le client", statut: "todo", flash: false, echeance: "2026-01-05" }] : []);
     if (u.pathname === "/rest/v1/rpc/espace_utilise") return json(tok === "tok-admin" ? { base: 30408704, stockage: 20480, calculs: 51200 } : null);
     if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
@@ -199,6 +200,8 @@ try {
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
   ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
   ok(/2 pour moi/.test(await p.locator(".carte", { hasText: "Check" }).first().innerText()), "Accueil : pastille « 2 pour moi » sur la carte Check (notes confiées, non réglées)");
+  { const t = await p.locator("#aujourdhui").innerText(); ok(t.includes("Aujourd") && t.includes("Rappeler le client") && t.includes("en retard") && t.includes("Façade Est"), "Accueil : bloc « Aujourd'hui » (notes pour moi dont une en retard, derniers calculs)"); }
+  ok((await p.locator("#aujourdhui a", { hasText: "Rappeler le client" }).getAttribute("href")).includes("Check/?note=n2"), "Accueil : une note du bloc « Aujourd'hui » s'ouvre directement");
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
