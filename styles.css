@@ -237,3 +237,7 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 .lien-ligne:hover { text-decoration: underline; }
 
 .espace { margin-top: 16px; }
+
+.aujourdhui { margin: 0 0 22px; }
+.aujourdhui-titre { margin: 0 0 10px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.aide.rouge { color: #c0392b; font-weight: 600; }

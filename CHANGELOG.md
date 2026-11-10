@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.18 — 10 novembre 2026
+
+- Nouveauté : un bloc « Aujourd'hui » en haut de l'Accueil rassemble vos notes à traiter, vos derniers calculs partagés et le chantier en cours.
+
 ## 2.17 — 10 novembre 2026
 
 - Nouveauté : les Statistiques montrent l'espace utilisé sur Supabase (base et fichiers) par rapport à l'offre gratuite.
