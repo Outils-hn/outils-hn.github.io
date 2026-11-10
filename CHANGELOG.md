@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.19 — 10 novembre 2026
+
+- Nouveauté : le bloc « Aujourd'hui » est retiré de l'Accueil, qui redevient plus léger.
+
 ## 2.18 — 10 novembre 2026
 
 - Nouveauté : un bloc « Aujourd'hui » en haut de l'Accueil rassemble vos notes à traiter, vos derniers calculs partagés et le chantier en cours.

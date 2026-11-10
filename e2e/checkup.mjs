@@ -200,8 +200,6 @@ try {
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
   ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
   ok(/2 pour moi/.test(await p.locator(".carte", { hasText: "Check" }).first().innerText()), "Accueil : pastille « 2 pour moi » sur la carte Check (notes confiées, non réglées)");
-  { const t = await p.locator("#aujourdhui").innerText(); ok(t.includes("Aujourd") && t.includes("Rappeler le client") && t.includes("en retard") && t.includes("Façade Est"), "Accueil : bloc « Aujourd'hui » (notes pour moi dont une en retard, derniers calculs)"); }
-  ok((await p.locator("#aujourdhui a", { hasText: "Rappeler le client" }).getAttribute("href")).includes("Check/?note=n2"), "Accueil : une note du bloc « Aujourd'hui » s'ouvre directement");
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
