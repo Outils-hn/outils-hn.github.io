@@ -1,6 +1,6 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.6";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur } from "./core.js?v=2.7";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -540,7 +540,8 @@ function lireSession() { try { const s = JSON.parse(localStorage.getItem(CLE_SES
 function ecrireSession(s) { try { if (s) localStorage.setItem(CLE_SESSION, JSON.stringify(s)); else localStorage.removeItem(CLE_SESSION); } catch { /* bloque */ } }
 function majCompte() {
   const s = lireSession();
-  $("#etatCompte").textContent = s ? (s.user?.email ?? "") : "Lecture seule";
+  $("#etatCompte").textContent = s ? (nomAffiche(s.user) || (s.user?.email ?? "")) : "Lecture seule";
+  $("#etatCompte").title = s ? (s.user?.email ?? "") : "";
   $("#etatCompte").classList.toggle("on", !!s);
   $("#compteBtn").textContent = s ? "Se déconnecter" : "Se connecter";
   chargerStats();

@@ -2,6 +2,12 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.25 — 10 novembre 2026
+
+- Nouveauté : l'Accueil a son logo, dans le même style que les applis (pastille sombre et quatre cases de couleur).
+- Nouveauté : en haut à droite, le nom s'affiche (Prénom NOM) à la place de l'adresse mail.
+- Nouveauté : un fondu doux quand on passe d'une appli à l'autre ou qu'on revient à l'Accueil (sur les navigateurs récents).
+
 ## 2.24 — 10 novembre 2026
 
 - Nouveauté : nouveau style « plan » pour l'Accueil (feuille de dessin, cotations, coins qui s'ouvrent au survol), avec les chiffres de Check en grand.

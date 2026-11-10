@@ -306,3 +306,13 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 .carte .fait small { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); }
 .carte.grande .texte { margin-bottom: 0; }
 .carte.grande .cote { margin-top: 0; }
+
+/* Transition douce entre les pages du site (navigateurs recents ; ignoree ailleurs). Le logo reste en place, le reste se fond. */
+@view-transition { navigation: auto; }
+.brand > svg:first-of-type { view-transition-name: logo; }
+::view-transition-group(logo) { animation-duration: 200ms; animation-timing-function: cubic-bezier(.2, .7, .2, 1); }
+::view-transition-old(root) { animation: vt-out 200ms cubic-bezier(.4, 0, .6, 1) both; }
+::view-transition-new(root) { animation: vt-in 200ms cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
