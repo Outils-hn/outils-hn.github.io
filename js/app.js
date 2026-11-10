@@ -348,19 +348,19 @@ function rendreApplis() {
   // Logo : pictogramme blanc sur une pastille de la couleur de l'appli
   const logo = (a, cls) => `<span class="logo ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PICTOS[a.nom] ?? ""}</svg></span>`;
   // Les trois applis du quotidien : une grande carte (la premiere) et deux petites a cote
-  const carte = (a, cls) => {
+  const carte = (a, cls, rang) => {
     const moi = a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : "";
     const ver = journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : "";
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     const enCours = ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : "";
-    const pied = cls === "grande" ? `<span class="pied">${moi}${enCours}<span class="ouvrir">Ouvrir →</span></span>` : "";
-    return `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}">${logo(a, cls)}<span class="corps"><span class="tete"><span class="nom">${esc(a.nom)}</span>${ver}${cls === "grande" ? "" : enCours + moi}</span><p class="texte">${esc(a.texte)}</p>${pied}</span></a>`;
+    // Style « plan » : numero d'usage (01 = le plus utilise) et ligne de cotation portant le role de l'appli
+    return `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}">${logo(a, cls)}<span class="corps"><span class="rang" title="Classement d'usage">0${rang}</span><span class="tete"><span class="nom">${esc(a.nom)}</span>${ver}${enCours}${moi}</span><p class="texte">${esc(a.texte)}</p><span class="cote"><i></i><b>${esc(a.role)}</b></span></span></a>`;
   };
   // Les autres : une simple ligne (logo, nom, version)
   const ligne = (a) => `<a class="carte lien" href="${a.url}" style="--c:${a.couleur}">${logo(a, "mini")}<span class="nom">${esc(a.nom)}</span>${signaux(a)}</a>`;
   const [jour, parfois, rare] = NIVEAUX.map((n) => n.noms.map(trouver).filter(Boolean));
   const groupe = (titre, liste) => liste.length ? `<h3 class="niveau">${titre}</h3><div class="lignes">${liste.map(ligne).join("")}</div>` : "";
-  $("#grille").innerHTML = (jour.length ? `<div class="quotidien">${carte(jour[0], "grande")}<div class="pile">${jour.slice(1).map((a) => carte(a, "petite")).join("")}</div></div>` : "")
+  $("#grille").innerHTML = (jour.length ? `<div class="quotidien">${carte(jour[0], "grande", 1)}<div class="pile">${jour.slice(1).map((a, i) => carte(a, "petite", i + 2)).join("")}</div></div>` : "")
     + groupe(NIVEAUX[1].titre, parfois) + groupe(NIVEAUX[2].titre, rare);
 }
 
