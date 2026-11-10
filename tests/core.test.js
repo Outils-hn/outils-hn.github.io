@@ -103,3 +103,13 @@ test("dossier chantier : notes triees retard, urgent, echeance ; compteurs", () 
   assert.deepEqual(trierNotes(n, "2026-11-10").map((x) => x.id), [2, 4, 3, 1]);
   assert.deepEqual(resumeChantier(n, [1, 2], "2026-11-10"), { retard: 2, urgentes: 1, notes: 4, fiches: 2 });
 });
+
+import { chercherApplis, chercherChantiers, nettoyerRequete } from "../js/recherche.js";
+test("recherche Ctrl+K : requete nettoyee, applis et chantiers sans accents", () => {
+  assert.equal(nettoyerRequete("  sika, (outdoor)* % "), "sika outdoor");
+  assert.deepEqual(chercherApplis("debit pan", APPLIS).map((a) => a.nom), ["Format"]);
+  assert.deepEqual(chercherApplis("", APPLIS), []);
+  const ch = [{ id: "1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "2", numero: "25-004", nom: "Hôtel du Lac" }];
+  assert.deepEqual(chercherChantiers("hotel", ch).map((c) => c.id), ["2"]);
+  assert.deepEqual(chercherChantiers("24-118 tilleuls", ch).map((c) => c.id), ["1"]);
+});

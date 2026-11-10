@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.14 — 10 novembre 2026
+
+- Nouveauté : une barre de recherche (Ctrl+K, ou le bouton « Rechercher ») qui cherche d'un coup une appli, un chantier, une fiche Index ou une note Check.
+
 ## 2.13 — 10 novembre 2026
 
 - Nouveauté : le chantier choisi dans « Chantiers » est retenu pour Linear et Format, qui le proposent à l'ouverture d'un nouveau projet. Le message sans note est plus clair : « Pas de notes visibles : vous n'êtes pas membre du projet dans Check ».

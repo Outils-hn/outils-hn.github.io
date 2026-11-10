@@ -1,4 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
+import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
 import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.4";
 
 const $ = (s) => document.querySelector(s);
@@ -642,3 +643,75 @@ function rendreDossier() {
     </div>`;
 }
 window.addEventListener("hashchange", () => { if (location.hash.startsWith("#chantiers")) rendre(); });
+
+
+// ---------- Recherche Ctrl+K : applis, chantiers, fiches Index, notes Check ----------
+const dR = $("#dRecherche"), rQ = $("#rQ"), rListe = $("#rListe");
+let rResultats = []; // [{ groupe, titre, detail, href }]
+let rActif = 0;
+let rNo = 0; // pour ignorer les reponses d'une frappe depassee
+let chantiersRecherche = null;
+
+function rendreResultats() {
+  const q = rQ.value.trim();
+  $("#rAide").textContent = !q ? "Tapez pour chercher · ↑ ↓ pour choisir · Entrée pour ouvrir · Échap pour fermer" : rResultats.length ? `${rResultats.length} résultat${rResultats.length > 1 ? "s" : ""}` : "Aucun résultat.";
+  let groupe = "";
+  rListe.innerHTML = rResultats.map((r, i) => {
+    const entete = r.groupe !== groupe ? `<li class="r-groupe" role="presentation">${esc(r.groupe)}</li>` : "";
+    groupe = r.groupe;
+    return `${entete}<li role="option" id="r${i}" data-i="${i}" aria-selected="${i === rActif}" class="r-ligne"><span>${esc(r.titre)}</span><span class="aide">${esc(r.detail ?? "")}</span></li>`;
+  }).join("");
+  rQ.setAttribute("aria-activedescendant", rResultats.length ? `r${rActif}` : "");
+  rListe.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: "nearest" });
+}
+
+async function lancerRecherche() {
+  const q = nettoyerRequete(rQ.value);
+  const no = ++rNo;
+  if (!q) { rResultats = []; rActif = 0; rendreResultats(); return; }
+  const locaux = chercherApplis(q, visibles()).map((a) => ({ groupe: "Applis", titre: a.nom, detail: a.role, href: a.url }));
+  rResultats = locaux; rActif = 0; rendreResultats();
+  const s = await sessionFraiche();
+  if (!s || no !== rNo) return;
+  const jeton = s.access_token, motif = encodeURIComponent(`*${q}*`);
+  try {
+    if (!chantiersRecherche) chantiersRecherche = await api("/rest/v1/projects?select=id,numero,nom&order=numero.asc", { jeton }).catch(() => []);
+    const [fiches, notes] = await Promise.all([
+      api(`/rest/v1/products?select=id,name,supplier&deleted_at=is.null&or=(name.ilike.${motif},supplier.ilike.${motif})&order=name.asc&limit=6`, { jeton }).catch(() => []),
+      api(`/rest/v1/check_notes?select=id,texte&texte=ilike.${motif}&supprime_le=is.null&archive=eq.false&order=created_at.desc&limit=6`, { jeton }).catch(() => []),
+    ]);
+    if (no !== rNo) return;
+    rResultats = [
+      ...locaux,
+      ...chercherChantiers(q, chantiersRecherche).slice(0, 6).map((c) => ({ groupe: "Chantiers", titre: `${c.numero} · ${c.nom}`, detail: "Dossier chantier", href: `#chantiers/${encodeURIComponent(c.id)}` })),
+      ...fiches.map((f) => ({ groupe: "Fiches Index", titre: f.name, detail: f.supplier, href: lienApp("Index") })),
+      ...notes.map((n) => ({ groupe: "Notes Check", titre: n.texte.length > 80 ? n.texte.slice(0, 80) + "…" : n.texte, detail: "", href: lienApp("Check") })),
+    ];
+    rendreResultats();
+  } catch { /* base injoignable : on garde les applis */ }
+}
+
+function ouvrirRecherche() {
+  if (!dR.open) dR.showModal();
+  rQ.value = ""; rResultats = []; rActif = 0; rendreResultats(); rQ.focus();
+}
+function ouvrirResultat(i) {
+  const r = rResultats[i];
+  if (!r) return;
+  dR.close();
+  if (r.href.startsWith("#")) location.hash = r.href; else location.href = r.href;
+}
+let rMinuterie;
+rQ.addEventListener("input", () => { clearTimeout(rMinuterie); rMinuterie = setTimeout(lancerRecherche, 180); });
+rQ.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    if (rResultats.length) { rActif = (rActif + (e.key === "ArrowDown" ? 1 : -1) + rResultats.length) % rResultats.length; rendreResultats(); }
+  } else if (e.key === "Enter") { e.preventDefault(); ouvrirResultat(rActif); }
+});
+rListe.addEventListener("click", (e) => { const li = e.target.closest("[data-i]"); if (li) ouvrirResultat(+li.dataset.i); });
+dR.addEventListener("click", (e) => { if (e.target === dR) dR.close(); });
+$("#rechercheBtn").addEventListener("click", ouvrirRecherche);
+document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); ouvrirRecherche(); } });
+// Arrivee depuis une autre appli (Ctrl+K) : « #recherche » ouvre la barre, puis on revient a l'adresse normale
+if (location.hash === "#recherche") { history.replaceState(null, "", location.pathname + location.search); ouvrirRecherche(); }

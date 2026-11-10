@@ -66,6 +66,7 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/product_projects") return json(u.searchParams.get("project_id") === "eq.c1" ? [{ product_id: "p1" }] : []);
     if (u.pathname === "/rest/v1/products") return json([{ id: "p1", name: "SikaMembran Outdoor plus", supplier: "Sika", category: "Membranes & Étanchéité" }]);
     if (u.pathname === "/rest/v1/check_projets") return json([{ id: "cp1", numero: "24-118", nom: "Tilleuls" }]);
+    if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("texte")) return json([{ id: "n5", texte: "Confirmer l'entraxe des consoles" }]);
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
     if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1" }, { id: "n2" }] : []);
     if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
@@ -215,6 +216,16 @@ try {
   ok((await p.locator("#dossier a", { hasText: "Noter dans Check" }).getAttribute("href")).includes("noter=%2324-118"), "Chantiers : « Noter dans Check » préremplit le numéro de chantier");
   ok((await p.evaluate(() => localStorage.getItem("outils-chantier-info"))) === JSON.stringify({ numero: "24-118", nom: "Résidence Les Tilleuls" }), "Chantiers : le chantier choisi est retenu pour les autres applis");
   await shot(p, "06c-chantiers");
+  // Recherche Ctrl+K
+  await p.keyboard.press("Control+k"); await p.waitForTimeout(300);
+  ok(await p.locator("#dRecherche").evaluate((d) => d.open), "Recherche : Ctrl+K ouvre la barre");
+  await p.locator("#rQ").fill("til"); await p.waitForTimeout(900);
+  const rtxt = await p.locator("#rListe").innerText();
+  ok(rtxt.includes("24-118") && rtxt.includes("SikaMembran") && rtxt.includes("Confirmer l'entraxe"), "Recherche : chantier, fiche Index et note Check trouvés d'un coup");
+  await shot(p, "06d-recherche");
+  await axe(p, "recherche");
+  await p.keyboard.press("ArrowDown"); await p.keyboard.press("Enter"); await p.waitForTimeout(500);
+  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)), "Recherche : Entrée ouvre le résultat et ferme la barre");
   await axe(p, "chantiers");
   await p.locator("#navTableau").click(); await p.waitForTimeout(300);
   await p.locator("[data-valider=c2]").click(); await p.waitForTimeout(500);

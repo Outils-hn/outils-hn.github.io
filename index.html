@@ -38,6 +38,7 @@
       <a href="#tableau" class="nav" data-nav="tableau" id="navTableau" hidden>Tableau de bord <span class="compte" id="navAttente"></span></a>
     </nav>
     <span class="etat-compte" id="etatCompte"></span>
+    <button class="btn" id="rechercheBtn" type="button" aria-label="Rechercher (Ctrl+K)" title="Rechercher (Ctrl+K)">Rechercher <kbd>Ctrl K</kbd></button>
     <button class="btn" id="compteBtn" type="button">Se connecter</button>
     <button class="icone" id="themeBtn" type="button" aria-label="Basculer le thème">
       <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
@@ -136,7 +137,7 @@
 </main>
 
 <footer>
-  Accueil v2.13 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.14 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
@@ -171,6 +172,12 @@
 </dialog>
 
 <!-- Connexion avec le compte Index (partagee avec les autres applis) -->
+<dialog id="dRecherche" class="recherche" aria-label="Recherche">
+  <input id="rQ" class="champ" type="search" placeholder="Rechercher une appli, un chantier, une fiche, une note…" role="combobox" aria-expanded="true" aria-controls="rListe" aria-autocomplete="list" autocomplete="off" aria-label="Rechercher">
+  <ul id="rListe" role="listbox" aria-label="Résultats"></ul>
+  <p class="recherche-aide" id="rAide">Tapez pour chercher · ↑ ↓ pour choisir · Entrée pour ouvrir · Échap pour fermer</p>
+</dialog>
+
 <dialog id="dConnexion" aria-labelledby="dc-titre">
   <form id="formConnexion" method="dialog">
     <h3 id="dc-titre">Connexion</h3>
