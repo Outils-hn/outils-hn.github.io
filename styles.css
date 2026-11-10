@@ -57,7 +57,7 @@ main { max-width: 1440px; margin: 0 auto; padding: 28px 32px 40px; }
 .carte::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 3px; background: var(--c); }
 .carte:hover { border-color: var(--c); transform: translateY(-2px); box-shadow: 0 6px 18px rgb(0 0 0 / .06); }
 .carte .tete { display: flex; align-items: center; gap: 10px; }
-.carte .pastille { width: 12px; height: 12px; border-radius: 3px; background: var(--c); flex: none; }
+.carte .pastille { width: 12px; height: 12px; border-radius: 3px; background: var(--c); flex: none; padding: 0; border: 0; box-sizing: border-box; }
 .carte .nom { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
 .carte .role { font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .carte .texte { margin: 0; color: var(--muted); font-size: 13.5px; flex: 1; line-height: 1.4; }
