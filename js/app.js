@@ -324,6 +324,20 @@ function rendreStats() {
     <p class="stats-note">Pas de suivi de connexions ni d'usage pour l'instant : seulement ce qui est déjà enregistré.</p>`;
 }
 
+/** Pictogrammes des applis (traits blancs, grille 24). */
+const PICTOS = {
+  Check: '<path d="M5 12.5l4.5 4.5L19 7"/>',
+  Index: '<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4M10 12h5M10 16h5"/>',
+  Access: '<path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  Trame: '<g fill="#fff" stroke="none"><circle cx="6" cy="6" r="1.7"/><circle cx="12" cy="6" r="1.7"/><circle cx="18" cy="6" r="1.7"/><circle cx="6" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18" cy="12" r="1.7"/><circle cx="6" cy="18" r="1.7"/><circle cx="12" cy="18" r="1.7"/><circle cx="18" cy="18" r="1.7"/></g>',
+  Linear: '<rect x="3" y="9" width="18" height="6" rx="1"/><path d="M9 9v6M15 9v6"/>',
+  Format: '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 11h17M12 11v9.5"/>',
+  Joint: '<rect x="3" y="8" width="6.5" height="8" rx="1"/><rect x="14.5" y="8" width="6.5" height="8" rx="1"/>',
+  Masse: '<path d="M6.5 9h11l2 11h-15z"/><circle cx="12" cy="5.8" r="2.3"/>',
+  Membrane: '<path d="M3 8c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/>',
+  Strate: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+};
+
 function rendreApplis() {
   const vis = visibles();
   const trouver = (nom) => vis.find((a) => a.nom === nom);
@@ -331,10 +345,19 @@ function rendreApplis() {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     return `${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}`;
   };
+  // Logo : pictogramme blanc sur une pastille de la couleur de l'appli
+  const logo = (a, cls) => `<span class="logo ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PICTOS[a.nom] ?? ""}</svg></span>`;
   // Les trois applis du quotidien : une grande carte (la premiere) et deux petites a cote
-  const carte = (a, cls) => `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}"><span class="tete"><span class="nom">${esc(a.nom)}</span>${signaux(a)}</span><p class="texte">${esc(a.texte)}</p></a>`;
-  // Les autres : une simple ligne (pastille, nom, role)
-  const ligne = (a) => `<a class="carte lien" href="${a.url}" style="--c:${a.couleur}"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span><span class="role">${esc(a.role)}</span>${signaux(a)}</a>`;
+  const carte = (a, cls) => {
+    const moi = a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : "";
+    const ver = journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : "";
+    const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
+    const enCours = ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : "";
+    const pied = cls === "grande" ? `<span class="pied">${moi}${enCours}<span class="ouvrir">Ouvrir →</span></span>` : "";
+    return `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}">${logo(a, cls)}<span class="corps"><span class="tete"><span class="nom">${esc(a.nom)}</span>${ver}${cls === "grande" ? "" : enCours + moi}</span><p class="texte">${esc(a.texte)}</p>${pied}</span></a>`;
+  };
+  // Les autres : une simple ligne (logo, nom, version)
+  const ligne = (a) => `<a class="carte lien" href="${a.url}" style="--c:${a.couleur}">${logo(a, "mini")}<span class="nom">${esc(a.nom)}</span>${signaux(a)}</a>`;
   const [jour, parfois, rare] = NIVEAUX.map((n) => n.noms.map(trouver).filter(Boolean));
   const groupe = (titre, liste) => liste.length ? `<h3 class="niveau">${titre}</h3><div class="lignes">${liste.map(ligne).join("")}</div>` : "";
   $("#grille").innerHTML = (jour.length ? `<div class="quotidien">${carte(jour[0], "grande")}<div class="pile">${jour.slice(1).map((a) => carte(a, "petite")).join("")}</div></div>` : "")

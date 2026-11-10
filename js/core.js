@@ -15,7 +15,7 @@ export const APPLIS = [
   { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00",
     texte: "Calepinage de panneaux pour estimer la matière." },
   { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF",
-    texte: "Fiches techniques fournisseurs, par catégorie et chantier." },
+    texte: "Fiches techniques fournisseurs." },
   { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285",
     texte: "Espace à laisser entre deux éléments selon la dilatation." },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
@@ -33,7 +33,7 @@ export const APPLIS = [
 /** Accueil : les applis classees par frequence d'usage (decision d'Hugo). */
 export const NIVEAUX = [
   { cle: "jour", titre: "Au quotidien", noms: ["Check", "Index", "Access"] },
-  { cle: "parfois", titre: "De temps en temps", noms: ["Trame", "Linear", "Format"] },
+  { cle: "parfois", titre: "Occasionnels", noms: ["Trame", "Linear", "Format"] },
   { cle: "rare", titre: "Autres outils", noms: ["Joint", "Masse", "Membrane", "Strate"] },
 ];
 
