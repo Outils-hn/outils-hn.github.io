@@ -4,7 +4,7 @@
   --bg: #F1F0EC; --card: #FAFAF8; --muted-bg: #E8E7E2; --line: #E0DFD9; --input: #D3D2CB;
   --ink: #1F2026; --muted: #5D6068; --primary: #1F2026; --on-primary: #FFFFFF;
   --danger: #B42318; --ok: #15803D; --warn: #7A4700; --info: #1D4ED8;
-  --radius: 10px;
+  --radius: 10px; --grille: rgb(31 32 38 / .05);
   --sans: "Geist", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "Geist Mono", ui-monospace, Consolas, monospace;
   color-scheme: light;
@@ -13,6 +13,7 @@
   --bg: #17181C; --card: #1D1E23; --muted-bg: #2A2B31; --line: #2F3036; --input: #3A3B42;
   --ink: #ECECE8; --muted: #A6A8AF; --primary: #ECECE8; --on-primary: #17181C;
   --danger: #FF8A7A; --ok: #4ADE80; --warn: #F0C060; --info: #8AB4FF;
+  --grille: rgb(236 236 232 / .05);
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -272,3 +273,36 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 .espace { margin-top: 16px; }
 
 .aide.rouge { color: #c0392b; font-weight: 600; }
+
+/* Accueil, style « plan » : feuille de dessin (grille, double cadre), cotations qui se tracent, coins qui s'ouvrent au survol */
+@keyframes trace { from { transform: scaleX(0); } }
+#applis { padding: 32px 34px 36px; border: 1px solid var(--input); box-shadow: inset 0 0 0 6px var(--bg), inset 0 0 0 7px var(--line);
+  background-image: linear-gradient(var(--grille) 1px, transparent 1px), linear-gradient(90deg, var(--grille) 1px, transparent 1px); background-size: 24px 24px; }
+#applis .titre h2 { display: inline-block; position: relative; padding-bottom: 10px; font-weight: 500; font-size: 26px; }
+#applis .titre h2::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--ink); transform-origin: left; animation: trace 1.1s .2s cubic-bezier(.6, 0, .2, 1) both; }
+.carte.grande, .carte.petite { border-radius: 3px; overflow: visible; }
+.carte.grande:hover, .carte.petite:hover { transform: none; box-shadow: none; }
+.carte.grande::before, .carte.petite::before, .carte.grande::after, .carte.petite::after { content: ""; display: block; position: absolute; inset: auto; width: 14px; height: 14px; background: none; border: 2px solid var(--c); transition: width .35s cubic-bezier(.2, .7, .2, 1), height .35s cubic-bezier(.2, .7, .2, 1); pointer-events: none; }
+.carte.grande::before, .carte.petite::before { left: -1px; top: -1px; border-right: 0; border-bottom: 0; }
+.carte.grande::after, .carte.petite::after { right: -1px; bottom: -1px; border-left: 0; border-top: 0; }
+.carte.grande:hover::before, .carte.petite:hover::before, .carte.grande:hover::after, .carte.petite:hover::after,
+.carte.grande:focus-visible::before, .carte.petite:focus-visible::before, .carte.grande:focus-visible::after, .carte.petite:focus-visible::after { width: calc(100% + 2px); height: calc(100% + 2px); }
+.carte .rang { font: 500 11px/1 var(--mono); letter-spacing: .12em; color: var(--muted); margin-bottom: 6px; }
+.carte .cote { position: relative; display: block; height: 16px; margin-top: 16px; }
+.carte.grande .cote { margin-top: auto; }
+.carte.grande .texte { flex: none; margin-bottom: 26px; }
+.carte .cote i { position: absolute; left: 0; right: 0; top: 7px; height: 1px; background: var(--input); transform-origin: left; animation: trace 1s .5s cubic-bezier(.6, 0, .2, 1) both; transition: background .3s; }
+.carte .cote::before, .carte .cote::after { content: ""; position: absolute; top: 2px; width: 1px; height: 11px; background: var(--input); transition: background .3s; }
+.carte .cote::before { left: 0; } .carte .cote::after { right: 0; }
+.carte .cote b { position: absolute; left: 50%; top: 0; transform: translateX(-50%); padding: 0 10px; background: var(--card); font: 400 10.5px/16px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.carte:hover .cote i, .carte:hover .cote::before, .carte:hover .cote::after { background: var(--c); }
+.niveau { font-family: var(--mono); font-weight: 500; font-size: 11.5px; letter-spacing: .14em; }
+.niveau::after { height: 0; background: none; border-top: 1px dashed var(--input); }
+@media (max-width: 560px) { #applis { padding: 22px 16px 26px; } }
+@media (prefers-reduced-motion: reduce) { #applis .titre h2::after, .carte .cote i { animation: none; } .carte::before, .carte::after { transition: none; } }
+.carte .faits { display: flex; gap: 36px; margin: auto 0 22px; padding-top: 22px; }
+.carte .fait b { display: block; font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -.02em; }
+.carte .fait.ver b { font-family: var(--mono); font-size: 22px; font-weight: 500; line-height: 34px; color: var(--muted); letter-spacing: 0; }
+.carte .fait small { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.carte.grande .texte { margin-bottom: 0; }
+.carte.grande .cote { margin-top: 0; }

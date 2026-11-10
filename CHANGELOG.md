@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.24 — 10 novembre 2026
+
+- Nouveauté : nouveau style « plan » pour l'Accueil (feuille de dessin, cotations, coins qui s'ouvrent au survol), avec les chiffres de Check en grand.
+
 ## 2.23 — 10 novembre 2026
 
 - Nouveauté : chaque appli a son logo sur l'Accueil, la carte Check est mieux remplie, et « De temps en temps » devient « Occasionnels ».
