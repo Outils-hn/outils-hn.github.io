@@ -604,11 +604,13 @@ async function chargerChantiers() {
     ]);
     const ids = projetsCheckDuChantier(c, projetsCheck).map((p) => p.id);
     const prods = liens.map((l) => l.product_id);
-    const [notes, fiches] = await Promise.all([
+    const [notes, fiches, calculs] = await Promise.all([
       ids.length ? api(`/rest/v1/check_notes?select=id,texte,statut,flash,echeance,pour&projet_id=in.(${ids.join(",")})&statut=neq.done&archive=eq.false&supprime_le=is.null&limit=200`, { jeton }).catch(() => []) : [],
       prods.length ? api(`/rest/v1/products?select=id,name,supplier,category&id=in.(${prods.join(",")})&deleted_at=is.null&order=supplier.asc,name.asc`, { jeton }) : [],
+      // Calculs partages (table facultative : absente tant que le script SQL n'est pas lance)
+      api(`/rest/v1/calculs?select=id,app,nom,auteur_email,updated_at&chantier_numero=eq.${encodeURIComponent(c.numero)}&supprime_le=is.null&order=updated_at.desc&limit=30`, { jeton }).catch(() => []),
     ]);
-    if (dossier?.id === id) dossier = { id, notes: trierNotes(notes, jourIso()), fiches, projetsCheck: ids.length };
+    if (dossier?.id === id) dossier = { id, notes: trierNotes(notes, jourIso()), fiches, calculs, projetsCheck: ids.length };
   } catch (e) { if (dossier?.id === id) dossier = { id, notes: [], fiches: [], erreur: horsLigne(e) ? "Base injoignable : réessayez dans un instant." : "Lecture impossible." }; }
   rendreDossier();
 }
@@ -631,6 +633,9 @@ function rendreDossier() {
   const fiches = dossier.fiches.length
     ? dossier.fiches.slice(0, 10).map((f) => `<li><a class="lien-ligne" href="${esc(lienApp("Index"))}?fiche=${encodeURIComponent(f.id)}">${esc(f.supplier)} · ${esc(f.name)}</a><span class="aide">${esc(f.category)}</span></li>`).join("")
     : `<li class="aide">Aucune fiche liée à ce chantier.</li>`;
+  const calculs = (dossier.calculs ?? []).length
+    ? dossier.calculs.map((x) => { const a = x.app === "linear" ? "Linear" : x.app === "format" ? "Format" : "Trame"; return `<li><a class="lien-ligne" href="${esc(lienApp(a))}?calcul=${encodeURIComponent(x.id)}">${esc(x.nom || "Sans nom")}</a><span class="aide">${a} · ${esc(String(x.auteur_email).split("@")[0])} · ${esc(fmtDate(String(x.updated_at).slice(0, 10)))}</span></li>`; }).join("")
+    : `<li class="aide">Aucun calcul partagé : dans l’appli, « Mes projets » puis l’icône Partager.</li>`;
   const outils = ["Linear", "Format", "Membrane", "Masse", "Trame"].map((n) => `<a class="btn" href="${esc(lienApp(n))}">${n}</a>`).join("");
   zone.innerHTML = `
     <div class="pastilles">${pastille(r.retard, "note en retard", "notes en retard", r.retard ? "rouge" : "")}${pastille(r.urgentes, "urgente", "urgentes", r.urgentes ? "orange" : "")}${pastille(r.notes, "note ouverte", "notes ouvertes")}${pastille(r.fiches, "fiche", "fiches")}</div>
@@ -639,6 +644,7 @@ function rendreDossier() {
         <p class="dossier-actions"><a class="btn" href="${esc(noter)}">+ Noter dans Check</a><a class="btn" href="${esc(lienApp("Check"))}">Ouvrir Check</a></p></div>
       <div class="panel"><h3 class="dossier-titre">Fiches Index <span class="aide">${r.fiches}</span></h3><ul class="gestion">${fiches}</ul>
         <p class="dossier-actions"><a class="btn" href="${esc(lienApp("Index"))}">Ouvrir Index</a></p></div>
+      <div class="panel dossier-large"><h3 class="dossier-titre">Calculs partagés <span class="aide">${(dossier.calculs ?? []).length}</span></h3><ul class="gestion">${calculs}</ul></div>
       <div class="panel dossier-large"><h3 class="dossier-titre">Calculer pour ce chantier</h3><p class="dossier-actions">${outils}</p></div>
     </div>`;
 }

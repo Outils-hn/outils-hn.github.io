@@ -65,6 +65,7 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/projects") return json(tok === "tok-admin" ? [{ id: "c1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "c2", numero: "25-004", nom: "Hôtel du Lac" }] : []);
     if (u.pathname === "/rest/v1/product_projects") return json(u.searchParams.get("project_id") === "eq.c1" ? [{ product_id: "p1" }] : []);
     if (u.pathname === "/rest/v1/products") return json([{ id: "p1", name: "SikaMembran Outdoor plus", supplier: "Sika", category: "Membranes & Étanchéité" }]);
+    if (u.pathname === "/rest/v1/calculs") return json(u.searchParams.get("chantier_numero") === "eq.24-118" ? [{ id: "k1", app: "linear", nom: "Garde-corps R+2", auteur_email: "hugo@exemple.ch", updated_at: "2026-11-10T08:00:00Z" }] : []);
     if (u.pathname === "/rest/v1/check_projets") return json([{ id: "cp1", numero: "24-118", nom: "Tilleuls" }]);
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("texte")) return json([{ id: "n5", texte: "Confirmer l'entraxe des consoles" }]);
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
@@ -216,6 +217,7 @@ try {
   ok((await p.locator("#dossier a", { hasText: "Noter dans Check" }).getAttribute("href")).includes("noter=%2324-118"), "Chantiers : « Noter dans Check » préremplit le numéro de chantier");
   ok((await p.evaluate(() => localStorage.getItem("outils-chantier-info"))) === JSON.stringify({ numero: "24-118", nom: "Résidence Les Tilleuls" }), "Chantiers : le chantier choisi est retenu pour les autres applis");
   ok((await p.locator("#dossier a", { hasText: "SikaMembran" }).getAttribute("href")).includes("Index/?fiche=p1") && (await p.locator("#dossier a", { hasText: "Confirmer l'entraxe" }).getAttribute("href")).includes("Check/?note=n3"), "Chantiers : une fiche et une note s'ouvrent directement");
+  ok((await p.locator("#dossier a", { hasText: "Garde-corps R+2" }).getAttribute("href")).includes("Linear/?calcul=k1"), "Chantiers : un calcul partagé s'ouvre directement dans son appli");
   await shot(p, "06c-chantiers");
   // Recherche Ctrl+K
   await p.keyboard.press("Control+k"); await p.waitForTimeout(300);
