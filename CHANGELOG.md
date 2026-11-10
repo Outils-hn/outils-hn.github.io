@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.21 — 10 novembre 2026
+
+- Nouveauté : l'Accueil classe les applis selon l'usage : Check, Index et Access en grand, puis Trame, Linear et Format, puis les autres outils en petites pastilles.
+
 ## 2.20 — 10 novembre 2026
 
 - Nouveauté : les cartes de l'Accueil sont plus légères : une seule phrase par appli.

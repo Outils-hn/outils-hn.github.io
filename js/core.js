@@ -30,6 +30,13 @@ export const APPLIS = [
     texte: "Répartition des perçages : intervalles, entraxe fixe ou maximal." },
 ];
 
+/** Accueil : les applis classees par frequence d'usage (decision d'Hugo). */
+export const NIVEAUX = [
+  { cle: "jour", titre: "Au quotidien", noms: ["Check", "Index", "Access"] },
+  { cle: "parfois", titre: "De temps en temps", noms: ["Trame", "Linear", "Format"] },
+  { cle: "rare", titre: "Autres outils", noms: ["Joint", "Masse", "Membrane", "Strate"] },
+];
+
 export const TYPES = { idee: "Idée", bug: "Bug" };
 export const STATUTS = { nouveau: "Nouveau", prevu: "Prévu", en_cours: "En cours", fait: "Fait", refuse: "Pas retenu" };
 const ORDRE_STATUT = { en_cours: 0, prevu: 1, nouveau: 2, fait: 3, refuse: 4 };
