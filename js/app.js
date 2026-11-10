@@ -1,6 +1,6 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.4";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.5";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -329,9 +329,7 @@ function rendreApplis() {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     return `<li><a class="carte" href="${a.url}" style="--c:${a.couleur}">
       <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}</span>
-      <span class="role">${esc(a.role)}</span>
       <p class="texte">${esc(a.texte)}</p>
-      <span class="ouvrir">Ouvrir ${esc(a.nom)} →</span>
     </a></li>`;
   }).join("");
 }
