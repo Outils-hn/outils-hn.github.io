@@ -353,8 +353,11 @@ function rendreApplis() {
     const ver = journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : "";
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     const enCours = ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : "";
+    // Grande carte : les chiffres qui comptent, en grand (notes confiees, idees ou bugs en cours, version)
+    const fait = (n, t, cls = "") => `<span class="fait ${cls}"><b>${n}</b><small>${t}</small></span>`;
+    const faits = `<span class="faits">${pourMoi ? fait(pourMoi, "pour moi") : ""}${ouverts ? fait(ouverts, "en cours") : ""}${journaux[a.nom] ? fait("v" + esc(journaux[a.nom][0].version), "version", "ver") : ""}</span>`;
     // Style « plan » : numero d'usage (01 = le plus utilise) et ligne de cotation portant le role de l'appli
-    return `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}">${logo(a, cls)}<span class="corps"><span class="rang" title="Classement d'usage">0${rang}</span><span class="tete"><span class="nom">${esc(a.nom)}</span>${ver}${enCours}${moi}</span><p class="texte">${esc(a.texte)}</p><span class="cote"><i></i><b>${esc(a.role)}</b></span></span></a>`;
+    return `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}">${logo(a, cls)}<span class="corps"><span class="rang" title="Classement d'usage">0${rang}</span><span class="tete"><span class="nom">${esc(a.nom)}</span>${cls === "grande" ? "" : ver + enCours + moi}</span><p class="texte">${esc(a.texte)}</p>${cls === "grande" ? faits : ""}<span class="cote"><i></i><b>${esc(a.role)}</b></span></span></a>`;
   };
   // Les autres : une simple ligne (logo, nom, version)
   const ligne = (a) => `<a class="carte lien" href="${a.url}" style="--c:${a.couleur}">${logo(a, "mini")}<span class="nom">${esc(a.nom)}</span>${signaux(a)}</a>`;

@@ -300,3 +300,9 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 .niveau::after { height: 0; background: none; border-top: 1px dashed var(--input); }
 @media (max-width: 560px) { #applis { padding: 22px 16px 26px; } }
 @media (prefers-reduced-motion: reduce) { #applis .titre h2::after, .carte .cote i { animation: none; } .carte::before, .carte::after { transition: none; } }
+.carte .faits { display: flex; gap: 36px; margin: auto 0 22px; padding-top: 22px; }
+.carte .fait b { display: block; font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -.02em; }
+.carte .fait.ver b { font-family: var(--mono); font-size: 22px; font-weight: 500; line-height: 34px; color: var(--muted); letter-spacing: 0; }
+.carte .fait small { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.carte.grande .texte { margin-bottom: 0; }
+.carte.grande .cote { margin-top: 0; }
