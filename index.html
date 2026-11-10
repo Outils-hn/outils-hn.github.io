@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.20">
+<link rel="stylesheet" href="styles.css?v=2.21">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
@@ -58,6 +58,13 @@
     <div id="blocStats" class="gestion-bloc" hidden>
       <h3>Statistiques <span class="aide">concepteur seulement</span></h3>
       <div id="statsContenu"></div>
+    </div>
+    <div id="blocSauvegarde" class="gestion-bloc" hidden>
+      <h3>Sauvegarde <span class="aide" id="resumeSauvegarde"></span></h3>
+      <div class="panel sauvegarde">
+        <p class="aide">Télécharge un fichier avec toutes les données des applis (fiches, fournisseurs, notes, comptes sans mots de passe…). À garder hors de Supabase : sur ton disque ou ton cloud. Les fichiers (PDF, images) ne sont pas inclus.</p>
+        <button type="button" class="btn primaire" id="sauvegarder">Télécharger la sauvegarde</button>
+      </div>
     </div>
     <div id="blocComptes" class="gestion-bloc" hidden>
       <h3>Comptes <span class="aide" id="resumeComptes"></span></h3>
@@ -132,7 +139,7 @@
 </main>
 
 <footer>
-  Accueil v2.25 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.26 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
@@ -230,6 +237,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/app.js?v=2.21"></script>
+<script type="module" src="js/app.js?v=2.22"></script>
 </body>
 </html>

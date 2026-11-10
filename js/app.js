@@ -211,6 +211,8 @@ async function chargerGestion() {
 function rendreGestion() {
   $("#blocStats").hidden = !stats;
   $("#blocComptes").hidden = !estAdmin();
+  $("#blocSauvegarde").hidden = role !== "concepteur";
+  if (role === "concepteur") { const d = lireDerniereSauvegarde(); $("#resumeSauvegarde").textContent = d ? `dernière : ${fmtDate(d)}` : "jamais faite"; }
   if (!role) return;
   const moi = lireSession()?.user?.id;
   const conc = role === "concepteur";
@@ -246,6 +248,28 @@ function rendreGestion() {
   $("#hVider").hidden = !(conc2 && filtreHist.corbeille && historique.length);
   $("#blocHist h3 .aide").textContent = filtreHist.corbeille ? "supprimées définitivement après 30 jours" : "90 derniers jours";
 }
+
+// Sauvegarde complete des donnees : un fichier JSON date, telecharge par le concepteur (fonction export_complet de supabase/sauvegarde.sql)
+const CLE_SAUVEGARDE = "accueil-derniere-sauvegarde";
+function lireDerniereSauvegarde() { try { return localStorage.getItem(CLE_SAUVEGARDE) || ""; } catch { return ""; } }
+$("#sauvegarder").addEventListener("click", async (e) => {
+  const b = e.currentTarget; b.disabled = true; const txt = b.textContent; b.textContent = "Préparation…";
+  try {
+    const sess = await sessionFraiche();
+    const data = await rpc("export_complet", {}, sess?.access_token);
+    const jour = new Date().toISOString().slice(0, 10);
+    const lien = document.createElement("a");
+    lien.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+    lien.download = `sauvegarde-outils-${jour}.json`;
+    document.body.append(lien); lien.click(); lien.remove();
+    setTimeout(() => URL.revokeObjectURL(lien.href), 10000);
+    try { localStorage.setItem(CLE_SAUVEGARDE, new Date().toISOString()); } catch { /* sans stockage : pas de date affichee */ }
+    $("#resumeSauvegarde").textContent = `dernière : ${fmtDate(new Date().toISOString())}`;
+    toast(`Sauvegarde téléchargée (${Object.keys(data.tables ?? {}).length} tables).`);
+  } catch (err) {
+    toast(/export_complet|function/i.test(err.message) ? "Script « sauvegarde.sql » à lancer dans Supabase." : horsLigne(err) ? "Base injoignable." : err.message);
+  } finally { b.disabled = false; b.textContent = txt; }
+});
 
 // Fenetre de confirmation maison (remplace confirm() du navigateur)
 function confirmer(titre, texte, bouton) {

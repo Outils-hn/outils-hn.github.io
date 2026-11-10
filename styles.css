@@ -316,3 +316,4 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 @keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
 @keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+.sauvegarde { padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between; } .sauvegarde p { margin: 0; max-width: 62ch; }

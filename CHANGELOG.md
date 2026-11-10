@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.26 — 10 novembre 2026
+
+- Nouveauté : un bouton « Sauvegarde » dans le Tableau de bord (concepteur) télécharge d'un clic toutes les données des applis dans un fichier daté.
+
 ## 2.25 — 10 novembre 2026
 
 - Nouveauté : l'Accueil a son logo, dans le même style que les applis (pastille sombre et quatre cases de couleur).
