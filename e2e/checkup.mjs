@@ -70,6 +70,7 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("texte")) return json([{ id: "n5", texte: "Confirmer l'entraxe des consoles" }]);
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
     if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1" }, { id: "n2" }] : []);
+    if (u.pathname === "/rest/v1/rpc/espace_utilise") return json(tok === "tok-admin" ? { base: 30408704, stockage: 20480, calculs: 51200 } : null);
     if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
     if (u.pathname === "/rest/v1/rpc/set_account_approved") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.approved = corps._approved; etat.actions.push(["approved", corps]); return json(null); }
@@ -205,6 +206,7 @@ try {
   ok((await p.locator("#navAttente").innerText()).includes("1"), "Tableau de bord : 1 compte en attente signalé dans le menu");
   await p.locator("#navTableau").click(); await p.waitForTimeout(500);
   ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle") && (await p.locator("#statsContenu").innerText()).includes("produits et colles du catalogue"), "Tableau de bord : statistiques affichées (concepteur), Membrane comprise");
+  ok((await p.locator("#statsContenu").innerText()).includes("Espace utilisé") && (await p.locator("#statsContenu").innerText()).includes("29 Mo sur 500 Mo"), "Tableau de bord : espace utilisé sur Supabase affiché");
   ok((await p.locator("#listeComptes li").count()) === 3, "Tableau de bord : 3 comptes listés");
   await shot(p, "06b-tableau");
   await axe(p, "tableau de bord");

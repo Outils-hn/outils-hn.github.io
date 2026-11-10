@@ -24,6 +24,7 @@ const rpc = (nom, args, jeton) => api(`/rest/v1/rpc/${nom}`, { methode: "POST", 
 const horsLigne = (e) => /fetch|network|Load failed/i.test(e?.message ?? "");
 
 // ---------- Etat ----------
+let espace = null; // espace Supabase utilise (null = bloc cache)
 let stats = null; // totaux reserves au concepteur (null = bloc cache)
 let role = null; // « dessinateur », « administrateur », « concepteur » ; null = pas de compte valide (onglet cache)
 let comptes = []; // liste des comptes (administrateurs) ; vide sinon
@@ -146,6 +147,7 @@ async function chargerStats() {
   const avantRole = role;
   try { role = s ? (await rpc("mon_role", {}, s.access_token)) || null : null; } catch { role = null; }
   try { stats = s && role === "concepteur" ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
+  try { espace = stats ? await rpc("espace_utilise", {}, s.access_token) : null; } catch { espace = null; }
   const avantApercu = apercu;
   apercu = !!stats;
   try { if (apercu) localStorage.setItem(CLE_APERCU, "1"); else localStorage.removeItem(CLE_APERCU); } catch { /* bloque */ }
@@ -285,6 +287,14 @@ $("#hVider").addEventListener("click", async () => {
     actionGestion("historique_vider_corbeille", {}, "Corbeille vidée.");
 });
 $("#hTbl").addEventListener("change", (e) => { filtreHist.tbl = e.target.value; chargerGestion(); });
+// Espace utilise sur l'offre gratuite de Supabase (500 Mo de base, 1 Go de fichiers)
+const LIMITE_BASE = 500 * 1024 * 1024, LIMITE_STOCKAGE = 1024 * 1024 * 1024;
+const mo = (o) => o >= 1024 * 1024 * 1024 ? `${(o / 1024 ** 3).toLocaleString("fr-CH", { maximumFractionDigits: 2 })} Go` : `${(o / 1024 ** 2).toLocaleString("fr-CH", { maximumFractionDigits: o < 10 * 1024 ** 2 ? 1 : 0 })} Mo`;
+function rendreEspace(n) {
+  if (!espace) return "";
+  const ligne = (lib, v, lim) => { const p = Math.min(100, v / lim * 100); return `<div class="barre"><div class="l"><span>${lib}</span><span>${mo(v)} sur ${mo(lim)} · ${n(Math.round(p * 10) / 10)} %</span></div><div class="f"><i style="width:${Math.max(1, Math.round(p))}%${p >= 80 ? ";background:#c0392b" : ""}"></i></div></div>`; };
+  return `<div class="bloc espace"><h3>Espace utilisé <span class="aide">offre gratuite de Supabase</span></h3>${ligne("Base de données", Number(espace.base), LIMITE_BASE)}${ligne("Fichiers", Number(espace.stockage), LIMITE_STOCKAGE)}<p class="det">Dont calculs partagés : ${mo(Number(espace.calculs))}. À surveiller seulement au-delà de 80 %.</p></div>`;
+}
 function rendreStats() {
   if (!stats) { $("#statsContenu").innerHTML = ""; return; }
   const c = stats.comptes, r = stats.retours, n = (x) => Number(x).toLocaleString("fr-CH");
@@ -306,6 +316,7 @@ function rendreStats() {
       <div class="bloc tableau"><h3>Contenu par appli</h3><table><thead><tr><th>Appli</th><th>Ce qu'on compte</th><th class="num">Total</th><th class="num">Sur 30 jours</th></tr></thead><tbody>${lignes}</tbody></table></div>
       <div class="lateral"><div class="bloc"><h3>Comptes par rôle</h3>${barres}</div><div class="bloc"><h3>Derniers comptes</h3>${derniers}</div></div>
     </div>
+    ${rendreEspace(n)}
     <p class="stats-note">Pas de suivi de connexions ni d'usage pour l'instant : seulement ce qui est déjà enregistré.</p>`;
 }
 
