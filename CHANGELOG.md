@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.11 — 10 novembre 2026
+
+- Nouveauté : sur la carte Check, une pastille « n pour moi » indique les notes qui vous sont confiées et pas encore réglées (quand vous êtes connecté).
+
 ## 2.10 — 9 novembre 2026
 
 - Nouveauté : dans les statistiques, « Contenu par appli » compte aussi le catalogue de Membrane (produits et colles).
