@@ -1,6 +1,6 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.5";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, termine, texteCompteur } from "./core.js?v=2.6";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -325,12 +325,17 @@ function rendreStats() {
 }
 
 function rendreApplis() {
-  $("#grille").innerHTML = visibles().map((a) => {
+  const carte = (a, niveau) => {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
-    return `<li><a class="carte" href="${a.url}" style="--c:${a.couleur}">
-      <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}</span>
-      <p class="texte">${esc(a.texte)}</p>
-    </a></li>`;
+    const tete = `<span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}</span>`;
+    return niveau === "rare"
+      ? `<li><a class="carte puce" href="${a.url}" style="--c:${a.couleur}">${tete}<span class="role">${esc(a.role)}</span></a></li>`
+      : `<li><a class="carte${niveau === "jour" ? " grand" : ""}" href="${a.url}" style="--c:${a.couleur}">${tete}<p class="texte">${esc(a.texte)}</p></a></li>`;
+  };
+  const vis = visibles();
+  $("#grille").innerHTML = NIVEAUX.map((n) => {
+    const liste = n.noms.map((nom) => vis.find((a) => a.nom === nom)).filter(Boolean);
+    return liste.length ? `<h3 class="niveau">${n.titre}</h3><ul class="grille ${n.cle}">${liste.map((a) => carte(a, n.cle)).join("")}</ul>` : "";
   }).join("");
 }
 

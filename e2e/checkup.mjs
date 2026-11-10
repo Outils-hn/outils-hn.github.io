@@ -117,7 +117,7 @@ try {
   const p = await page();
   await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
   ok((await p.locator(".carte").count()) === 10, "10 applis sur l'accueil");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Access,Check,Format,Index,Joint,Linear,Masse,Membrane,Strate,Trame", "dans l'ordre alphabétique");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Masse,Membrane,Strate", "classées par fréquence d'usage (quotidien, de temps en temps, autres)");
   ok(await p.locator(".carte", { hasText: "Masse" }).getByText("1 en cours").isVisible(), "carte Masse : « 1 en cours »");
   ok((await p.locator(".carte", { hasText: "Strate" }).getAttribute("href")) === "https://outils-hn.github.io/Strate/", "lien Strate");
   ok((await p.locator("#navCompte").textContent()).includes("2"), "menu : 2 retours ouverts");
