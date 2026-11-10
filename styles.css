@@ -218,3 +218,7 @@ footer button:hover { color: var(--ink); text-decoration: underline; }
 .dossier-large .dossier-actions { border-top: 0; }
 .dossier-grille .gestion li { justify-content: space-between; align-items: center; }
 @media (max-width: 760px) { .dossier-grille { grid-template-columns: 1fr; } }
+#chantiers .tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+#chantiers .tete h2 { margin: 0 0 4px; }
+#chantiers .tete p { margin: 0; color: var(--muted); }
+.dossier-actions .btn { text-decoration: none; }

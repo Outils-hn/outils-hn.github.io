@@ -621,7 +621,7 @@ function rendreDossier() {
   if (dossier?.erreur) { zone.innerHTML = `<p class="erreur">${esc(dossier.erreur)}</p>`; return; }
   const jour = jourIso();
   const r = resumeChantier(dossier.notes, dossier.fiches, jour);
-  const pastille = (n, mot, cls = "") => `<span class="pastille ${cls}">${n} ${mot}${n > 1 ? "s" : ""}</span>`;
+  const pastille = (n, un, plur, cls = "") => `<span class="pastille ${cls}">${n} ${n > 1 ? plur : un}</span>`;
   const noter = lienApp("Check") + "?noter=" + encodeURIComponent(`#${c.numero} `);
   const notes = dossier.notes.length
     ? dossier.notes.slice(0, 8).map((n) => `<li><span>${esc(n.texte)}</span><span class="aide">${n.echeance && n.echeance < jour ? "en retard · " : ""}${n.flash ? "urgent" : n.echeance ? esc(fmtDate(n.echeance)) : ""}</span></li>`).join("")
@@ -631,7 +631,7 @@ function rendreDossier() {
     : `<li class="aide">Aucune fiche liée à ce chantier.</li>`;
   const outils = ["Linear", "Format", "Membrane", "Masse", "Trame"].map((n) => `<a class="btn" href="${esc(lienApp(n))}">${n}</a>`).join("");
   zone.innerHTML = `
-    <div class="pastilles">${pastille(r.retard, "note en retard", r.retard ? "rouge" : "")}${pastille(r.urgentes, "urgente", r.urgentes ? "orange" : "")}${pastille(r.notes, "note ouverte")}${pastille(r.fiches, "fiche")}</div>
+    <div class="pastilles">${pastille(r.retard, "note en retard", "notes en retard", r.retard ? "rouge" : "")}${pastille(r.urgentes, "urgente", "urgentes", r.urgentes ? "orange" : "")}${pastille(r.notes, "note ouverte", "notes ouvertes")}${pastille(r.fiches, "fiche", "fiches")}</div>
     <div class="dossier-grille">
       <div class="panel"><h3 class="dossier-titre">Notes Check <span class="aide">${r.notes} ouverte${r.notes > 1 ? "s" : ""}</span></h3><ul class="gestion">${notes}</ul>
         <p class="dossier-actions"><a class="btn" href="${esc(noter)}">+ Noter dans Check</a><a class="btn" href="${esc(lienApp("Check"))}">Ouvrir Check</a></p></div>
