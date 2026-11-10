@@ -62,6 +62,11 @@ async function brancher(ctx) {
         retours: { total: 6, nouveaux: 2 },
         applis: [{ nom: "Index", total: 312, mois: 18, a_verifier: 41 }, { nom: "Access", total: 58, mois: 7 }, { nom: "Check", total: 240, mois: 64 }, { nom: "Masse", total: 95, mois: 11 }, { nom: "Format", total: 34, mois: 2 }, { nom: "Strate", total: 120, mois: 0 }, { nom: "Membrane", total: 6, mois: 6 }] });
     }
+    if (u.pathname === "/rest/v1/projects") return json(tok === "tok-admin" ? [{ id: "c1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "c2", numero: "25-004", nom: "Hôtel du Lac" }] : []);
+    if (u.pathname === "/rest/v1/product_projects") return json(u.searchParams.get("project_id") === "eq.c1" ? [{ product_id: "p1" }] : []);
+    if (u.pathname === "/rest/v1/products") return json([{ id: "p1", name: "SikaMembran Outdoor plus", supplier: "Sika", category: "Membranes & Étanchéité" }]);
+    if (u.pathname === "/rest/v1/check_projets") return json([{ id: "cp1", numero: "24-118", nom: "Tilleuls" }]);
+    if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
     if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1" }, { id: "n2" }] : []);
     if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
@@ -201,6 +206,16 @@ try {
   ok((await p.locator("#listeComptes li").count()) === 3, "Tableau de bord : 3 comptes listés");
   await shot(p, "06b-tableau");
   await axe(p, "tableau de bord");
+  // Dossier chantier
+  ok(await p.locator("#navChantiers").isVisible(), "Chantiers : onglet visible pour un compte valide");
+  await p.locator("#navChantiers").click(); await p.waitForTimeout(400);
+  await p.locator("#fChantier").selectOption("c1"); await p.waitForTimeout(700);
+  const dos = await p.locator("#dossier").innerText();
+  ok(dos.includes("Confirmer l'entraxe") && dos.includes("en retard") && dos.includes("SikaMembran Outdoor plus"), "Chantiers : notes Check (en retard) et fiches Index du chantier affichées");
+  ok((await p.locator("#dossier a", { hasText: "Noter dans Check" }).getAttribute("href")).includes("noter=%2324-118"), "Chantiers : « Noter dans Check » préremplit le numéro de chantier");
+  await shot(p, "06c-chantiers");
+  await axe(p, "chantiers");
+  await p.locator("#navTableau").click(); await p.waitForTimeout(300);
   await p.locator("[data-valider=c2]").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c2" && a[1]._approved === true), "Comptes : Valider appelle la base");
   await p.locator("[data-admin=c3]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);

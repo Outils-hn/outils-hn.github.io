@@ -205,3 +205,20 @@ footer button:hover { color: var(--ink); text-decoration: underline; }
 .chg .fleche { color: var(--muted); }
 .gestion-bloc .outils-hist { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .gestion .btn.icone-sup { padding: 4px 8px; }
+
+/* Dossier chantier */
+.pastilles { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 18px; }
+.pastille { padding: 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--card); font-size: 13px; }
+.pastille.rouge { color: #b91c1c; background: #fef2f2; border-color: #fca5a5; }
+.pastille.orange { color: #9a3412; background: #fff7ed; border-color: #fed7aa; }
+.dossier-grille { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+.dossier-large { grid-column: 1 / -1; }
+.dossier-titre { margin: 0; padding: 14px 18px; font-size: 14px; display: flex; justify-content: space-between; border-bottom: 1px solid var(--line); }
+.dossier-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 12px 18px; border-top: 1px solid var(--line); }
+.dossier-large .dossier-actions { border-top: 0; }
+.dossier-grille .gestion li { justify-content: space-between; align-items: center; }
+@media (max-width: 760px) { .dossier-grille { grid-template-columns: 1fr; } }
+#chantiers .tete { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+#chantiers .tete h2 { margin: 0 0 4px; }
+#chantiers .tete p { margin: 0; color: var(--muted); }
+.dossier-actions .btn { text-decoration: none; }

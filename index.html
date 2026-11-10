@@ -33,6 +33,7 @@
     <nav aria-label="Sections">
       <a href="#applis" class="nav" data-nav="applis">Applis</a>
       <a href="#retours" class="nav" data-nav="retours">Idées &amp; bugs <span class="compte" id="navCompte"></span></a>
+      <a href="#chantiers" class="nav" data-nav="chantiers" id="navChantiers" hidden>Chantiers</a>
       <a href="#nouveautes" class="nav" data-nav="nouveautes">Nouveautés</a>
       <a href="#tableau" class="nav" data-nav="tableau" id="navTableau" hidden>Tableau de bord <span class="compte" id="navAttente"></span></a>
     </nav>
@@ -77,6 +78,17 @@
       </div>
       <ul class="gestion panel" id="listeHist" aria-live="polite"></ul>
     </div>
+  </section>
+
+  <section id="chantiers" aria-labelledby="t-chantiers" hidden>
+    <div class="tete">
+      <div>
+        <h2 id="t-chantiers">Dossier chantier</h2>
+        <p id="resumeChantier">Choisissez un chantier pour tout voir au même endroit.</p>
+      </div>
+      <select id="fChantier" class="champ" aria-label="Chantier"></select>
+    </div>
+    <div id="dossier"></div>
   </section>
 
   <section id="retours" aria-labelledby="t-retours" hidden>
@@ -124,7 +136,7 @@
 </main>
 
 <footer>
-  Accueil v2.11 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.12 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
