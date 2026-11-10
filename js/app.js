@@ -325,18 +325,20 @@ function rendreStats() {
 }
 
 function rendreApplis() {
-  const carte = (a, niveau) => {
-    const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
-    const tete = `<span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}</span>`;
-    return niveau === "rare"
-      ? `<li><a class="carte puce" href="${a.url}" style="--c:${a.couleur}">${tete}<span class="role">${esc(a.role)}</span></a></li>`
-      : `<li><a class="carte${niveau === "jour" ? " grand" : ""}" href="${a.url}" style="--c:${a.couleur}">${tete}<p class="texte">${esc(a.texte)}</p></a></li>`;
-  };
   const vis = visibles();
-  $("#grille").innerHTML = NIVEAUX.map((n) => {
-    const liste = n.noms.map((nom) => vis.find((a) => a.nom === nom)).filter(Boolean);
-    return liste.length ? `<h3 class="niveau">${n.titre}</h3><ul class="grille ${n.cle}">${liste.map((a) => carte(a, n.cle)).join("")}</ul>` : "";
-  }).join("");
+  const trouver = (nom) => vis.find((a) => a.nom === nom);
+  const signaux = (a) => {
+    const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
+    return `${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}`;
+  };
+  // Les trois applis du quotidien : une grande carte (la premiere) et deux petites a cote
+  const carte = (a, cls) => `<a class="carte ${cls}" href="${a.url}" style="--c:${a.couleur}"><span class="tete"><span class="nom">${esc(a.nom)}</span>${signaux(a)}</span><p class="texte">${esc(a.texte)}</p></a>`;
+  // Les autres : une simple ligne (pastille, nom, role)
+  const ligne = (a) => `<a class="carte lien" href="${a.url}" style="--c:${a.couleur}"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span><span class="role">${esc(a.role)}</span>${signaux(a)}</a>`;
+  const [jour, parfois, rare] = NIVEAUX.map((n) => n.noms.map(trouver).filter(Boolean));
+  const groupe = (titre, liste) => liste.length ? `<h3 class="niveau">${titre}</h3><div class="lignes">${liste.map(ligne).join("")}</div>` : "";
+  $("#grille").innerHTML = (jour.length ? `<div class="quotidien">${carte(jour[0], "grande")}<div class="pile">${jour.slice(1).map((a) => carte(a, "petite")).join("")}</div></div>` : "")
+    + groupe(NIVEAUX[1].titre, parfois) + groupe(NIVEAUX[2].titre, rare);
 }
 
 function rendreRetours() {
