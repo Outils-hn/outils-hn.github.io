@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.12 — 10 novembre 2026
+
+- Nouveauté : un nouvel onglet « Chantiers » : on choisit un chantier et on voit ses notes Check (en retard d'abord), ses fiches Index et des raccourcis vers les outils de calcul.
+
 ## 2.11 — 10 novembre 2026
 
 - Nouveauté : sur la carte Check, une pastille « n pour moi » indique les notes qui vous sont confiées et pas encore réglées (quand vous êtes connecté).
