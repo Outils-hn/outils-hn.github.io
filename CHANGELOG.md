@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.15 — 10 novembre 2026
+
+- Nouveauté : dans la recherche Ctrl+K et dans le dossier chantier, une fiche Index ou une note Check s'ouvre directement sur la bonne fiche ou la bonne note.
+
 ## 2.14 — 10 novembre 2026
 
 - Nouveauté : une barre de recherche (Ctrl+K, ou le bouton « Rechercher ») qui cherche d'un coup une appli, un chantier, une fiche Index ou une note Check.

@@ -215,6 +215,7 @@ try {
   ok(dos.includes("Confirmer l'entraxe") && dos.includes("en retard") && dos.includes("SikaMembran Outdoor plus"), "Chantiers : notes Check (en retard) et fiches Index du chantier affichées");
   ok((await p.locator("#dossier a", { hasText: "Noter dans Check" }).getAttribute("href")).includes("noter=%2324-118"), "Chantiers : « Noter dans Check » préremplit le numéro de chantier");
   ok((await p.evaluate(() => localStorage.getItem("outils-chantier-info"))) === JSON.stringify({ numero: "24-118", nom: "Résidence Les Tilleuls" }), "Chantiers : le chantier choisi est retenu pour les autres applis");
+  ok((await p.locator("#dossier a", { hasText: "SikaMembran" }).getAttribute("href")).includes("Index/?fiche=p1") && (await p.locator("#dossier a", { hasText: "Confirmer l'entraxe" }).getAttribute("href")).includes("Check/?note=n3"), "Chantiers : une fiche et une note s'ouvrent directement");
   await shot(p, "06c-chantiers");
   // Recherche Ctrl+K
   await p.keyboard.press("Control+k"); await p.waitForTimeout(300);

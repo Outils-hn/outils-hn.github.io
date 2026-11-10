@@ -626,10 +626,10 @@ function rendreDossier() {
   const pastille = (n, un, plur, cls = "") => `<span class="pastille ${cls}">${n} ${n > 1 ? plur : un}</span>`;
   const noter = lienApp("Check") + "?noter=" + encodeURIComponent(`#${c.numero} `);
   const notes = dossier.notes.length
-    ? dossier.notes.slice(0, 8).map((n) => `<li><span>${esc(n.texte)}</span><span class="aide">${n.echeance && n.echeance < jour ? "en retard · " : ""}${n.flash ? "urgent" : n.echeance ? esc(fmtDate(n.echeance)) : ""}</span></li>`).join("")
+    ? dossier.notes.slice(0, 8).map((n) => `<li><a class="lien-ligne" href="${esc(lienApp("Check"))}?note=${encodeURIComponent(n.id)}">${esc(n.texte)}</a><span class="aide">${n.echeance && n.echeance < jour ? "en retard · " : ""}${n.flash ? "urgent" : n.echeance ? esc(fmtDate(n.echeance)) : ""}</span></li>`).join("")
     : `<li class="aide">${dossier.projetsCheck ? "Aucune note ouverte." : "Pas de notes visibles : vous n’êtes pas membre du projet dans Check."}</li>`;
   const fiches = dossier.fiches.length
-    ? dossier.fiches.slice(0, 10).map((f) => `<li><span>${esc(f.supplier)} · ${esc(f.name)}</span><span class="aide">${esc(f.category)}</span></li>`).join("")
+    ? dossier.fiches.slice(0, 10).map((f) => `<li><a class="lien-ligne" href="${esc(lienApp("Index"))}?fiche=${encodeURIComponent(f.id)}">${esc(f.supplier)} · ${esc(f.name)}</a><span class="aide">${esc(f.category)}</span></li>`).join("")
     : `<li class="aide">Aucune fiche liée à ce chantier.</li>`;
   const outils = ["Linear", "Format", "Membrane", "Masse", "Trame"].map((n) => `<a class="btn" href="${esc(lienApp(n))}">${n}</a>`).join("");
   zone.innerHTML = `
@@ -684,8 +684,8 @@ async function lancerRecherche() {
     rResultats = [
       ...locaux,
       ...chercherChantiers(q, chantiersRecherche).slice(0, 6).map((c) => ({ groupe: "Chantiers", titre: `${c.numero} · ${c.nom}`, detail: "Dossier chantier", href: `#chantiers/${encodeURIComponent(c.id)}` })),
-      ...fiches.map((f) => ({ groupe: "Fiches Index", titre: f.name, detail: f.supplier, href: lienApp("Index") })),
-      ...notes.map((n) => ({ groupe: "Notes Check", titre: n.texte.length > 80 ? n.texte.slice(0, 80) + "…" : n.texte, detail: "", href: lienApp("Check") })),
+      ...fiches.map((f) => ({ groupe: "Fiches Index", titre: f.name, detail: f.supplier, href: `${lienApp("Index")}?fiche=${encodeURIComponent(f.id)}` })),
+      ...notes.map((n) => ({ groupe: "Notes Check", titre: n.texte.length > 80 ? n.texte.slice(0, 80) + "…" : n.texte, detail: "", href: `${lienApp("Check")}?note=${encodeURIComponent(n.id)}` })),
     ];
     rendreResultats();
   } catch { /* base injoignable : on garde les applis */ }
