@@ -199,7 +199,7 @@ try {
   await p.locator("#formConnexion [name=mdp]").fill(ADMIN.mdp);
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
   ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
-  ok(/2\s+pour moi/.test(await p.locator(".carte", { hasText: "Check" }).first().innerText()), "Accueil : pastille « 2 pour moi » sur la carte Check (notes confiées, non réglées)");
+  ok(/2\s*pour moi/.test(await p.locator(".carte", { hasText: "Check" }).first().innerText()), "Accueil : pastille « 2 pour moi » sur la carte Check (notes confiées, non réglées)");
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
