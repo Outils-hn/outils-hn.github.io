@@ -617,6 +617,7 @@ function rendreDossier() {
   const zone = $("#dossier");
   if (!c) { $("#resumeChantier").textContent = chantiers ? "Choisissez un chantier pour tout voir au même endroit." : "Chargement…"; zone.innerHTML = ""; return; }
   $("#resumeChantier").textContent = `${c.numero} · ${c.nom}`;
+  try { localStorage.setItem("outils-chantier-info", JSON.stringify({ numero: c.numero, nom: c.nom })); } catch { /* stockage bloque */ }
   if (dossier?.chargement) { zone.innerHTML = `<p class="aide">Chargement…</p>`; return; }
   if (dossier?.erreur) { zone.innerHTML = `<p class="erreur">${esc(dossier.erreur)}</p>`; return; }
   const jour = jourIso();
@@ -625,7 +626,7 @@ function rendreDossier() {
   const noter = lienApp("Check") + "?noter=" + encodeURIComponent(`#${c.numero} `);
   const notes = dossier.notes.length
     ? dossier.notes.slice(0, 8).map((n) => `<li><span>${esc(n.texte)}</span><span class="aide">${n.echeance && n.echeance < jour ? "en retard · " : ""}${n.flash ? "urgent" : n.echeance ? esc(fmtDate(n.echeance)) : ""}</span></li>`).join("")
-    : `<li class="aide">${dossier.projetsCheck ? "Aucune note ouverte." : "Aucun projet Check avec ce numéro de chantier."}</li>`;
+    : `<li class="aide">${dossier.projetsCheck ? "Aucune note ouverte." : "Pas de notes visibles : vous n’êtes pas membre du projet dans Check."}</li>`;
   const fiches = dossier.fiches.length
     ? dossier.fiches.slice(0, 10).map((f) => `<li><span>${esc(f.supplier)} · ${esc(f.name)}</span><span class="aide">${esc(f.category)}</span></li>`).join("")
     : `<li class="aide">Aucune fiche liée à ce chantier.</li>`;
