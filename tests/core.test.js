@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { APPLIS, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireDate, lireJournal, lireLien, texteCompteur } from "../js/core.js";
+import { APPLIS, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireDate, lireJournal, lireLien, nomAffiche, texteCompteur } from "../js/core.js";
 
 const r = (o) => ({ id: "x", app: "Masse", type: "idee", texte: "", nom: "", reponse: "", statut: "nouveau", moi_aussi: 0, created_at: "2026-10-20T08:00:00Z", ...o });
 const liste = [
@@ -112,4 +112,13 @@ test("recherche Ctrl+K : requete nettoyee, applis et chantiers sans accents", ()
   const ch = [{ id: "1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "2", numero: "25-004", nom: "Hôtel du Lac" }];
   assert.deepEqual(chercherChantiers("hotel", ch).map((c) => c.id), ["2"]);
   assert.deepEqual(chercherChantiers("24-118 tilleuls", ch).map((c) => c.id), ["1"]);
+});
+
+test("nomAffiche : « Prénom NOM » depuis le compte, sinon vide", () => {
+  assert.equal(nomAffiche({ user_metadata: { first_name: "hugo", last_name: "naegellen" } }), "Hugo NAEGELLEN");
+  assert.equal(nomAffiche({ user_metadata: { first_name: "jean-pierre", last_name: "de la Tour" } }), "Jean-Pierre DE LA TOUR");
+  assert.equal(nomAffiche({ user_metadata: { display_name: "Sarah Müller" } }), "Sarah MÜLLER");
+  assert.equal(nomAffiche({ user_metadata: { display_name: "Hugo" } }), "");
+  assert.equal(nomAffiche({ email: "h@exemple.ch" }), "");
+  assert.equal(nomAffiche(null), "");
 });

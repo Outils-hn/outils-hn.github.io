@@ -161,3 +161,16 @@ export function trierNotes(notes, jour) {
 export function resumeChantier(notes, fiches, jour) {
   return { retard: notes.filter((n) => n.echeance && n.echeance < jour).length, urgentes: notes.filter((n) => n.flash).length, notes: notes.length, fiches: fiches.length };
 }
+
+/** « Prénom NOM » d'apres les infos du compte (prenom et nom saisis a la creation), sinon vide : on affiche alors l'email. */
+export function nomAffiche(u) {
+  const m = (u && u.user_metadata) || {};
+  const txt = (v) => (typeof v === "string" ? v.trim() : "");
+  const maj = (s) => s.toLowerCase().replace(/(^|[\s'-])(\p{L})/gu, (_x, a, b) => a + b.toUpperCase());
+  let prenom = txt(m.first_name), nom = txt(m.last_name);
+  if (!prenom || !nom) {
+    const mots = txt(m.display_name).split(/\s+/).filter(Boolean);
+    if (mots.length >= 2) { prenom = mots.slice(0, -1).join(" "); nom = mots[mots.length - 1]; }
+  }
+  return prenom && nom ? `${maj(prenom)} ${nom.toLocaleUpperCase("fr")}` : "";
+}
