@@ -224,8 +224,8 @@ try {
   ok(rtxt.includes("24-118") && rtxt.includes("SikaMembran") && rtxt.includes("Confirmer l'entraxe"), "Recherche : chantier, fiche Index et note Check trouvés d'un coup");
   await shot(p, "06d-recherche");
   await axe(p, "recherche");
-  await p.keyboard.press("ArrowDown"); await p.keyboard.press("Enter"); await p.waitForTimeout(500);
-  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)), "Recherche : Entrée ouvre le résultat et ferme la barre");
+  await p.locator("#rListe [role=option]", { hasText: "24-118" }).click(); await p.waitForTimeout(500);
+  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)) && p.url().includes("#chantiers/c1"), "Recherche : un clic sur un chantier ouvre son dossier et ferme la barre");
   await axe(p, "chantiers");
   await p.locator("#navTableau").click(); await p.waitForTimeout(300);
   await p.locator("[data-valider=c2]").click(); await p.waitForTimeout(500);
