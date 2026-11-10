@@ -125,8 +125,18 @@ async function sessionFraiche() {
   }
   return s;
 }
+/** Notes de Check confiees a la personne connectee, pas reglees : la pastille « pour moi » de la carte Check. */
+let pourMoi = 0;
+async function chargerPourMoi(s) {
+  let n = 0;
+  try {
+    if (s?.user?.id) n = (await api(`/rest/v1/check_notes?select=id&pour=eq.${encodeURIComponent(s.user.id)}&statut=neq.done&archive=eq.false&supprime_le=is.null&limit=99`, { jeton: s.access_token }))?.length ?? 0;
+  } catch { n = 0; /* base injoignable ou Check pas active : pas de pastille */ }
+  if (n !== pourMoi) { pourMoi = n; rendreApplis(); }
+}
 async function chargerStats() {
   const s = await sessionFraiche();
+  chargerPourMoi(s);
   const avant = !!stats;
   const avantRole = role;
   try { role = s ? (await rpc("mon_role", {}, s.access_token)) || null : null; } catch { role = null; }
@@ -298,7 +308,7 @@ function rendreApplis() {
   $("#grille").innerHTML = visibles().map((a) => {
     const ouverts = retours.filter((r) => r.app === a.nom && !termine(r)).length;
     return `<li><a class="carte" href="${a.url}" style="--c:${a.couleur}">
-      <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}</span>
+      <span class="tete"><span class="pastille"></span><span class="nom">${esc(a.nom)}</span>${journaux[a.nom] ? `<span class="version" title="Version actuelle de ${esc(a.nom)}">v${esc(journaux[a.nom][0].version)}</span>` : ""}${ouverts ? `<span class="signal" title="Idées et bugs en cours pour ${esc(a.nom)}">${ouverts} en cours</span>` : ""}${a.nom === "Check" && pourMoi ? `<span class="signal moi" title="Notes qui vous sont confiées, à traiter dans Check">${pourMoi} pour moi</span>` : ""}</span>
       <span class="role">${esc(a.role)}</span>
       <p class="texte">${esc(a.texte)}</p>
       <span class="ouvrir">Ouvrir ${esc(a.nom)} →</span>

@@ -62,6 +62,7 @@ async function brancher(ctx) {
         retours: { total: 6, nouveaux: 2 },
         applis: [{ nom: "Index", total: 312, mois: 18, a_verifier: 41 }, { nom: "Access", total: 58, mois: 7 }, { nom: "Check", total: 240, mois: 64 }, { nom: "Masse", total: 95, mois: 11 }, { nom: "Format", total: 34, mois: 2 }, { nom: "Strate", total: 120, mois: 0 }, { nom: "Membrane", total: 6, mois: 6 }] });
     }
+    if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1" }, { id: "n2" }] : []);
     if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
     if (u.pathname === "/rest/v1/rpc/set_account_approved") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.approved = corps._approved; etat.actions.push(["approved", corps]); return json(null); }
@@ -189,6 +190,7 @@ try {
   await p.locator("#formConnexion [name=mdp]").fill(ADMIN.mdp);
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
   ok((await p.locator("#etatCompte").innerText()) === `${ADMIN.email}`, "Connexion : email seul en haut de page");
+  ok(/2 pour moi/.test(await p.locator(".carte", { hasText: "Check" }).first().innerText()), "Accueil : pastille « 2 pour moi » sur la carte Check (notes confiées, non réglées)");
   ok(!!(await p.evaluate(() => localStorage.getItem("sb-dtxgvwaqjmmffiiohika-auth-token"))), "Connexion : session rangee sous la cle commune a toutes les applis");
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
