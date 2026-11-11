@@ -1,4 +1,5 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
+import { creerZip } from "./zip.js?v=1";
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
 import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur } from "./core.js?v=2.7";
 
@@ -268,6 +269,47 @@ $("#sauvegarder").addEventListener("click", async (e) => {
     toast(`Sauvegarde téléchargée (${Object.keys(data.tables ?? {}).length} tables).`);
   } catch (err) {
     toast(/export_complet|function/i.test(err.message) ? "Script « sauvegarde.sql » à lancer dans Supabase." : horsLigne(err) ? "Base injoignable." : err.message);
+  } finally { b.disabled = false; b.textContent = txt; }
+});
+
+// Sauvegarde des fichiers : liste chaque dossier de stockage (recursivement), telecharge chaque fichier puis assemble un zip dans le navigateur
+const SEAUX = ["technical-sheets", "check-images"];
+async function listerSeau(seau, jeton, prefixe = "") {
+  const tous = [];
+  for (let decal = 0; ; decal += 1000) {
+    const page = await api(`/storage/v1/object/list/${seau}`, { methode: "POST", corps: { prefix: prefixe, limit: 1000, offset: decal, sortBy: { column: "name", order: "asc" } }, jeton });
+    for (const o of page ?? []) {
+      const chemin = prefixe ? `${prefixe}/${o.name}` : o.name;
+      if (o.id) tous.push(chemin); else tous.push(...await listerSeau(seau, jeton, chemin)); // sans id = sous-dossier
+    }
+    if (!page || page.length < 1000) return tous;
+  }
+}
+$("#sauvegarderFichiers").addEventListener("click", async (e) => {
+  const b = e.currentTarget; b.disabled = true; const txt = b.textContent; b.textContent = "Liste des fichiers…";
+  try {
+    const jeton = (await sessionFraiche())?.access_token;
+    const liste = [];
+    for (const seau of SEAUX) for (const chemin of await listerSeau(seau, jeton)) liste.push({ seau, chemin });
+    const fichiers = [], rates = [];
+    for (let i = 0; i < liste.length; i++) {
+      const { seau, chemin } = liste[i];
+      b.textContent = `Fichiers : ${i + 1} / ${liste.length}`;
+      try {
+        const r = await fetch(`${BASE_URL}/storage/v1/object/authenticated/${seau}/${chemin.split("/").map(encodeURIComponent).join("/")}`, { headers: { apikey: BASE_KEY, Authorization: `Bearer ${jeton}` } });
+        if (!r.ok) throw new Error(String(r.status));
+        fichiers.push({ nom: `${seau}/${chemin}`, octets: new Uint8Array(await r.arrayBuffer()) });
+      } catch { rates.push(`${seau}/${chemin}`); }
+    }
+    if (rates.length) fichiers.push({ nom: "fichiers-non-recuperes.txt", octets: new TextEncoder().encode(rates.join("\n")) });
+    const lien = document.createElement("a");
+    lien.href = URL.createObjectURL(new Blob(creerZip(fichiers), { type: "application/zip" }));
+    lien.download = `sauvegarde-fichiers-${new Date().toISOString().slice(0, 10)}.zip`;
+    document.body.append(lien); lien.click(); lien.remove();
+    setTimeout(() => URL.revokeObjectURL(lien.href), 30000);
+    toast(rates.length ? `Zip téléchargé : ${fichiers.length - 1} fichiers, ${rates.length} non récupérés (liste dans le zip).` : `Zip téléchargé : ${fichiers.length} fichiers.`);
+  } catch (err) {
+    toast(horsLigne(err) ? "Base injoignable." : err.message);
   } finally { b.disabled = false; b.textContent = txt; }
 });
 

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.22">
+<link rel="stylesheet" href="styles.css?v=2.23">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
@@ -62,8 +62,11 @@
     <div id="blocSauvegarde" class="gestion-bloc" hidden>
       <h3>Sauvegarde <span class="aide" id="resumeSauvegarde"></span></h3>
       <div class="panel sauvegarde">
-        <p class="aide">Télécharge un fichier avec toutes les données des applis (fiches, fournisseurs, notes, comptes sans mots de passe…). À garder hors de Supabase : sur ton disque ou ton cloud. Les fichiers (PDF, images) ne sont pas inclus.</p>
-        <button type="button" class="btn primaire" id="sauvegarder">Télécharger la sauvegarde</button>
+        <p class="aide">Télécharge un fichier avec toutes les données des applis (fiches, fournisseurs, notes, comptes sans mots de passe…). À garder hors de Supabase : sur ton disque ou ton cloud. Les fichiers (PDF d'Index, images de Check) se récupèrent à part, dans un zip.</p>
+        <span class="boutons-sauvegarde">
+          <button type="button" class="btn primaire" id="sauvegarder">Télécharger les données</button>
+          <button type="button" class="btn" id="sauvegarderFichiers">Télécharger les fichiers</button>
+        </span>
       </div>
     </div>
     <div id="blocComptes" class="gestion-bloc" hidden>
@@ -139,7 +142,7 @@
 </main>
 
 <footer>
-  Accueil v2.26 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.27 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
@@ -237,6 +240,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/app.js?v=2.23"></script>
+<script type="module" src="js/app.js?v=2.24"></script>
 </body>
 </html>
