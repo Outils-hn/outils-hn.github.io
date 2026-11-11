@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.28 — 11 novembre 2026
+
+- Nouveauté : « Télécharger les fichiers » récupère bien les PDF d'Index (le zip arrivait vide).
+
 ## 2.27 — 11 novembre 2026
 
 - Nouveauté : la sauvegarde récupère aussi les fichiers (PDF d'Index, images de Check) dans un zip, avec un second bouton dans le Tableau de bord.

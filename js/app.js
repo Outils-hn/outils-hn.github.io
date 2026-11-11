@@ -272,31 +272,24 @@ $("#sauvegarder").addEventListener("click", async (e) => {
   } finally { b.disabled = false; b.textContent = txt; }
 });
 
-// Sauvegarde des fichiers : liste chaque dossier de stockage (recursivement), telecharge chaque fichier puis assemble un zip dans le navigateur
-const SEAUX = ["technical-sheets", "check-images"];
-async function listerSeau(seau, jeton, prefixe = "") {
-  const tous = [];
-  for (let decal = 0; ; decal += 1000) {
-    const page = await api(`/storage/v1/object/list/${seau}`, { methode: "POST", corps: { prefix: prefixe, limit: 1000, offset: decal, sortBy: { column: "name", order: "asc" } }, jeton });
-    for (const o of page ?? []) {
-      const chemin = prefixe ? `${prefixe}/${o.name}` : o.name;
-      if (o.id) tous.push(chemin); else tous.push(...await listerSeau(seau, jeton, chemin)); // sans id = sous-dossier
-    }
-    if (!page || page.length < 1000) return tous;
-  }
-}
+// Sauvegarde des fichiers : la liste vient de la fonction liste_fichiers (supabase/sauvegarde-fichiers.sql), puis chaque fichier est telecharge
+// et le zip assemble dans le navigateur. Les seaux publics (PDF) passent par l'adresse publique, les autres par la session.
+const SEAUX_PUBLICS = ["technical-sheets"];
+const adresseFichier = (seau, chemin) => `${BASE_URL}/storage/v1/object/${SEAUX_PUBLICS.includes(seau) ? "public" : "authenticated"}/${seau}/${chemin.split("/").map(encodeURIComponent).join("/")}`;
 $("#sauvegarderFichiers").addEventListener("click", async (e) => {
   const b = e.currentTarget; b.disabled = true; const txt = b.textContent; b.textContent = "Liste des fichiers…";
   try {
     const jeton = (await sessionFraiche())?.access_token;
-    const liste = [];
-    for (const seau of SEAUX) for (const chemin of await listerSeau(seau, jeton)) liste.push({ seau, chemin });
+    let liste;
+    try { liste = await rpc("liste_fichiers", {}, jeton); }
+    catch (err) { throw new Error(/liste_fichiers|function/i.test(err.message) ? "Script « sauvegarde-fichiers.sql » à lancer dans Supabase." : err.message); }
+    if (!liste?.length) { toast("Aucun fichier trouvé dans le stockage."); return; }
     const fichiers = [], rates = [];
     for (let i = 0; i < liste.length; i++) {
       const { seau, chemin } = liste[i];
       b.textContent = `Fichiers : ${i + 1} / ${liste.length}`;
       try {
-        const r = await fetch(`${BASE_URL}/storage/v1/object/authenticated/${seau}/${chemin.split("/").map(encodeURIComponent).join("/")}`, { headers: { apikey: BASE_KEY, Authorization: `Bearer ${jeton}` } });
+        const r = await fetch(adresseFichier(seau, chemin), { headers: { apikey: BASE_KEY, Authorization: `Bearer ${jeton}` } });
         if (!r.ok) throw new Error(String(r.status));
         fichiers.push({ nom: `${seau}/${chemin}`, octets: new Uint8Array(await r.arrayBuffer()) });
       } catch { rates.push(`${seau}/${chemin}`); }

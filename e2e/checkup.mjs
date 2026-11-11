@@ -57,12 +57,8 @@ async function brancher(ctx) {
       return json({ access_token: "tok-admin", expires_in: 3600, user: { id: ADMIN.id, email: ADMIN.email } });
     }
     if (u.pathname === "/rest/v1/rpc/export_complet") return tok === "tok-admin" ? json({ date: "2026-11-11", tables: { products: [{ id: 1 }], check_notes: [] }, comptes: [] }) : json({ message: "Reserve au concepteur" }, 400);
-    if (u.pathname.startsWith("/storage/v1/object/list/")) {
-      const seau = u.pathname.split("/").pop();
-      if (seau === "technical-sheets") return json(corps.prefix ? [{ name: "fiche é.pdf", id: "f2" }] : [{ name: "racine.pdf", id: "f1" }, { name: "sika", id: null }]);
-      return json(corps.prefix ? [] : [{ name: "img.png", id: "f3" }]);
-    }
-    if (u.pathname.startsWith("/storage/v1/object/authenticated/")) return r.fulfill({ status: 200, contentType: "application/octet-stream", body: Buffer.from("contenu " + decodeURIComponent(u.pathname)) });
+    if (u.pathname === "/rest/v1/rpc/liste_fichiers") return tok === "tok-admin" ? json([{ seau: "technical-sheets", chemin: "racine.pdf" }, { seau: "technical-sheets", chemin: "sika/fiche é.pdf" }, { seau: "check-images", chemin: "n1/img.png" }]) : json({ message: "Reserve au concepteur" }, 400);
+    if (/^\/storage\/v1\/object\/(authenticated|public)\//.test(u.pathname)) return r.fulfill({ status: 200, contentType: "application/octet-stream", body: Buffer.from("contenu " + decodeURIComponent(u.pathname)) });
     if (u.pathname === "/rest/v1/rpc/stats_accueil") {
       if (tok !== "tok-admin") return json({ message: "Reserve au concepteur" }, 400);
       return json({ comptes: { total: 14, valides: 12, attente: 2, concepteur: 1, administrateur: 2, dessinateur: 9 },
@@ -224,7 +220,7 @@ try {
   ok(/^sauvegarde-outils-\d{4}-\d{2}-\d{2}\.json$/.test(dlJson.suggestedFilename()) && JSON.parse(readFileSync(await dlJson.path(), "utf8")).tables.products.length === 1, "Sauvegarde : fichier JSON daté avec les tables");
   const [dlZip] = await Promise.all([p.waitForEvent("download"), p.locator("#sauvegarderFichiers").click()]);
   const zip = readFileSync(await dlZip.path()).toString("latin1");
-  ok(/^sauvegarde-fichiers-.*\.zip$/.test(dlZip.suggestedFilename()) && zip.startsWith("PK") && ["technical-sheets/racine.pdf", "technical-sheets/sika/fiche", "check-images/img.png"].every((n) => zip.includes(n)), "Sauvegarde : zip des fichiers, sous-dossiers compris");
+  ok(/^sauvegarde-fichiers-.*\.zip$/.test(dlZip.suggestedFilename()) && zip.startsWith("PK") && ["technical-sheets/racine.pdf", "technical-sheets/sika/fiche", "check-images/n1/img.png"].every((n) => zip.includes(n)), "Sauvegarde : zip des fichiers, sous-dossiers compris");
   await axe(p, "tableau de bord");
   // Dossier chantier
   ok(await p.locator("#navChantiers").isVisible(), "Chantiers : onglet visible pour un compte valide");
