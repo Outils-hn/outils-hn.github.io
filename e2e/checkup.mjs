@@ -59,6 +59,12 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/rpc/export_complet") return tok === "tok-admin" ? json({ date: "2026-11-11", tables: { products: [{ id: 1 }], check_notes: [] }, comptes: [] }) : json({ message: "Reserve au concepteur" }, 400);
     if (u.pathname === "/rest/v1/rpc/liste_fichiers") return tok === "tok-admin" ? json([{ seau: "technical-sheets", chemin: "racine.pdf" }, { seau: "technical-sheets", chemin: "sika/fiche é.pdf" }, { seau: "check-images", chemin: "n1/img.png" }]) : json({ message: "Reserve au concepteur" }, 400);
     if (/^\/storage\/v1\/object\/(authenticated|public)\//.test(u.pathname)) return r.fulfill({ status: 200, contentType: "application/octet-stream", body: Buffer.from("contenu " + decodeURIComponent(u.pathname)) });
+    if (u.pathname === "/rest/v1/rpc/fiche_valider" || u.pathname === "/rest/v1/rpc/fiche_refuser") {
+      const f = etat.fiches.find((x) => x.id === corps._id); etat.fiches = etat.fiches.filter((x) => x.id !== corps._id);
+      etat.actions.push([u.pathname.endsWith("valider") ? "fiche_ok" : "fiche_non", corps]);
+      return json({ ok: true, fichier: u.pathname.endsWith("valider") ? (f?.pdf_attente_path ? f.pdf_path : null) : (f?.statut === "en_attente" ? f.pdf_path : f?.pdf_attente_path) });
+    }
+    if (u.pathname === "/storage/v1/object/technical-sheets" && req.method() === "DELETE") { etat.fichiersRetires.push(...(corps.prefixes || [])); return json([]); }
     if (u.pathname === "/rest/v1/rpc/stats_accueil") {
       if (tok !== "tok-admin") return json({ message: "Reserve au concepteur" }, 400);
       return json({ comptes: { total: 14, valides: 12, attente: 2, concepteur: 1, administrateur: 2, dessinateur: 9 },
@@ -68,6 +74,7 @@ async function brancher(ctx) {
     }
     if (u.pathname === "/rest/v1/projects") return json(tok === "tok-admin" ? [{ id: "c1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "c2", numero: "25-004", nom: "Hôtel du Lac" }] : []);
     if (u.pathname === "/rest/v1/product_projects") return json(u.searchParams.get("project_id") === "eq.c1" ? [{ product_id: "p1" }] : []);
+    if (u.pathname === "/rest/v1/products" && (u.searchParams.get("or") || "").includes("statut")) return json(tok === "tok-admin" ? etat.fiches : []);
     if (u.pathname === "/rest/v1/products") return json([{ id: "p1", name: "SikaMembran Outdoor plus", supplier: "Sika", category: "Membranes & Étanchéité" }]);
     if (u.pathname === "/rest/v1/calculs" && u.searchParams.get("auteur")) return json(tok === "tok-admin" ? [{ id: "k1", app: "format", nom: "Façade Est", updated_at: "2026-11-10T08:00:00Z" }] : []);
     if (u.pathname === "/rest/v1/calculs") return json(u.searchParams.get("chantier_numero") === "eq.24-118" ? [{ id: "k1", app: "linear", nom: "Garde-corps R+2", auteur_email: "hugo@exemple.ch", updated_at: "2026-11-10T08:00:00Z" }] : []);
@@ -101,6 +108,11 @@ async function brancher(ctx) {
     return json([]);
   });
 }
+etat.fiches = [
+  { id: "f1", name: "Fiche proposée", supplier: "Sika", category: "Joints", pdf_path: "joints/proposee.pdf", pdf_filename: "proposee.pdf", pdf_attente_path: null, statut: "en_attente", created_by: "c2", updated_at: new Date().toISOString() },
+  { id: "f2", name: "Fiche existante", supplier: "Isover", category: "Isolation", pdf_path: "isolation/v1.pdf", pdf_filename: "v1.pdf", pdf_attente_path: "isolation/v2.pdf", pdf_attente_filename: "v2.pdf", statut: "valide", created_by: "c3", updated_at: new Date().toISOString() },
+];
+etat.fichiersRetires = [];
 const b = await chromium.launch();
 // Compte obligatoire : par defaut, la page s'ouvre avec la session d'une dessinatrice validee (posee une seule fois, pas a chaque rechargement)
 const DESSIN = { id: "22222222-2222-4222-8222-222222222222", email: "julie@exemple.ch", user_metadata: { first_name: "julie", last_name: "martin" } };
@@ -222,7 +234,7 @@ try {
   // Statistiques : onglet visible apres connexion du concepteur (la fonction repond), cache sinon
   await p.waitForTimeout(400);
   ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : onglet visible pour un compte valide");
-  ok((await p.locator("#navAttente").innerText()).includes("1"), "Tableau de bord : 1 compte en attente signalé dans le menu");
+  ok((await p.locator("#navAttente").innerText()).includes("3"), "Tableau de bord : 1 compte + 2 fiches à valider signalés dans le menu");
   await p.locator("#navTableau").click(); await p.waitForTimeout(500);
   ok((await p.locator("#statsContenu").innerText()).includes("312") && (await p.locator("#statsContenu").innerText()).includes("Comptes par rôle") && (await p.locator("#statsContenu").innerText()).includes("produits et colles du catalogue"), "Tableau de bord : statistiques affichées (concepteur), Membrane comprise");
   ok((await p.locator("#statsContenu").innerText()).includes("Espace utilisé") && (await p.locator("#statsContenu").innerText()).includes("29 Mo sur 500 Mo"), "Tableau de bord : espace utilisé sur Supabase affiché");
@@ -265,6 +277,16 @@ try {
   ok(etat.actions.some((a) => a[0] === "admin" && a[1]._id === "c3" && a[1]._admin === true), "Comptes : Nommer admin (concepteur) appelle la base");
   await p.locator("[data-retirer=c3]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c3" && a[1]._approved === false), "Comptes : Retirer l'accès demande confirmation puis appelle la base");
+  // Fiches a valider (concepteur) : nouvelle fiche et nouveau PDF, avec pastille dans le menu
+  ok((await p.locator("#listeFiches > li").count()) === 2 && (await p.locator("#listeFiches").innerText()).includes("Nouveau PDF"), "Fiches à valider : nouvelle fiche et nouveau PDF listés");
+  await p.locator("[data-ok-fiche=f2]").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "fiche_ok" && a[1]._id === "f2") && etat.fichiersRetires.includes("isolation/v1.pdf"), "Fiches à valider : Valider appelle la base et retire l'ancien PDF");
+  await p.locator("[data-non-fiche=f1]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "fiche_non" && a[1]._id === "f1") && etat.fichiersRetires.includes("joints/proposee.pdf") && (await p.locator("#listeFiches").innerText()).includes("Rien à valider"), "Fiches à valider : Refuser demande confirmation, supprime la fiche et son PDF");
+  // Historique replie par defaut : la fleche l'ouvre
+  ok(!(await p.locator("#listeHist").isVisible()) && (await p.locator("#hReplier").getAttribute("aria-expanded")) === "false", "Historique : replié par défaut");
+  await p.locator("#hReplier").click(); await p.waitForTimeout(200);
+  ok(await p.locator("#listeHist").isVisible(), "Historique : la flèche déplie la liste");
   ok((await p.locator("#listeHist > li").count()) === 2 && (await p.locator("#listeHist").innerText()).includes("60"), "Historique : 2 lignes");
   ok((await p.locator("#listeHist .chg .avant").first().innerText()).length > 0 && (await p.locator("#listeHist > li", { hasText: "Fiche test" }).locator(".chg li").count()) === 1 && (await p.locator("#listeHist > li", { hasText: "Fiche test" }).locator(".apres").innerText()) === "fiche-v2.pdf", "Historique : un PDF modifié = une seule ligne « PDF : ancien → nouveau », sans champs techniques");
   ok((await p.locator("[data-annuler]").count()) === 1, "Historique : bouton Annuler seulement quand c'est permis");

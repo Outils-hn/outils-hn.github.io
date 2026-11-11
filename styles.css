@@ -352,3 +352,11 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 @media (max-width: 1000px) { .ap-rang, .ap-rang.n4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ap-rang.n4 .ap-carte { flex-direction: row; } }
 @media (max-width: 760px) { #apercu { padding: 28px 22px 28px; } .ap-etapes { grid-template-columns: 1fr; } .ap-rang, .ap-rang.n4 { grid-template-columns: 1fr; } }
 #etatCompte[hidden] ~ #compteBtn { margin-left: auto; }
+
+/* Historique repliable (fleche a gauche du titre) */
+.replier { display: inline-flex; align-items: center; gap: 6px; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.replier svg { transition: transform .2s; transform: rotate(90deg); color: var(--muted); }
+.replier[aria-expanded="false"] svg { transform: rotate(0deg); }
+.replier:hover svg { color: var(--ink); }
+#blocHist.replie #listeHist, #blocHist.replie .outils-hist { display: none; }
+#blocHist.replie .ligne { margin-bottom: 0; }
