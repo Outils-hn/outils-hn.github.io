@@ -31,6 +31,7 @@ let roleCharge = false; // le role du compte connecte a-t-il ete lu ? (evite d'a
 let role = null; // « dessinateur », « administrateur », « concepteur » ; null = pas de compte valide (onglet cache)
 let comptes = []; // liste des comptes (administrateurs) ; vide sinon
 let historique = []; // dernieres modifications des donnees communes
+let fiches = []; // fiches d'Index en attente de validation (concepteur) ; null = colonnes absentes (base pas encore a jour)
 let histErreur = false;
 const filtreHist = { tbl: "", corbeille: false };
 const estAdmin = () => role === "administrateur" || role === "concepteur";
@@ -130,7 +131,8 @@ function rendre() {
   $("#navTableau").hidden = !role;
   $("#navChantiers").hidden = !role;
   const attente = comptes.filter((c) => !c.approved).length;
-  $("#navAttente").textContent = estAdmin() && attente ? `· ${attente}` : "";
+  const aValider = attente + (role === "concepteur" && fiches ? fiches.length : 0);
+  $("#navAttente").textContent = estAdmin() && aValider ? `· ${aValider}` : "";
   $("#nouveautes").hidden = v !== "nouveautes";
   document.querySelectorAll("[data-nav]").forEach((a) => (a.dataset.nav === v ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));
   const c = compter(retours);
@@ -233,6 +235,12 @@ async function chargerGestion() {
     rpc("historique_lire", { _tbl: filtreHist.tbl || null, _limite: 100, ...(filtreHist.corbeille ? { _corbeille: true } : {}) }, jeton),
   ]);
   comptes = c.status === "fulfilled" ? c.value ?? [] : [];
+  // Fiches a valider (concepteur) : nouvelles fiches et nouveaux PDF proposes dans Index
+  if (role === "concepteur") {
+    try {
+      fiches = await api("/rest/v1/products?select=id,name,supplier,category,pdf_path,pdf_filename,pdf_attente_path,pdf_attente_filename,statut,created_by,updated_at&deleted_at=is.null&or=(statut.eq.en_attente,pdf_attente_path.not.is.null)&order=updated_at.desc", { jeton });
+    } catch { fiches = null; }
+  } else fiches = [];
   histErreur = h.status !== "fulfilled";
   historique = h.status === "fulfilled" ? h.value ?? [] : [];
   rendre();
@@ -241,6 +249,7 @@ async function chargerGestion() {
 function rendreGestion() {
   $("#blocStats").hidden = !stats;
   $("#blocComptes").hidden = !estAdmin();
+  rendreFiches();
   $("#blocSauvegarde").hidden = role !== "concepteur";
   if (role === "concepteur") { const d = lireDerniereSauvegarde(); $("#resumeSauvegarde").textContent = d ? `dernière : ${fmtDate(d)}` : "jamais faite"; }
   if (!role) return;
@@ -276,6 +285,7 @@ function rendreGestion() {
   $("#hCorbeille").textContent = filtreHist.corbeille ? "← Retour à l'historique" : "Corbeille";
   $("#hCorbeille").setAttribute("aria-pressed", String(filtreHist.corbeille));
   $("#hVider").hidden = !(conc2 && filtreHist.corbeille && historique.length);
+  $("#hNombre").textContent = historique.length ? `· ${historique.length} ligne${historique.length > 1 ? "s" : ""}` : "";
   $("#blocHist h3 .aide").textContent = filtreHist.corbeille ? "supprimées définitivement après 30 jours" : "90 derniers jours";
 }
 
@@ -352,6 +362,64 @@ async function actionGestion(nom, args, message) {
   try { await rpc(nom, args, sess?.access_token); toast(message); await chargerGestion(); }
   catch (err) { toast(horsLigne(err) ? "Base injoignable." : err.message); }
 }
+// ---------- Fiches a valider (concepteur) ----------
+function rendreFiches() {
+  const bloc = $("#blocFiches");
+  bloc.hidden = role !== "concepteur" || fiches === null;
+  if (bloc.hidden) return;
+  const auteur = (id) => { const c = comptes.find((x) => x.id === id); return c ? nomCompte(c) : "un membre de l'équipe"; };
+  $("#listeFiches").innerHTML = fiches.map((f) => {
+    const nouvelle = f.statut === "en_attente";
+    const pdf = nouvelle ? f.pdf_path : f.pdf_attente_path;
+    const nomPdf = nouvelle ? f.pdf_filename : f.pdf_attente_filename;
+    return `<li><div class="corps"><div class="l1"><span class="badge-h">${nouvelle ? "Nouvelle fiche" : "Nouveau PDF"}</span> <b>${esc(f.name)}</b></div>
+      <div class="l2">${esc(f.supplier)} · ${esc(f.category)} · proposée par ${esc(auteur(f.created_by))} · ${esc(quand(f.updated_at))}${nomPdf ? ` · ${esc(nomPdf)}` : ""}</div></div>
+      <div class="boutons">${pdf ? `<button type="button" class="btn" data-voir="${esc(pdf)}">Voir le PDF</button>` : ""}<button type="button" class="btn primaire" data-ok-fiche="${esc(f.id)}">Valider</button><button type="button" class="btn danger" data-non-fiche="${esc(f.id)}">Refuser</button></div></li>`;
+  }).join("") || `<li class="vide">Rien à valider.</li>`;
+}
+// Le fichier ecarte (ancien PDF remplace, ou PDF refuse) est retire du stockage
+async function retirerFichier(chemin, jeton) {
+  if (!chemin) return;
+  try { await api("/storage/v1/object/technical-sheets", { methode: "DELETE", corps: { prefixes: [chemin] }, jeton }); } catch { /* deja absent */ }
+}
+$("#listeFiches").addEventListener("click", async (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const sess = await sessionFraiche(); const jeton = sess?.access_token;
+  if (b.dataset.voir) {
+    // Lien temporaire (le dossier des fiches est prive) ; onglet ouvert tout de suite pour ne pas etre bloque
+    const onglet = window.open("about:blank", "_blank");
+    try {
+      const r = await api(`/storage/v1/object/sign/technical-sheets/${b.dataset.voir.split("/").map(encodeURIComponent).join("/")}`, { methode: "POST", corps: { expiresIn: 600 }, jeton });
+      const url = `${BASE_URL}/storage/v1${r.signedURL ?? r.signedUrl}`;
+      if (onglet) onglet.location.href = url; else window.open(url, "_blank", "noopener");
+    } catch (err) { onglet?.close(); toast(horsLigne(err) ? "Base injoignable." : "PDF introuvable."); }
+    return;
+  }
+  const id = b.dataset.okFiche || b.dataset.nonFiche; if (!id) return;
+  const f = fiches.find((x) => x.id === id); if (!f) return;
+  if (b.dataset.nonFiche && !(await confirmer(`Refuser « ${f.name} » ?`, f.statut === "en_attente" ? "La fiche et son PDF sont supprimés." : "Le nouveau PDF est supprimé ; la fiche garde son PDF actuel.", "Refuser"))) return;
+  try {
+    const r = await rpc(b.dataset.okFiche ? "fiche_valider" : "fiche_refuser", { _id: id }, jeton);
+    await retirerFichier(r?.fichier, jeton);
+    toast(b.dataset.okFiche ? `« ${f.name} » validée.` : `« ${f.name} » refusée.`);
+    await chargerGestion();
+  } catch (err) { toast(horsLigne(err) ? "Base injoignable." : err.message); }
+});
+
+// Historique replie par defaut (longue liste) ; le choix est retenu
+const CLE_HIST = "accueil-historique-ouvert";
+function majReplier() {
+  let ouvert = false; try { ouvert = localStorage.getItem(CLE_HIST) === "1"; } catch { /* bloque */ }
+  $("#blocHist").classList.toggle("replie", !ouvert);
+  $("#hReplier").setAttribute("aria-expanded", String(ouvert));
+}
+$("#hReplier").addEventListener("click", () => {
+  const ouvert = $("#hReplier").getAttribute("aria-expanded") !== "true";
+  try { localStorage.setItem(CLE_HIST, ouvert ? "1" : "0"); } catch { /* bloque */ }
+  majReplier();
+});
+majReplier();
+
 $("#listeComptes").addEventListener("click", async (e) => {
   const b = e.target.closest("button"); if (!b) return;
   const id = b.dataset.valider || b.dataset.admin || b.dataset.retirer;
