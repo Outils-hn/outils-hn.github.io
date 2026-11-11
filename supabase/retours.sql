@@ -60,11 +60,11 @@ begin
   return jsonb_build_object('ok', found);
 end $$;
 
--- Administrateurs d'Index : statut et reponse, ou suppression (spam)
+-- Concepteur seulement : statut et reponse, ou suppression (spam)
 create or replace function public.retour_traiter(p_id uuid, p_statut text, p_reponse text) returns jsonb
 language plpgsql security definer set search_path = public as $$
 begin
-  if not public.is_admin() then return jsonb_build_object('ok', false, 'error', 'Réservé aux administrateurs d''Index.'); end if;
+  if not public.is_concepteur() then return jsonb_build_object('ok', false, 'error', 'Réservé au concepteur.'); end if;
   if p_statut not in ('nouveau', 'prevu', 'en_cours', 'fait', 'refuse') then return jsonb_build_object('ok', false, 'error', 'Statut inconnu.'); end if;
   update retours set statut = p_statut, reponse = left(coalesce(p_reponse, ''), 1000), updated_at = now() where id = p_id;
   return jsonb_build_object('ok', found);
@@ -73,7 +73,7 @@ end $$;
 create or replace function public.retour_supprimer(p_id uuid) returns jsonb
 language plpgsql security definer set search_path = public as $$
 begin
-  if not public.is_admin() then return jsonb_build_object('ok', false, 'error', 'Réservé aux administrateurs d''Index.'); end if;
+  if not public.is_concepteur() then return jsonb_build_object('ok', false, 'error', 'Réservé au concepteur.'); end if;
   delete from retours where id = p_id;
   return jsonb_build_object('ok', found);
 end $$;
