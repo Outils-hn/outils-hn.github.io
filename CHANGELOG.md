@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.30 — 11 novembre 2026
+
+- La sauvegarde des fichiers récupère les PDF d'Index avec le compte connecté (le dossier des fiches devient privé).
+
 ## 2.29 — 11 novembre 2026
 
 - Nouveauté : les applis sont désormais réservées aux comptes de l'équipe. Sans compte, l'Accueil présente ce que fait chaque appli, avec la connexion et l'inscription.
