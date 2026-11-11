@@ -302,9 +302,9 @@ $("#sauvegarder").addEventListener("click", async (e) => {
 });
 
 // Sauvegarde des fichiers : la liste vient de la fonction liste_fichiers (supabase/sauvegarde-fichiers.sql), puis chaque fichier est telecharge
-// et le zip assemble dans le navigateur. Les seaux publics (PDF) passent par l'adresse publique, les autres par la session.
-const SEAUX_PUBLICS = ["technical-sheets"];
-const adresseFichier = (seau, chemin) => `${BASE_URL}/storage/v1/object/${SEAUX_PUBLICS.includes(seau) ? "public" : "authenticated"}/${seau}/${chemin.split("/").map(encodeURIComponent).join("/")}`;
+// avec la session (tous les dossiers sont prives depuis le passage au compte obligatoire) et le zip assemble dans le navigateur.
+// Repli sur l'adresse publique tant que le dossier des PDF n'est pas encore prive.
+const adresseFichier = (seau, chemin, mode = "authenticated") => `${BASE_URL}/storage/v1/object/${mode}/${seau}/${chemin.split("/").map(encodeURIComponent).join("/")}`;
 $("#sauvegarderFichiers").addEventListener("click", async (e) => {
   const b = e.currentTarget; b.disabled = true; const txt = b.textContent; b.textContent = "Liste des fichiers…";
   try {
@@ -318,7 +318,9 @@ $("#sauvegarderFichiers").addEventListener("click", async (e) => {
       const { seau, chemin } = liste[i];
       b.textContent = `Fichiers : ${i + 1} / ${liste.length}`;
       try {
-        const r = await fetch(adresseFichier(seau, chemin), { headers: { apikey: BASE_KEY, Authorization: `Bearer ${jeton}` } });
+        const entetes = { headers: { apikey: BASE_KEY, Authorization: `Bearer ${jeton}` } };
+        let r = await fetch(adresseFichier(seau, chemin), entetes);
+        if (!r.ok && seau === "technical-sheets") r = await fetch(adresseFichier(seau, chemin, "public"), entetes);
         if (!r.ok) throw new Error(String(r.status));
         fichiers.push({ nom: `${seau}/${chemin}`, octets: new Uint8Array(await r.arrayBuffer()) });
       } catch { rates.push(`${seau}/${chemin}`); }
