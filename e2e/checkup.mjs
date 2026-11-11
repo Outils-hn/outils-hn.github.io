@@ -76,7 +76,7 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
     if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1", texte: "Vérifier les ancrages du R+2", statut: "todo", flash: true, echeance: null }, { id: "n2", texte: "Rappeler le client", statut: "todo", flash: false, echeance: "2026-01-05" }] : []);
     if (u.pathname === "/rest/v1/rpc/espace_utilise") return json(tok === "tok-admin" ? { base: 30408704, stockage: 20480, calculs: 51200 } : null);
-    if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : null);
+    if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : tok === "tok-dessin" ? "dessinateur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
     if (u.pathname === "/rest/v1/rpc/set_account_approved") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.approved = corps._approved; etat.actions.push(["approved", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/set_account_admin") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.is_admin = corps._admin; etat.actions.push(["admin", corps]); return json(null); }
@@ -102,12 +102,16 @@ async function brancher(ctx) {
   });
 }
 const b = await chromium.launch();
-async function page({ dark = false } = {}) {
+// Compte obligatoire : par defaut, la page s'ouvre avec la session d'une dessinatrice validee (posee une seule fois, pas a chaque rechargement)
+const DESSIN = { id: "22222222-2222-4222-8222-222222222222", email: "julie@exemple.ch", user_metadata: { first_name: "julie", last_name: "martin" } };
+async function page({ dark = false, connecte = true } = {}) {
   const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+  if (connecte) await ctx.addInitScript((u) => { if (!sessionStorage.getItem("e2e-init")) { sessionStorage.setItem("e2e-init", "1"); localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-dessin", refresh_token: "ref-dessin", expires_at: Math.floor(Date.now() / 1000) + 3000, user: u })); } }, DESSIN);
   if (dark) await ctx.addInitScript(() => localStorage.setItem("accueil-theme", "dark"));
   await brancher(ctx);
   const p = await ctx.newPage();
-  p.on("pageerror", (e) => ok(false, `erreur JS : ${e.message}`));
+  // (une transition de page interrompue par une redirection n'est pas une erreur de l'appli)
+  p.on("pageerror", (e) => { if (!/ViewTransition|Transition was aborted/.test(e.message)) ok(false, `erreur JS : ${e.message}`); });
   return p;
 }
 const shot = async (p, n) => { await p.waitForTimeout(400); await p.screenshot({ path: `${out}/${n}.png`, fullPage: true }); };
@@ -118,7 +122,7 @@ const axe = async (p, nom) => {
 };
 
 try {
-  const p = await page();
+  let p = await page();
   await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
   ok((await p.locator(".carte").count()) === 10, "10 applis sur l'accueil");
   ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Masse,Membrane,Strate", "classées par fréquence d'usage (quotidien, occasionnels, autres)");
@@ -195,7 +199,17 @@ try {
   ok(etat.envois.length === n, "champ piège : envoi d'un robot ignoré");
 
   // Compte Index : « Se connecter » en haut de page, connexion partagee (cle de stockage d'Index)
-  ok((await p.locator("#etatCompte").innerText()) === "Lecture seule" && (await p.locator("#compteBtn").innerText()) === "Se connecter", "Bandeau : « Lecture seule » + Se connecter");
+  ok((await p.locator("#etatCompte").innerText()) === "Julie MARTIN", "Bandeau : Prénom NOM du compte connecté");
+  // Compte obligatoire : sans compte, page d'apercu (aucune appli ouvrable, pas de menu ni de recherche)
+  p = await page({ connecte: false });
+  await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
+  ok(await p.locator("#apercu").isVisible() && (await p.locator(".ap-carte").count()) === 10 && !(await p.locator("#applis").isVisible()), "Sans compte : page d'aperçu des 10 applis, aucune appli ouvrable");
+  ok(!(await p.locator("#nav").isVisible()) && !(await p.locator("#rechercheBtn").isVisible()), "Sans compte : ni menu ni recherche");
+  ok((await p.locator(".ap-carte", { hasText: "Index" }).locator("li").count()) === 3, "Aperçu : ce que fait chaque appli (3 points pour Index)");
+  ok((await p.locator("#apActions a", { hasText: "Créer un compte" }).getAttribute("href")) === "https://outils-hn.github.io/Index/auth", "Aperçu : lien « Créer un compte »");
+  await shot(p, "00-apercu");
+  await axe(p, "aperçu");
+  ok((await p.locator("#compteBtn").innerText()) === "Se connecter", "Bandeau : Se connecter");
   await p.locator("#compteBtn").click();
   await p.locator("#formConnexion [name=email]").fill(ADMIN.email); await p.locator("#formConnexion [name=mdp]").fill("mauvais");
   await p.locator("#formConnexion button[type=submit]").click(); await p.waitForTimeout(400);
@@ -269,10 +283,23 @@ try {
   ok((await p.locator("#listeHist > li").count()) === 2, "Historique : la ligne restaurée est revenue");
   await p.getByRole("link", { name: "Applis" }).click(); await p.waitForTimeout(200);
   await p.locator("#compteBtn").click(); await p.waitForTimeout(200);
-  ok((await p.locator("#etatCompte").innerText()) === "Lecture seule", "Deconnexion : retour en lecture seule");
+  ok(await p.locator("#apercu").isVisible() && !(await p.locator("#applis").isVisible()), "Déconnexion : retour à la page d'aperçu");
   ok(!(await p.locator("#navTableau").isVisible()), "Tableau de bord : onglet cache sans connexion");
   // Joint (en preparation) : visible seulement pour le concepteur, et le drapeau partage avec les menus des applis retombe a la deconnexion
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Masse,Membrane,Strate", "Joint et Membrane : cartes visibles sans compte");
+  ok((await p.locator(".ap-carte").count()) === 10, "Sans compte : les 10 applis restent présentées dans l'aperçu");
+  // Compte pas encore valide : ecran d'attente
+  const pAtt = await page({ connecte: false });
+  await pAtt.goto(URL0); await pAtt.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-attente", refresh_token: "ref-x", expires_at: Math.floor(Date.now() / 1000) + 3000, user: { id: "u3", email: "nouveau@exemple.ch" } })));
+  await pAtt.reload(); await pAtt.waitForTimeout(600);
+  ok((await pAtt.locator("#apLead").innerText()).includes("attend la validation") && !(await pAtt.locator("#applis").isVisible()), "Compte en attente : message clair, applis fermées");
+  await shot(pAtt, "00b-attente");
+  // Arrivee depuis une appli sans compte (garde.js) : apres connexion, retour a l'appli demandee
+  const pRet = await page({ connecte: false });
+  await pRet.goto(URL0 + "?retour=%2FCheck%2F"); await pRet.waitForTimeout(300);
+  await pRet.locator("[data-ap=connexion]").click();
+  await pRet.locator("#formConnexion [name=email]").fill(ADMIN.email); await pRet.locator("#formConnexion [name=mdp]").fill(ADMIN.mdp);
+  await pRet.locator("#formConnexion button[type=submit]").click(); await pRet.waitForTimeout(1200);
+  ok(new URL(pRet.url()).pathname === "/Check/", "Connexion depuis une appli : retour à l'appli demandée");
   ok(!(await p.evaluate(() => localStorage.getItem("outils-apercu"))), "Joint : drapeau d'apercu absent sans compte concepteur");
   // Session perimee (plus d'une heure) : l'Accueil la renouvelle et l'onglet apparait quand meme
   await p.evaluate((u) => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });

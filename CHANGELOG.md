@@ -2,6 +2,13 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.29 — 11 novembre 2026
+
+- Nouveauté : les applis sont désormais réservées aux comptes de l'équipe. Sans compte, l'Accueil présente ce que fait chaque appli, avec la connexion et l'inscription.
+- Nouveauté : un compte qui attend la validation d'un administrateur le voit clairement à l'Accueil.
+- Nouveauté : après la connexion, on revient directement dans l'appli qu'on voulait ouvrir.
+- Nouveauté : la page des applis est plus large sur grand écran.
+
 ## 2.28 — 11 novembre 2026
 
 - Nouveauté : « Télécharger les fichiers » récupère bien les PDF d'Index (le zip arrivait vide).
