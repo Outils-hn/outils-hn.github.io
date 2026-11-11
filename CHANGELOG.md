@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.34 — 11 novembre 2026
+
+- Nouveauté : les titres de groupe (Occasionnels, Autres outils…) n'ont plus de trait pointillé.
+
 ## 2.33 — 11 novembre 2026
 
 - Nouveauté : le Tableau de bord du concepteur contient « Qui fait quoi », un tableau repliable des droits de chaque rôle.
