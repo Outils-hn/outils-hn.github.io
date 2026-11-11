@@ -249,6 +249,7 @@ async function chargerGestion() {
 function rendreGestion() {
   $("#blocStats").hidden = !stats;
   $("#blocComptes").hidden = !estAdmin();
+  $("#blocDroits").hidden = role !== "concepteur";
   rendreFiches();
   $("#blocSauvegarde").hidden = role !== "concepteur";
   if (role === "concepteur") { const d = lireDerniereSauvegarde(); $("#resumeSauvegarde").textContent = d ? `dernière : ${fmtDate(d)}` : "jamais faite"; }
@@ -419,6 +420,19 @@ $("#hReplier").addEventListener("click", () => {
   majReplier();
 });
 majReplier();
+// « Qui fait quoi » (concepteur) : replie par defaut, choix retenu
+const CLE_DROITS = "accueil-droits-ouvert";
+function majDroits() {
+  let ouvert = false; try { ouvert = localStorage.getItem(CLE_DROITS) === "1"; } catch { /* bloque */ }
+  $("#blocDroits").classList.toggle("replie", !ouvert);
+  $("#dReplier").setAttribute("aria-expanded", String(ouvert));
+}
+$("#dReplier").addEventListener("click", () => {
+  const ouvert = $("#dReplier").getAttribute("aria-expanded") !== "true";
+  try { localStorage.setItem(CLE_DROITS, ouvert ? "1" : "0"); } catch { /* bloque */ }
+  majDroits();
+});
+majDroits();
 
 $("#listeComptes").addEventListener("click", async (e) => {
   const b = e.target.closest("button"); if (!b) return;

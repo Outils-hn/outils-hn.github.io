@@ -283,6 +283,11 @@ try {
   ok(etat.actions.some((a) => a[0] === "fiche_ok" && a[1]._id === "f2") && etat.fichiersRetires.includes("isolation/v1.pdf"), "Fiches à valider : Valider appelle la base et retire l'ancien PDF");
   await p.locator("[data-non-fiche=f1]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "fiche_non" && a[1]._id === "f1") && etat.fichiersRetires.includes("joints/proposee.pdf") && (await p.locator("#listeFiches").innerText()).includes("Rien à valider"), "Fiches à valider : Refuser demande confirmation, supprime la fiche et son PDF");
+  // « Qui fait quoi » (concepteur) : replie, la fleche montre le tableau des droits
+  await p.locator("#dReplier").click(); await p.waitForTimeout(200);
+  ok(await p.locator("#droitsContenu").isVisible() && (await p.locator("#droitsContenu tbody tr").count()) === 13, "Qui fait quoi : tableau des droits visible pour le concepteur");
+  await shot(p, "06c-droits");
+  await p.locator("#dReplier").click();
   // Historique replie par defaut : la fleche l'ouvre
   ok(!(await p.locator("#listeHist").isVisible()) && (await p.locator("#hReplier").getAttribute("aria-expanded")) === "false", "Historique : replié par défaut");
   await p.locator("#hReplier").click(); await p.waitForTimeout(200);

@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.33 — 11 novembre 2026
+
+- Nouveauté : le Tableau de bord du concepteur contient « Qui fait quoi », un tableau repliable des droits de chaque rôle.
+
 ## 2.32 — 11 novembre 2026
 
 - Nouveauté : seul le concepteur traite les idées et bugs (statut, réponse, suppression), puisque c'est lui qui modifie les applis.
