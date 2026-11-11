@@ -35,8 +35,8 @@ let fiches = []; // fiches d'Index en attente de validation (concepteur) ; null 
 let histErreur = false;
 const filtreHist = { tbl: "", corbeille: false };
 const estAdmin = () => role === "administrateur" || role === "concepteur";
-/** Un administrateur connecte (session commune avec Index) peut traiter les retours : plus de connexion separee. */
-const admin = () => (estAdmin() ? { email: lireSession()?.user?.email ?? "" } : null);
+/** Seul le concepteur traite les idees et bugs (statut, reponse, suppression) : c'est lui qui modifie le code. */
+const admin = () => (role === "concepteur" ? { email: lireSession()?.user?.email ?? "" } : null);
 // Applis en apercu (aucune pour l'instant ; champ « apercu: true » dans core.js) : visibles seulement pour le concepteur. Le drapeau est garde dans le navigateur
 // (meme site pour toutes les applis) pour que leurs menus montrent aussi l'appli ; il est remis a jour a chaque visite de l'Accueil.
 const CLE_APERCU = "outils-apercu";
