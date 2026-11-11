@@ -322,3 +322,4 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 #applis .lignes { display: grid; grid-template-columns: repeat(auto-fill, 192px); gap: 24px 24px; }
 #applis .lignes > * { height: 24px; align-items: center; }
 @media (max-width: 560px) { #applis .lignes { grid-template-columns: repeat(auto-fill, 168px); } }
+.boutons-sauvegarde { display: flex; flex-wrap: wrap; gap: 10px; }
