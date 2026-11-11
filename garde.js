@@ -7,6 +7,7 @@
   var CLE_PUBLIQUE = "sb_publishable_yEWGxFFSLTE1lJRXnFUmpg_dMwa6LxW";
   var ACCUEIL = "https://outils-hn.github.io/";
   var p = location.pathname, h = location.hash, q = location.search;
+  if (location.hostname !== "outils-hn.github.io") return; // seulement sur le vrai site (tests locaux et apercus non concernes)
 
   // Pages libres : inscription / mot de passe oublie d'Index, et retour d'un lien recu par e-mail
   if (/\/Index\/(auth|nouveau-mot-de-passe)\/?$/i.test(p)) return;
