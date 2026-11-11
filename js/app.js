@@ -1,7 +1,7 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { creerZip } from "./zip.js?v=1";
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur } from "./core.js?v=2.7";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur } from "./core.js?v=2.8";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -27,6 +27,7 @@ const horsLigne = (e) => /fetch|network|Load failed/i.test(e?.message ?? "");
 // ---------- Etat ----------
 let espace = null; // espace Supabase utilise (null = bloc cache)
 let stats = null; // totaux reserves au concepteur (null = bloc cache)
+let roleCharge = false; // le role du compte connecte a-t-il ete lu ? (evite d'afficher « en attente » trop tot)
 let role = null; // « dessinateur », « administrateur », « concepteur » ; null = pas de compte valide (onglet cache)
 let comptes = []; // liste des comptes (administrateurs) ; vide sinon
 let historique = []; // dernieres modifications des donnees communes
@@ -73,8 +74,10 @@ async function chargerJournaux() {
 }
 
 async function charger() {
+  const sess = await sessionFraiche();
+  if (!sess) { retours = []; charge = true; rendre(); return; } // les retours sont reserves aux comptes
   try {
-    retours = await api("/rest/v1/retours?select=*&order=created_at.desc&limit=500");
+    retours = await api("/rest/v1/retours?select=*&order=created_at.desc&limit=500", { jeton: sess.access_token });
     erreurChargement = null;
   } catch (e) {
     erreurChargement = /retours|does not exist|PGRST205|42P01/i.test(e.message) ? "pas-prete" : "injoignable";
@@ -91,10 +94,34 @@ function toast(msg) {
   clearTimeout(minuteur); minuteur = setTimeout(() => (t.hidden = true), 3200);
 }
 
+// ---------- Acces : compte obligatoire ----------
+// « invite » = pas de session, « attente » = compte pas encore valide, « chargement » = role en cours de lecture, « ok » = compte valide
+function etatAcces() {
+  if (!lireSession()) return "invite";
+  if (!roleCharge) return "chargement";
+  return role ? "ok" : "attente";
+}
+// Retour vers l'appli demandee apres connexion (garde.js envoie ?retour=/Appli/...) : chemin du meme site seulement
+function adresseRetour() {
+  const r = new URLSearchParams(location.search).get("retour") || "";
+  return /^\/(?!\/)/.test(r) && !/^\/?(\?|#|$)/.test(r) ? r : "";
+}
+
 // ---------- Vues ----------
 function vue() { if (location.hash.startsWith("#chantiers") && role) return "chantiers"; return (location.hash === "#tableau" || location.hash === "#statistiques") && role ? "tableau" : location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
 
 function rendre() {
+  const acces = etatAcces();
+  const ouvert = acces === "ok";
+  $("#nav").hidden = !ouvert;
+  $("#rechercheBtn").hidden = !ouvert;
+  $("#apercu").hidden = acces !== "invite" && acces !== "attente";
+  if (!ouvert) {
+    for (const id of ["#applis", "#retours", "#tableau", "#chantiers", "#nouveautes"]) $(id).hidden = true;
+    document.title = "Accueil — les outils du bureau d'études";
+    rendreApercu(acces);
+    return;
+  }
   const v = vue();
   $("#applis").hidden = v !== "applis";
   $("#retours").hidden = v !== "retours";
@@ -150,7 +177,9 @@ async function chargerStats() {
   chargerPourMoi(s);
   const avant = !!stats;
   const avantRole = role;
-  try { role = s ? (await rpc("mon_role", {}, s.access_token)) || null : null; } catch { role = null; }
+  try { role = s ? (await rpc("mon_role", {}, s.access_token)) || null : null; roleCharge = true; } catch (e) { role = null; roleCharge = !horsLigne(e); }
+  // Arrive ici depuis une appli (garde.js) : une fois le compte valide, on y retourne
+  if (role && adresseRetour()) { location.replace(adresseRetour()); return; }
   try { stats = s && role === "concepteur" ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
   try { espace = stats ? await rpc("espace_utilise", {}, s.access_token) : null; } catch { espace = null; }
   const avantApercu = apercu;
@@ -158,7 +187,7 @@ async function chargerStats() {
   try { if (apercu) localStorage.setItem(CLE_APERCU, "1"); else localStorage.removeItem(CLE_APERCU); } catch { /* bloque */ }
   if (avantApercu !== apercu) { remplirListes(); if (apercu && journauxCharges) chargerJournaux(); }
   if (role) chargerGestion(); else { comptes = []; historique = []; }
-  if (avant !== !!stats || avantRole !== role || stats) rendre();
+  rendre();
 }
 
 // ---------- Tableau de bord : comptes et historique (fonctions de la base, droits verifies cote base) ----------
@@ -397,6 +426,37 @@ const PICTOS = {
   Strate: '<path d="M4 6h16M4 12h16M4 18h16"/>',
 };
 
+// Page d'apercu (sans compte ou en attente de validation)
+const logoAppli = (a, cls) => `<span class="logo ${cls}" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PICTOS[a.nom] ?? ""}</svg></span>`;
+function rendreApercu(acces) {
+  if (acces !== "invite" && acces !== "attente") return;
+  const s = lireSession();
+  const attente = acces === "attente";
+  $("#apercu").classList.toggle("attente", attente);
+  $("#apLead").textContent = attente
+    ? `Votre compte${s ? ` (${s.user?.email ?? ""})` : ""} attend la validation d'un administrateur. Dès qu'il est validé, rechargez la page : toutes les applis s'ouvriront.`
+    : "Fiches techniques, notes d'équipe, débits et calculs du quotidien, réunis au même endroit. L'accès se fait avec un compte de l'équipe.";
+  $("#apActions").innerHTML = attente
+    ? `<button type="button" class="btn primaire" data-ap="recharger">Recharger</button><button type="button" class="btn" data-ap="deconnexion">Se déconnecter</button>`
+    : `<button type="button" class="btn primaire" data-ap="connexion">Se connecter</button><a class="btn" href="https://outils-hn.github.io/Index/auth">Créer un compte</a>`;
+  $("#apEtapes").hidden = attente;
+  // Par frequence d'usage, comme la page des applis : 3 + 3 + 4 cartes, chaque ligne remplie (grille de 12 colonnes)
+  const carteAp = (a) => `<article class="ap-carte" style="--c:${a.couleur}">
+    ${logoAppli(a, "petite")}
+    <div class="ap-corps"><h3>${esc(a.nom)} <span class="ap-role">${esc(a.role)}</span></h3><p>${esc(a.texte)}</p>
+    ${a.points?.length ? `<ul>${a.points.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}</div></article>`;
+  $("#apGrille").innerHTML = NIVEAUX.map((n) => {
+    const liste = n.noms.map((nom) => APPLIS.find((a) => a.nom === nom)).filter((a) => a && !a.apercu);
+    return liste.length ? `<h3 class="niveau">${esc(n.titre)}</h3><div class="ap-rang n${liste.length}">${liste.map(carteAp).join("")}</div>` : "";
+  }).join("");
+}
+$("#apercu").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-ap]"); if (!b) return;
+  if (b.dataset.ap === "connexion") $("#compteBtn").click();
+  else if (b.dataset.ap === "recharger") location.reload();
+  else if (b.dataset.ap === "deconnexion") { ecrireSession(null); majCompte(); toast("Déconnecté."); }
+});
+
 function rendreApplis() {
   const vis = visibles();
   const trouver = (nom) => vis.find((a) => a.nom === nom);
@@ -532,7 +592,7 @@ $("#liste").addEventListener("click", async (e) => {
     const id = m.dataset.moiAussi;
     m.disabled = true;
     try {
-      const r = await rpc("retour_moi_aussi", { p_id: id });
+      const r = await rpc("retour_moi_aussi", { p_id: id }, (await sessionFraiche())?.access_token);
       if (r?.ok) {
         votes.add(id);
         try { localStorage.setItem(VOTES, JSON.stringify([...votes])); } catch { /* stockage bloque */ }
@@ -600,7 +660,7 @@ $("#formNouveau").addEventListener("submit", async (e) => {
   };
   $("#nEnvoyer").disabled = true;
   try {
-    const r = await rpc("retour_envoyer", { p: corps });
+    const r = await rpc("retour_envoyer", { p: corps }, (await sessionFraiche())?.access_token);
     if (!r?.ok) { $("#nErreur").textContent = r?.error || "Envoi refusé."; return; }
     try { localStorage.setItem("accueil-prenom", corps.nom); } catch { /* stockage bloque */ }
     dN.close();
@@ -618,11 +678,15 @@ function lireSession() { try { const s = JSON.parse(localStorage.getItem(CLE_SES
 function ecrireSession(s) { try { if (s) localStorage.setItem(CLE_SESSION, JSON.stringify(s)); else localStorage.removeItem(CLE_SESSION); } catch { /* bloque */ } }
 function majCompte() {
   const s = lireSession();
-  $("#etatCompte").textContent = s ? (nomAffiche(s.user) || (s.user?.email ?? "")) : "Lecture seule";
+  $("#etatCompte").textContent = s ? (nomAffiche(s.user) || (s.user?.email ?? "")) : "";
+  $("#etatCompte").hidden = !s;
   $("#etatCompte").title = s ? (s.user?.email ?? "") : "";
   $("#etatCompte").classList.toggle("on", !!s);
   $("#compteBtn").textContent = s ? "Se déconnecter" : "Se connecter";
+  roleCharge = false;
+  rendre();
   chargerStats();
+  if (s) charger();
 }
 const dC = $("#dConnexion");
 $("#compteBtn").addEventListener("click", () => {
@@ -843,6 +907,6 @@ rQ.addEventListener("keydown", (e) => {
 rListe.addEventListener("click", (e) => { const li = e.target.closest("[data-i]"); if (li) ouvrirResultat(+li.dataset.i); });
 dR.addEventListener("click", (e) => { if (e.target === dR) dR.close(); });
 $("#rechercheBtn").addEventListener("click", ouvrirRecherche);
-document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); ouvrirRecherche(); } });
+document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k" && etatAcces() === "ok") { e.preventDefault(); ouvrirRecherche(); } });
 // Arrivee depuis une autre appli (Ctrl+K) : « #recherche » ouvre la barre, puis on revient a l'adresse normale
-if (location.hash === "#recherche") { history.replaceState(null, "", location.pathname + location.search); ouvrirRecherche(); }
+if (location.hash === "#recherche") { history.replaceState(null, "", location.pathname + location.search); if (etatAcces() !== "invite") ouvrirRecherche(); }

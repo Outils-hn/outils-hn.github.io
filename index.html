@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.23">
+<link rel="stylesheet" href="styles.css?v=2.24">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
@@ -26,7 +26,7 @@
       <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="5.5" fill="#1F2026"/><rect x="5" y="5" width="6.2" height="6.2" rx="1.2" fill="#F1F0EC"/><rect x="12.8" y="5" width="6.2" height="6.2" rx="1.2" fill="#C2255C"/><rect x="5" y="12.8" width="6.2" height="6.2" rx="1.2" fill="#6D4AFF"/><rect x="12.8" y="12.8" width="6.2" height="6.2" rx="1.2" fill="#0E9F6E"/></svg>
       <h1>Accueil</h1>
     </a>
-    <nav aria-label="Sections">
+    <nav aria-label="Sections" id="nav">
       <a href="#applis" class="nav" data-nav="applis">Applis</a>
       <a href="#retours" class="nav" data-nav="retours">Idées &amp; bugs <span class="compte" id="navCompte"></span></a>
       <a href="#chantiers" class="nav" data-nav="chantiers" id="navChantiers" hidden>Chantiers</a>
@@ -43,6 +43,22 @@
 </header>
 
 <main>
+  <!-- Visiteur sans compte (ou compte pas encore valide) : apercu des applis, connexion, inscription -->
+  <section id="apercu" aria-labelledby="t-apercu" hidden>
+    <div class="ap-tete">
+      <p class="ap-sur">Bureau d'études façade</p>
+      <h2 id="t-apercu">Les outils du bureau d'études</h2>
+      <p class="ap-lead" id="apLead"></p>
+      <div class="ap-actions" id="apActions"></div>
+    </div>
+    <ol class="ap-etapes" id="apEtapes">
+      <li><b>1</b><span>Créez votre compte</span></li>
+      <li><b>2</b><span>Un administrateur le valide</span></li>
+      <li><b>3</b><span>Toutes les applis s'ouvrent, avec une seule connexion</span></li>
+    </ol>
+    <div class="ap-grille" id="apGrille"></div>
+  </section>
+
   <section id="applis" aria-labelledby="t-applis">
     <div class="titre">
       <h2 id="t-applis">Les outils du bureau d'études</h2>
@@ -142,7 +158,7 @@
 </main>
 
 <footer>
-  Accueil v2.28 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.29 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
@@ -190,7 +206,7 @@
     <label class="bloc">Email <input name="email" type="email" class="champ" autocomplete="username" required></label>
     <label class="bloc">Mot de passe <input name="mdp" type="password" class="champ" autocomplete="current-password" required></label>
     <p class="erreur" id="cErreur" role="alert"></p>
-    <p class="aide">Pas encore de compte ? <a href="https://outils-hn.github.io/Index/auth" target="_blank" rel="noopener noreferrer">Créez-le dans Index</a>.<br>Un collègue doit ensuite le valider.</p>
+    <p class="aide">Pas encore de compte ? <a href="https://outils-hn.github.io/Index/auth">Créez-le ici</a>. Un administrateur doit ensuite le valider.<br><a href="https://outils-hn.github.io/Index/auth">Mot de passe oublié ?</a></p>
     <div class="actions">
       <button type="button" class="btn" data-fermer>Annuler</button>
       <button type="submit" class="btn primaire">Se connecter</button>
@@ -240,6 +256,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/app.js?v=2.25"></script>
+<script type="module" src="js/app.js?v=2.26"></script>
 </body>
 </html>
