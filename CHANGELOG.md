@@ -5,6 +5,7 @@ Chaque version qui change quelque chose de visible pour l'équipe a une puce « 
 ## 2.26 — 10 novembre 2026
 
 - Nouveauté : un bouton « Sauvegarde » dans le Tableau de bord (concepteur) télécharge d'un clic toutes les données des applis dans un fichier daté.
+- Nouveauté : les logos des lignes « Occasionnels » et « Autres outils » sont alignés en colonnes, calés sur le quadrillage.
 
 ## 2.25 — 10 novembre 2026
 

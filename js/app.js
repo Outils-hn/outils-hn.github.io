@@ -389,7 +389,26 @@ function rendreApplis() {
   const groupe = (titre, liste) => liste.length ? `<h3 class="niveau">${titre}</h3><div class="lignes">${liste.map(ligne).join("")}</div>` : "";
   $("#grille").innerHTML = (jour.length ? `<div class="quotidien">${carte(jour[0], "grande", 1)}<div class="pile">${jour.slice(1).map((a, i) => carte(a, "petite", i + 2)).join("")}</div></div>` : "")
     + groupe(NIVEAUX[1].titre, parfois) + groupe(NIVEAUX[2].titre, rare);
+  calerSurGrille();
 }
+
+// Cale les logos des lignes sur le quadrillage de 24 px du fond : on ajoute au titre de groupe juste l'espace qui manque.
+const PAS = 24;
+function calerSurGrille() {
+  const zone = document.querySelector("#applis"); if (!zone) return;
+  const origine = zone.getBoundingClientRect().top + zone.clientTop;
+  for (const bloc of zone.querySelectorAll(".lignes")) {
+    const titre = bloc.previousElementSibling, logo = bloc.querySelector(".logo");
+    if (!titre || !logo) continue;
+    titre.style.marginTop = "";
+    const reste = (logo.getBoundingClientRect().top - origine) % PAS;
+    const manque = (PAS - Math.round(reste)) % PAS;
+    if (manque) titre.style.marginTop = `${parseFloat(getComputedStyle(titre).marginTop) + manque}px`;
+  }
+}
+let minuterieCalage;
+window.addEventListener("resize", () => { clearTimeout(minuterieCalage); minuterieCalage = setTimeout(calerSurGrille, 120); });
+document.fonts?.ready.then(calerSurGrille);
 
 function rendreRetours() {
   const liste = $("#liste");
