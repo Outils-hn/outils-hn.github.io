@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.35 — 11 novembre 2026
+
+- Nouveauté : sur la page d'aperçu, la 3e étape devient simplement « Toutes les applis s'ouvrent ».
+
 ## 2.34 — 11 novembre 2026
 
 - Nouveauté : les titres de groupe (Occasionnels, Autres outils…) n'ont plus de trait pointillé.
