@@ -276,7 +276,7 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 
 /* Accueil, style « plan » : feuille de dessin (grille, double cadre), cotations qui se tracent, coins qui s'ouvrent au survol */
 @keyframes trace { from { transform: scaleX(0); } }
-#applis { padding: 32px 34px 36px; border: 1px solid var(--input); box-shadow: inset 0 0 0 6px var(--bg), inset 0 0 0 7px var(--line);
+#applis { padding: 32px 48px 36px; border: 1px solid var(--input); box-shadow: inset 0 0 0 6px var(--bg), inset 0 0 0 7px var(--line);
   background-image: linear-gradient(var(--grille) 1px, transparent 1px), linear-gradient(90deg, var(--grille) 1px, transparent 1px); background-size: 24px 24px; }
 #applis .titre h2 { display: inline-block; position: relative; padding-bottom: 10px; font-weight: 500; font-size: 26px; }
 #applis .titre h2::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--ink); transform-origin: left; animation: trace 1.1s .2s cubic-bezier(.6, 0, .2, 1) both; }
@@ -298,7 +298,7 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 .carte:hover .cote i, .carte:hover .cote::before, .carte:hover .cote::after { background: var(--c); }
 .niveau { font-family: var(--mono); font-weight: 500; font-size: 11.5px; letter-spacing: .14em; }
 .niveau::after { height: 0; background: none; border-top: 1px dashed var(--input); }
-@media (max-width: 560px) { #applis { padding: 22px 16px 26px; } }
+@media (max-width: 560px) { #applis { padding: 22px 24px 26px; } }
 @media (prefers-reduced-motion: reduce) { #applis .titre h2::after, .carte .cote i { animation: none; } .carte::before, .carte::after { transition: none; } }
 .carte .faits { display: flex; gap: 36px; margin: auto 0 22px; padding-top: 22px; }
 .carte .fait b { display: block; font-size: 34px; line-height: 1; font-weight: 600; letter-spacing: -.02em; }
@@ -316,3 +316,9 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 @keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
 @keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; } }
+.sauvegarde { padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: center; justify-content: space-between; } .sauvegarde p { margin: 0; max-width: 62ch; }
+
+/* Lignes « Occasionnels » / « Autres outils » : colonnes fixes calees sur le quadrillage de 24 px (pas de 216 px = 9 carreaux) */
+#applis .lignes { display: grid; grid-template-columns: repeat(auto-fill, 192px); gap: 24px 24px; }
+#applis .lignes > * { height: 24px; align-items: center; }
+@media (max-width: 560px) { #applis .lignes { grid-template-columns: repeat(auto-fill, 168px); } }

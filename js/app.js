@@ -211,6 +211,8 @@ async function chargerGestion() {
 function rendreGestion() {
   $("#blocStats").hidden = !stats;
   $("#blocComptes").hidden = !estAdmin();
+  $("#blocSauvegarde").hidden = role !== "concepteur";
+  if (role === "concepteur") { const d = lireDerniereSauvegarde(); $("#resumeSauvegarde").textContent = d ? `dernière : ${fmtDate(d)}` : "jamais faite"; }
   if (!role) return;
   const moi = lireSession()?.user?.id;
   const conc = role === "concepteur";
@@ -246,6 +248,28 @@ function rendreGestion() {
   $("#hVider").hidden = !(conc2 && filtreHist.corbeille && historique.length);
   $("#blocHist h3 .aide").textContent = filtreHist.corbeille ? "supprimées définitivement après 30 jours" : "90 derniers jours";
 }
+
+// Sauvegarde complete des donnees : un fichier JSON date, telecharge par le concepteur (fonction export_complet de supabase/sauvegarde.sql)
+const CLE_SAUVEGARDE = "accueil-derniere-sauvegarde";
+function lireDerniereSauvegarde() { try { return localStorage.getItem(CLE_SAUVEGARDE) || ""; } catch { return ""; } }
+$("#sauvegarder").addEventListener("click", async (e) => {
+  const b = e.currentTarget; b.disabled = true; const txt = b.textContent; b.textContent = "Préparation…";
+  try {
+    const sess = await sessionFraiche();
+    const data = await rpc("export_complet", {}, sess?.access_token);
+    const jour = new Date().toISOString().slice(0, 10);
+    const lien = document.createElement("a");
+    lien.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: "application/json" }));
+    lien.download = `sauvegarde-outils-${jour}.json`;
+    document.body.append(lien); lien.click(); lien.remove();
+    setTimeout(() => URL.revokeObjectURL(lien.href), 10000);
+    try { localStorage.setItem(CLE_SAUVEGARDE, new Date().toISOString()); } catch { /* sans stockage : pas de date affichee */ }
+    $("#resumeSauvegarde").textContent = `dernière : ${fmtDate(new Date().toISOString())}`;
+    toast(`Sauvegarde téléchargée (${Object.keys(data.tables ?? {}).length} tables).`);
+  } catch (err) {
+    toast(/export_complet|function/i.test(err.message) ? "Script « sauvegarde.sql » à lancer dans Supabase." : horsLigne(err) ? "Base injoignable." : err.message);
+  } finally { b.disabled = false; b.textContent = txt; }
+});
 
 // Fenetre de confirmation maison (remplace confirm() du navigateur)
 function confirmer(titre, texte, bouton) {
@@ -365,7 +389,26 @@ function rendreApplis() {
   const groupe = (titre, liste) => liste.length ? `<h3 class="niveau">${titre}</h3><div class="lignes">${liste.map(ligne).join("")}</div>` : "";
   $("#grille").innerHTML = (jour.length ? `<div class="quotidien">${carte(jour[0], "grande", 1)}<div class="pile">${jour.slice(1).map((a, i) => carte(a, "petite", i + 2)).join("")}</div></div>` : "")
     + groupe(NIVEAUX[1].titre, parfois) + groupe(NIVEAUX[2].titre, rare);
+  calerSurGrille();
 }
+
+// Cale les logos des lignes sur le quadrillage de 24 px du fond : on ajoute au titre de groupe juste l'espace qui manque.
+const PAS = 24;
+function calerSurGrille() {
+  const zone = document.querySelector("#applis"); if (!zone) return;
+  const origine = zone.getBoundingClientRect().top + zone.clientTop;
+  for (const bloc of zone.querySelectorAll(".lignes")) {
+    const titre = bloc.previousElementSibling, logo = bloc.querySelector(".logo");
+    if (!titre || !logo) continue;
+    titre.style.marginTop = "";
+    const reste = (logo.getBoundingClientRect().top - origine) % PAS;
+    const manque = (PAS - Math.round(reste)) % PAS;
+    if (manque) titre.style.marginTop = `${parseFloat(getComputedStyle(titre).marginTop) + manque}px`;
+  }
+}
+let minuterieCalage;
+window.addEventListener("resize", () => { clearTimeout(minuterieCalage); minuterieCalage = setTimeout(calerSurGrille, 120); });
+document.fonts?.ready.then(calerSurGrille);
 
 function rendreRetours() {
   const liste = $("#liste");
