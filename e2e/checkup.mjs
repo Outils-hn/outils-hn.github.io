@@ -302,7 +302,7 @@ try {
   ok(etat.actions.some((a) => a[0] === "fiche_non" && a[1]._id === "f1") && etat.fichiersRetires.includes("joints/proposee.pdf") && (await p.locator("#listeFiches").innerText()).includes("Rien à valider"), "Fiches à valider : Refuser demande confirmation, supprime la fiche et son PDF");
   // « Qui fait quoi » (concepteur) : replie, la fleche montre le tableau des droits
   await p.locator("#dReplier").click(); await p.waitForTimeout(200);
-  ok(await p.locator("#droitsContenu").isVisible() && (await p.locator("#droitsContenu tbody tr").count()) === 13, "Qui fait quoi : tableau des droits visible pour le concepteur");
+  ok(await p.locator("#droitsContenu").isVisible() && (await p.locator("#droitsContenu tbody tr").count()) === 14, "Qui fait quoi : tableau des droits visible pour le concepteur");
   await shot(p, "06c-droits");
   await p.locator("#dReplier").click();
   // Historique replie par defaut : la fleche l'ouvre
