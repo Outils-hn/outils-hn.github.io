@@ -9,7 +9,7 @@ export const BASE_KEY =
  *  apercu: true = appli en preparation, visible seulement pour le concepteur (voir « apercu » dans app.js). */
 export const APPLIS = [
   { nom: "Access", role: "Annuaire fournisseurs", url: "https://outils-hn.github.io/Access/", couleur: "#C2255C",
-    texte: "Sites des fournisseurs, par domaine.", points: ["Liens vers les sites et portails CAO des fournisseurs", "Classés par domaine", "Identifiants du bureau ou perso à portée de clic"] },
+    texte: "Sites des fournisseurs, par domaine.", points: ["Liens vers les sites et portails CAO des fournisseurs", "Classés par domaine", "Identifiants du bureau à portée de clic"] },
   { nom: "Check", role: "Notes & tâches", url: "https://outils-hn.github.io/Check/", couleur: "#4338CA",
     texte: "Notes et tâches, perso ou d'équipe.", points: ["Notes perso et notes de projet partagées", "Tâches confiées à un collègue, avec échéance", "Photos jointes, corbeille de 30 jours"] },
   { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00",

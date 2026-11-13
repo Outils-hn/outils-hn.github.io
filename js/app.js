@@ -1,7 +1,7 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { creerZip } from "./zip.js?v=1";
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.9";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.10";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);

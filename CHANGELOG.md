@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.40 — 13 novembre 2026
+
+- Nouveauté : la carte Access dit « Identifiants du bureau à portée de clic » (plus d'accès perso), et le tableau des droits précise que seul le concepteur enregistre les identifiants des fournisseurs.
+
 ## 2.39 — 13 novembre 2026
 
 - Nouveauté : après la connexion (et après le choix du mot de passe), on arrive toujours sur la page des applis.
