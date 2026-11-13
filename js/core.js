@@ -20,6 +20,8 @@ export const APPLIS = [
     texte: "Espace à laisser entre deux éléments selon la dilatation.", points: ["Espace à laisser selon la dilatation", "Par matériau et écart de température"] },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
     texte: "Débit de profilés en barres, avec le minimum de chutes.", points: ["Mise en barre avec le minimum de chutes", "Longueurs du commerce et stock de barres", "Liste de débit prête à imprimer"] },
+  { nom: "Maquette", role: "Maquettes IFC", url: "https://outils-hn.github.io/Maquette/", couleur: "#4D7C0F", apercu: true,
+    texte: "Ouvrir les maquettes IFC des architectes, sans logiciel.", points: ["3D, plans, élévations et coupes", "Listes des fenêtres et des murs pour Excel", "Coupes DXF pour AutoCAD"] },
   { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A",
     texte: "Poids des éléments de façade à partir de leurs composants.", points: ["Poids d'un élément à partir de ses composants", "Bibliothèque de matériaux commune", "Listes de livraison avec poids total"] },
   { nom: "Membrane", role: "Étanchéité", url: "https://outils-hn.github.io/Membrane/", couleur: "#B45309",
@@ -34,7 +36,7 @@ export const APPLIS = [
 export const NIVEAUX = [
   { cle: "jour", titre: "Au quotidien", noms: ["Check", "Index", "Access"] },
   { cle: "parfois", titre: "Occasionnels", noms: ["Trame", "Linear", "Format"] },
-  { cle: "rare", titre: "Autres outils", noms: ["Joint", "Masse", "Membrane", "Strate"] },
+  { cle: "rare", titre: "Autres outils", noms: ["Joint", "Maquette", "Masse", "Membrane", "Strate"] },
 ];
 
 export const TYPES = { idee: "Idée", bug: "Bug" };

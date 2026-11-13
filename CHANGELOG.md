@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.41 — 13 novembre 2026
+
+- Nouvelle appli Maquette (maquettes IFC) ajoutée en aperçu : visible seulement pour le concepteur tant qu'elle n'est pas ouverte à l'équipe.
+
 ## 2.40 — 13 novembre 2026
 
 - Nouveauté : la carte Access dit « Identifiants du bureau à portée de clic » (plus d'accès perso), et le tableau des droits précise que seul le concepteur enregistre les identifiants des fournisseurs.
