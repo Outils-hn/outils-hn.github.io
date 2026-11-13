@@ -86,7 +86,7 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/check_notes" && u.searchParams.get("projet_id")) return json([{ id: "n3", texte: "Confirmer l'entraxe des consoles", statut: "todo", flash: false, echeance: "2026-01-05", pour: null }, { id: "n4", texte: "Photos des angles côté Est", statut: "todo", flash: true, echeance: null, pour: null }]);
     if (u.pathname === "/rest/v1/check_notes") return json(tok === "tok-admin" ? [{ id: "n1", texte: "Vérifier les ancrages du R+2", statut: "todo", flash: true, echeance: null }, { id: "n2", texte: "Rappeler le client", statut: "todo", flash: false, echeance: "2026-01-05" }] : []);
     if (u.pathname === "/rest/v1/rpc/espace_utilise") return json(tok === "tok-admin" ? { base: 30408704, stockage: 20480, calculs: 51200 } : null);
-    if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : tok === "tok-dessin" ? "dessinateur" : null);
+    if (u.pathname === "/rest/v1/rpc/mon_role") return json(tok === "tok-admin" ? "concepteur" : tok === "tok-dessin" || tok === "tok-jean" ? "dessinateur" : null);
     if (u.pathname === "/rest/v1/rpc/list_accounts") return json(tok === "tok-admin" ? etat.comptes : [], tok === "tok-admin" ? 200 : 200);
     if (u.pathname === "/rest/v1/rpc/set_account_approved") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.approved = corps._approved; etat.actions.push(["approved", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/set_account_admin") { const c = etat.comptes.find((x) => x.id === corps._id); if (c) c.is_admin = corps._admin; etat.actions.push(["admin", corps]); return json(null); }
@@ -373,7 +373,7 @@ try {
 
   // Compte collegue : connexion avec un simple identifiant, puis choix obligatoire du mot de passe
   const pj = await page({ connecte: false });
-  await pj.goto(URL0); await pj.waitForLoadState("networkidle"); await pj.waitForTimeout(400);
+  await pj.goto(URL0 + "#tableau"); await pj.waitForLoadState("networkidle"); await pj.waitForTimeout(400);
   await pj.locator("#compteBtn").click();
   await pj.locator("#formConnexion [name=email]").fill("Jean.Dupont"); await pj.locator("#formConnexion [name=mdp]").fill("facade-27");
   await pj.locator("#formConnexion button[type=submit]").click(); await pj.waitForTimeout(1200);
@@ -394,6 +394,7 @@ try {
   ok(!(await pj.locator("#dPremiere").evaluate((d) => d.open)) && etat.actions.some((a) => a[0] === "user" && a[1].password === "Fenetre-2026" && a[1].data?.display_name === "Jean Dupont")
     && etat.actions.some((a) => a[0] === "premiere" && a[1]._prenom === "Jean"), "Collègue : mot de passe et nom enregistrés, la fenêtre se ferme");
   ok((await pj.locator("#etatCompte").innerText()).includes("Jean"), "Collègue : son nom s'affiche en haut");
+  ok(!new URL(pj.url()).hash && (await pj.locator("#tableau").isHidden()), `Collègue : après la connexion, il arrive sur la page des applis (adresse : ${pj.url()})`);
 
   const p3 = await page({ dark: true });
   await p3.goto(URL0 + "#retours"); await p3.waitForLoadState("networkidle"); await p3.waitForTimeout(400);

@@ -780,6 +780,8 @@ function majCompte() {
   if (s) charger();
 }
 const dC = $("#dConnexion");
+/** Apres une connexion, on arrive toujours sur la page des applis (pas sur l'onglet laisse ouvert par le compte precedent). */
+function versPageApplis() { if (location.hash) history.replaceState(null, "", location.pathname + location.search); }
 $("#compteBtn").addEventListener("click", () => {
   if (lireSession()) { ecrireSession(null); majCompte(); toast("Déconnecté."); return; }
   $("#formConnexion").reset(); $("#cErreur").textContent = ""; dC.showModal();
@@ -790,7 +792,7 @@ $("#formConnexion").addEventListener("submit", async (e) => {
   try {
     const s = await api("/auth/v1/token?grant_type=password", { methode: "POST", corps: { email: adresseConnexion(f.get("email")), password: f.get("mdp") } });
     ecrireSession({ ...s, expires_at: s.expires_at ?? Math.floor(Date.now() / 1000) + (s.expires_in ?? 3600) });
-    $("#cErreur").textContent = ""; dC.close(); majCompte();
+    $("#cErreur").textContent = ""; dC.close(); versPageApplis(); majCompte();
   } catch (err) {
     $("#cErreur").textContent = err.status === 400 ? "Identifiant ou mot de passe incorrect." : horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message;
   }
@@ -820,7 +822,7 @@ $("#formPremiere").addEventListener("submit", async (e) => {
     const u = await api("/auth/v1/user", { methode: "PUT", corps: { password: mdp, ...(donnees ? { data: donnees } : {}) }, jeton: s.access_token });
     await rpc("premiere_connexion_faite", { _prenom: prenom, _nom: nom }, s.access_token);
     if (u?.id) ecrireSession({ ...lireSession(), user: u });
-    dP.close(); toast("C'est fait ! Votre mot de passe est enregistré."); majCompte();
+    dP.close(); toast("C'est fait ! Votre mot de passe est enregistré."); versPageApplis(); majCompte();
   } catch (x) {
     err.textContent = /same_password|different from the old/i.test(`${x.data?.error_code ?? ""} ${x.message}`) ? "Choisissez un mot de passe différent du provisoire."
       : /weak|short|characters/i.test(x.message) ? "Mot de passe trop simple : allongez-le ou ajoutez des chiffres."
