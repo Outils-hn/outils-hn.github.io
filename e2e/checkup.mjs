@@ -373,7 +373,7 @@ try {
 
   // Compte collegue : connexion avec un simple identifiant, puis choix obligatoire du mot de passe
   const pj = await page({ connecte: false });
-  await pj.goto(URL0); await pj.waitForLoadState("networkidle"); await pj.waitForTimeout(400);
+  await pj.goto(URL0 + "#tableau"); await pj.waitForLoadState("networkidle"); await pj.waitForTimeout(400);
   await pj.locator("#compteBtn").click();
   await pj.locator("#formConnexion [name=email]").fill("Jean.Dupont"); await pj.locator("#formConnexion [name=mdp]").fill("facade-27");
   await pj.locator("#formConnexion button[type=submit]").click(); await pj.waitForTimeout(1200);
@@ -394,6 +394,7 @@ try {
   ok(!(await pj.locator("#dPremiere").evaluate((d) => d.open)) && etat.actions.some((a) => a[0] === "user" && a[1].password === "Fenetre-2026" && a[1].data?.display_name === "Jean Dupont")
     && etat.actions.some((a) => a[0] === "premiere" && a[1]._prenom === "Jean"), "Collègue : mot de passe et nom enregistrés, la fenêtre se ferme");
   ok((await pj.locator("#etatCompte").innerText()).includes("Jean"), "Collègue : son nom s'affiche en haut");
+  ok(!new URL(pj.url()).hash && !(await pj.locator("#applis").isHidden()), "Collègue : après la connexion, il arrive sur la page des applis");
 
   const p3 = await page({ dark: true });
   await p3.goto(URL0 + "#retours"); await p3.waitForLoadState("networkidle"); await p3.waitForTimeout(400);
