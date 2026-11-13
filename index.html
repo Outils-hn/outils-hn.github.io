@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="styles.css?v=2.27">
+<link rel="stylesheet" href="styles.css?v=2.28">
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 </head>
@@ -174,7 +174,7 @@
 </main>
 
 <footer>
-  Accueil v2.35 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.36 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
@@ -218,14 +218,49 @@
 <dialog id="dConnexion" aria-labelledby="dc-titre">
   <form id="formConnexion" method="dialog">
     <h3 id="dc-titre">Connexion</h3>
-    <p class="aide">Votre compte Index, valable dans toutes les applis.</p>
-    <label class="bloc">Email <input name="email" type="email" class="champ" autocomplete="username" required></label>
+    <p class="aide">Votre compte, valable dans toutes les applis.</p>
+    <label class="bloc">Identifiant ou e-mail <input name="email" type="text" class="champ" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex. jean.dupont" required></label>
     <label class="bloc">Mot de passe <input name="mdp" type="password" class="champ" autocomplete="current-password" required></label>
     <p class="erreur" id="cErreur" role="alert"></p>
-    <p class="aide">Pas encore de compte ? <a href="https://outils-hn.github.io/Index/auth">Créez-le ici</a>. Un administrateur doit ensuite le valider.<br><a href="https://outils-hn.github.io/Index/auth">Mot de passe oublié ?</a></p>
+    <p class="aide">Mot de passe oublié ? Si vous vous connectez avec un identifiant, demandez à Hugo ; avec un e-mail, <a href="https://outils-hn.github.io/Index/auth">réinitialisez-le ici</a>.<br>Pas encore de compte ? <a href="https://outils-hn.github.io/Index/auth">Créez-le ici</a>, un administrateur le validera.</p>
     <div class="actions">
       <button type="button" class="btn" data-fermer>Annuler</button>
       <button type="submit" class="btn primaire">Se connecter</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Premiere connexion d'un compte collegue : choisir son mot de passe (et son nom) -->
+<dialog id="dPremiere" aria-labelledby="dp-titre">
+  <form id="formPremiere" method="dialog">
+    <h3 id="dp-titre">Bienvenue ! Choisissez votre mot de passe</h3>
+    <p class="aide">Vous vous êtes connecté avec un mot de passe provisoire. Choisissez le vôtre : c'est lui que vous utiliserez dans toutes les applis.</p>
+    <div class="deux">
+      <label class="bloc">Prénom <input name="prenom" class="champ" autocomplete="given-name" maxlength="60"></label>
+      <label class="bloc">Nom <input name="nom" class="champ" autocomplete="family-name" maxlength="60"></label>
+    </div>
+    <label class="bloc">Nouveau mot de passe <input name="mdp" type="password" class="champ" autocomplete="new-password" minlength="8" required></label>
+    <label class="bloc">Retapez-le <input name="mdp2" type="password" class="champ" autocomplete="new-password" minlength="8" required></label>
+    <p class="aide">8 caractères minimum. Évitez un mot de passe que vous utilisez déjà ailleurs.</p>
+    <p class="erreur" id="pErreur" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" id="pDeconnexion">Se déconnecter</button>
+      <button type="submit" class="btn primaire" id="pValider">Enregistrer et continuer</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Mot de passe provisoire remis par le concepteur -->
+<dialog id="dMdp" aria-labelledby="dm-titre">
+  <form id="formMdp" method="dialog">
+    <h3 id="dm-titre">Mot de passe provisoire</h3>
+    <p class="aide" id="mQui"></p>
+    <label class="bloc">Mot de passe provisoire <input name="mdp" class="champ" autocomplete="off" spellcheck="false" minlength="6" required></label>
+    <p class="aide">Donnez-le à la personne : à sa prochaine connexion, elle devra choisir son propre mot de passe.</p>
+    <p class="erreur" id="mErreur" role="alert"></p>
+    <div class="actions">
+      <button type="button" class="btn" data-fermer>Annuler</button>
+      <button type="submit" class="btn primaire">Enregistrer</button>
     </div>
   </form>
 </dialog>
@@ -272,6 +307,6 @@
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-<script type="module" src="js/app.js?v=2.30"></script>
+<script type="module" src="js/app.js?v=2.31"></script>
 </body>
 </html>

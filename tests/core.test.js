@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { APPLIS, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireDate, lireJournal, lireLien, nomAffiche, texteCompteur } from "../js/core.js";
+import { APPLIS, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireDate, lireJournal, lireLien, nomAffiche, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "../js/core.js";
 
 const r = (o) => ({ id: "x", app: "Masse", type: "idee", texte: "", nom: "", reponse: "", statut: "nouveau", moi_aussi: 0, created_at: "2026-10-20T08:00:00Z", ...o });
 const liste = [
@@ -121,4 +121,13 @@ test("nomAffiche : « Prénom NOM » depuis le compte, sinon vide", () => {
   assert.equal(nomAffiche({ user_metadata: { display_name: "Hugo" } }), "");
   assert.equal(nomAffiche({ email: "h@exemple.ch" }), "");
   assert.equal(nomAffiche(null), "");
+});
+
+test("comptes collegue : identifiant sans @ -> adresse fictive, l'e-mail reste tel quel", () => {
+  assert.equal(adresseConnexion("  Jean.Dupont "), "jean.dupont@equipe.invalid");
+  assert.equal(adresseConnexion("hugo@exemple.ch"), "hugo@exemple.ch");
+  assert.equal(identifiantEquipe("jean.dupont@equipe.invalid"), "jean.dupont");
+  assert.equal(identifiantEquipe("hugo@exemple.ch"), null);
+  assert.match(mdpProvisoire(), /^[a-z]+-\d{2}$/);
+  assert.equal(mdpProvisoire(() => 0), "facade-10");
 });

@@ -21,7 +21,7 @@ const etat = {
     { id: "r2", app: "Format", type: "idee", texte: "Pouvoir choisir l'aluminium anodisé dans les matériaux", nom: "", page: "", version: "", navigateur: "", statut: "nouveau", reponse: "", moi_aussi: 0, created_at: new Date(Date.now() - J).toISOString() },
     { id: "r3", app: "Linear", type: "idee", texte: "Export de la liste de coupe en Excel", nom: "Sarah", page: "", version: "", navigateur: "", statut: "fait", reponse: "", moi_aussi: 4, created_at: new Date(Date.now() - 20 * J).toISOString() },
   ],
-  envois: [], admin: [], actions: [],
+  envois: [], admin: [], actions: [], jeanProvisoire: true,
   comptes: [
     { id: ADMIN.id, email: ADMIN.email, display_name: "Hugo", approved: true, is_admin: true, role: "concepteur", created_at: new Date().toISOString() },
     { id: "c2", email: "sarah@exemple.ch", display_name: "Sarah", approved: false, is_admin: false, role: "dessinateur", created_at: new Date().toISOString() },
@@ -51,6 +51,9 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/retours") return json(etat.retours);
     if (u.pathname === "/auth/v1/token" && u.searchParams.get("grant_type") === "refresh_token") {
       return corps.refresh_token === "ref-ok" ? json({ access_token: "tok-admin", refresh_token: "ref-ok", expires_in: 3600, user: { id: ADMIN.id, email: ADMIN.email } }) : json({ error: "invalid_grant" }, 400);
+    }
+    if (u.pathname === "/auth/v1/token" && corps.email === "jean.dupont@equipe.invalid") {
+      return corps.password === "facade-27" ? json({ access_token: "tok-jean", expires_in: 3600, user: { id: "jean-1", email: corps.email, user_metadata: {} } }) : json({ error: "invalid_grant" }, 400);
     }
     if (u.pathname === "/auth/v1/token") {
       if (corps.email !== ADMIN.email || corps.password !== ADMIN.mdp) return json({ error: "invalid_grant", error_description: "Invalid login credentials" }, 400);
@@ -91,6 +94,13 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/rpc/historique_masquer") { const h = etat.histo.find((x) => x.id === corps._id); if (h) h.masque = corps._masquer; etat.actions.push(["masquer", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/historique_vider_corbeille") { etat.histo = etat.histo.filter((h) => !h.masque); etat.actions.push(["vider", corps]); return json(null); }
     if (u.pathname === "/rest/v1/rpc/historique_annuler") { const h = etat.histo.find((x) => x.id === corps._id); if (h) { h.annule = true; h.peut_annuler = false; } etat.actions.push(["annuler", corps]); return json(null); }
+    if (u.pathname === "/rest/v1/rpc/mon_mdp_provisoire") return json(tok === "tok-jean" ? etat.jeanProvisoire : false);
+    if (u.pathname === "/rest/v1/rpc/premiere_connexion_faite") { if (tok === "tok-jean") etat.jeanProvisoire = false; etat.actions.push(["premiere", corps]); return json(null); }
+    if (u.pathname === "/rest/v1/rpc/reinitialiser_mdp") { if (tok !== "tok-admin") return json({ message: "Réservé au concepteur" }, 400); etat.actions.push(["mdp", corps]); return json(null); }
+    if (u.pathname === "/auth/v1/user" && req.method() === "PUT") {
+      if (corps.password === "facade-27") return json({ error_code: "same_password", msg: "New password should be different from the old password." }, 422);
+      etat.actions.push(["user", corps]); return json({ id: "jean-1", email: "jean.dupont@equipe.invalid", user_metadata: corps.data ?? {} });
+    }
     if (u.pathname === "/rest/v1/rpc/is_approved") return json(true);
     if (u.pathname === "/rest/v1/rpc/is_admin") return json(tok === "tok-admin");
     if (u.pathname === "/rest/v1/rpc/retour_envoyer") {
@@ -277,6 +287,13 @@ try {
   ok(etat.actions.some((a) => a[0] === "admin" && a[1]._id === "c3" && a[1]._admin === true), "Comptes : Nommer admin (concepteur) appelle la base");
   await p.locator("[data-retirer=c3]").click(); await p.locator("#dq-ok").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c3" && a[1]._approved === false), "Comptes : Retirer l'accès demande confirmation puis appelle la base");
+  // Mot de passe oublie : le concepteur donne un mot de passe provisoire
+  await p.locator("[data-mdp=c3]").click();
+  ok(/^[a-z]+-\d{2}$/.test(await p.locator("#formMdp [name=mdp]").inputValue()), "Mot de passe : un provisoire facile à dicter est proposé");
+  await p.locator("#formMdp [name=mdp]").fill("chantier-42");
+  await p.locator("#formMdp button[type=submit]").click(); await p.waitForTimeout(500);
+  ok(etat.actions.some((a) => a[0] === "mdp" && a[1]._id === "c3" && a[1]._mdp === "chantier-42") && !(await p.locator("#dMdp").evaluate((d) => d.open)), "Mot de passe : provisoire enregistré pour le compte");
+  ok((await p.locator(`[data-mdp="${ADMIN.id}"]`).count()) === 0, "Mot de passe : pas de bouton sur le compte du concepteur");
   // Fiches a valider (concepteur) : nouvelle fiche et nouveau PDF, avec pastille dans le menu
   ok((await p.locator("#listeFiches > li").count()) === 2 && (await p.locator("#listeFiches").innerText()).includes("Nouveau PDF"), "Fiches à valider : nouvelle fiche et nouveau PDF listés");
   await p.locator("[data-ok-fiche=f2]").click(); await p.waitForTimeout(500);
@@ -353,6 +370,30 @@ try {
 
   await p.locator("#themeBtn").click();
   ok(await p.evaluate(() => localStorage.getItem("outils-theme")) === "dark", "thème : le choix est écrit dans le réglage commun « outils-theme »");
+
+  // Compte collegue : connexion avec un simple identifiant, puis choix obligatoire du mot de passe
+  const pj = await page({ connecte: false });
+  await pj.goto(URL0); await pj.waitForLoadState("networkidle"); await pj.waitForTimeout(400);
+  await pj.locator("#compteBtn").click();
+  await pj.locator("#formConnexion [name=email]").fill("Jean.Dupont"); await pj.locator("#formConnexion [name=mdp]").fill("facade-27");
+  await pj.locator("#formConnexion button[type=submit]").click(); await pj.waitForTimeout(1200);
+  ok(await pj.locator("#dPremiere").evaluate((d) => d.open), "Collègue : connexion par identifiant, puis fenêtre « Choisissez votre mot de passe »");
+  await pj.keyboard.press("Escape"); await pj.waitForTimeout(200);
+  ok(await pj.locator("#dPremiere").evaluate((d) => d.open), "Collègue : Échap ne permet pas de sauter l'étape");
+  await shot(pj, "06-premiere-connexion");
+  await axe(pj, "première connexion");
+  await pj.locator("#formPremiere [name=prenom]").fill("Jean"); await pj.locator("#formPremiere [name=nom]").fill("Dupont");
+  await pj.locator("#formPremiere [name=mdp]").fill("Fenetre-2026"); await pj.locator("#formPremiere [name=mdp2]").fill("Fenetre-2027");
+  await pj.locator("#pValider").click(); await pj.waitForTimeout(300);
+  ok(/pas identiques/.test(await pj.locator("#pErreur").innerText()), "Collègue : les deux mots de passe doivent être identiques");
+  await pj.locator("#formPremiere [name=mdp]").fill("facade-27"); await pj.locator("#formPremiere [name=mdp2]").fill("facade-27");
+  await pj.locator("#pValider").click(); await pj.waitForTimeout(500);
+  ok(/différent du provisoire/.test(await pj.locator("#pErreur").innerText()), "Collègue : le provisoire ne peut pas être gardé");
+  await pj.locator("#formPremiere [name=mdp]").fill("Fenetre-2026"); await pj.locator("#formPremiere [name=mdp2]").fill("Fenetre-2026");
+  await pj.locator("#pValider").click(); await pj.waitForTimeout(1200);
+  ok(!(await pj.locator("#dPremiere").evaluate((d) => d.open)) && etat.actions.some((a) => a[0] === "user" && a[1].password === "Fenetre-2026" && a[1].data?.display_name === "Jean Dupont")
+    && etat.actions.some((a) => a[0] === "premiere" && a[1]._prenom === "Jean"), "Collègue : mot de passe et nom enregistrés, la fenêtre se ferme");
+  ok((await pj.locator("#etatCompte").innerText()).includes("Jean"), "Collègue : son nom s'affiche en haut");
 
   const p3 = await page({ dark: true });
   await p3.goto(URL0 + "#retours"); await p3.waitForLoadState("networkidle"); await p3.waitForTimeout(400);
