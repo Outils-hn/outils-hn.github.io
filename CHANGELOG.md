@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.37 — 13 novembre 2026
+
+- Nouveauté : la fenêtre de connexion explique qu'il suffit de demander à Hugo pour avoir un identifiant, ou un mot de passe provisoire en cas d'oubli (même avec une adresse inventée).
+
 ## 2.36 — 13 novembre 2026
 
 - Nouveauté : on peut se connecter avec un simple identifiant (ex. « jean.dupont ») ; à la première connexion avec un mot de passe provisoire, on choisit le sien. Mot de passe oublié : Hugo en donne un nouveau provisoire depuis le tableau de bord.
