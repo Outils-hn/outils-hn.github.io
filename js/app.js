@@ -525,7 +525,7 @@ function rendreApercu(acces) {
   const attente = acces === "attente";
   $("#apercu").classList.toggle("attente", attente);
   $("#apLead").textContent = attente
-    ? `Votre compte${s ? ` (${s.user?.email ?? ""})` : ""} attend la validation d'un administrateur. Dès qu'il est validé, rechargez la page : toutes les applis s'ouvriront.`
+    ? `Votre compte${s ? ` (${identifiantEquipe(s.user?.email) ?? s.user?.email ?? ""})` : ""} attend la validation d'un administrateur. Dès qu'il est validé, rechargez la page : toutes les applis s'ouvriront.`
     : "Fiches techniques, notes d'équipe, débits et calculs du quotidien, réunis au même endroit. L'accès se fait avec un compte de l'équipe.";
   $("#apActions").innerHTML = attente
     ? `<button type="button" class="btn primaire" data-ap="recharger">Recharger</button><button type="button" class="btn" data-ap="deconnexion">Se déconnecter</button>`
