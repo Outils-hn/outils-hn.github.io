@@ -177,7 +177,7 @@ export function nomAffiche(u) {
 
 /** Comptes « collègue » : créés par le concepteur avec une adresse fictive, on s'y connecte avec un simple identifiant. */
 export const DOMAINE_EQUIPE = "equipe.invalid";
-/** Ce qui est tapé dans « Identifiant ou e-mail » → adresse de connexion (« jean.dupont » → « jean.dupont@equipe.invalid »). */
+/** Ce qui est tapé dans « Identifiant ou e-mail » → adresse de connexion (« j.dupont » → « j.dupont@equipe.invalid »). */
 export function adresseConnexion(saisie) {
   const s = String(saisie ?? "").trim();
   return s.includes("@") ? s : `${s.toLowerCase()}@${DOMAINE_EQUIPE}`;

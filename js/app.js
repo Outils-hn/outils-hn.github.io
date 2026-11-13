@@ -812,7 +812,7 @@ $("#formPremiere").addEventListener("submit", async (e) => {
   const f = e.target, err = $("#pErreur");
   const mdp = f.mdp.value, prenom = f.prenom.value.trim(), nom = f.nom.value.trim();
   if (mdp !== f.mdp2.value) { err.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
-  if (mdp.length < 8) { err.textContent = "8 caractères minimum."; return; }
+  if (mdp.length < 6) { err.textContent = "6 caractères minimum."; return; }
   $("#pValider").disabled = true; err.textContent = "";
   try {
     const s = await sessionFraiche();
