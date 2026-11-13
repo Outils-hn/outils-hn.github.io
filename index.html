@@ -174,7 +174,7 @@
 </main>
 
 <footer>
-  Accueil v2.37 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
+  Accueil v2.38 · <button type="button" id="aproposBtn">Conçu par Hugo N.</button> · 2026
 </footer>
 
 <!-- Nouveau retour -->
@@ -219,7 +219,7 @@
   <form id="formConnexion" method="dialog">
     <h3 id="dc-titre">Connexion</h3>
     <p class="aide">Votre compte, valable dans toutes les applis.</p>
-    <label class="bloc">Identifiant ou e-mail <input name="email" type="text" class="champ" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex. jean.dupont" required></label>
+    <label class="bloc">Identifiant ou e-mail <input name="email" type="text" class="champ" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="ex. j.dupont" required></label>
     <label class="bloc">Mot de passe <input name="mdp" type="password" class="champ" autocomplete="current-password" required></label>
     <p class="erreur" id="cErreur" role="alert"></p>
     <p class="aide">Mot de passe oublié ? Demandez à Hugo : il vous donne un mot de passe provisoire, même si votre adresse est inventée.<br>Pas encore de compte ? Demandez à Hugo de vous créer un identifiant, ou <a href="https://outils-hn.github.io/Index/auth">créez-le vous-même</a> (une adresse inventée suffit).</p>
@@ -239,9 +239,9 @@
       <label class="bloc">Prénom <input name="prenom" class="champ" autocomplete="given-name" maxlength="60"></label>
       <label class="bloc">Nom <input name="nom" class="champ" autocomplete="family-name" maxlength="60"></label>
     </div>
-    <label class="bloc">Nouveau mot de passe <input name="mdp" type="password" class="champ" autocomplete="new-password" minlength="8" required></label>
-    <label class="bloc">Retapez-le <input name="mdp2" type="password" class="champ" autocomplete="new-password" minlength="8" required></label>
-    <p class="aide">8 caractères minimum. Évitez un mot de passe que vous utilisez déjà ailleurs.</p>
+    <label class="bloc">Nouveau mot de passe <input name="mdp" type="password" class="champ" autocomplete="new-password" minlength="6" required></label>
+    <label class="bloc">Retapez-le <input name="mdp2" type="password" class="champ" autocomplete="new-password" minlength="6" required></label>
+    <p class="aide">6 caractères minimum. Évitez un mot de passe que vous utilisez déjà ailleurs.</p>
     <p class="erreur" id="pErreur" role="alert"></p>
     <div class="actions">
       <button type="button" class="btn" id="pDeconnexion">Se déconnecter</button>
