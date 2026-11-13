@@ -1,7 +1,7 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { creerZip } from "./zip.js?v=1";
 import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur } from "./core.js?v=2.8";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.9";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -180,6 +180,10 @@ async function chargerStats() {
   const avant = !!stats;
   const avantRole = role;
   try { role = s ? (await rpc("mon_role", {}, s.access_token)) || null : null; roleCharge = true; } catch (e) { role = null; roleCharge = !horsLigne(e); }
+  // Compte collègue avec un mot de passe provisoire : il choisit le sien avant d'aller plus loin
+  let provisoire = false;
+  try { provisoire = s ? (await rpc("mon_mdp_provisoire", {}, s.access_token)) === true : false; } catch { provisoire = false; /* base pas encore a jour */ }
+  if (provisoire) { ouvrirPremiere(s); rendre(); return; }
   // Arrive ici depuis une appli (garde.js) : une fois le compte valide, on y retourne
   if (role && adresseRetour()) { location.replace(adresseRetour()); return; }
   try { stats = s && role === "concepteur" ? await rpc("stats_accueil", {}, s.access_token) : null; } catch { stats = null; }
@@ -260,11 +264,13 @@ function rendreGestion() {
   $("#resumeComptes").textContent = att ? `${att} en attente de validation` : "";
   $("#listeComptes").innerHTML = comptes.map((c) => {
     const etiquette = c.role === "concepteur" ? "Concepteur" : c.is_admin ? "Administrateur" : "Dessinateur";
-    const boutons = !c.approved ? `<button type="button" class="btn primaire" data-valider="${esc(c.id)}">Valider</button>`
+    const mdp = conc && c.id !== moi && c.role !== "concepteur" ? `<button type="button" class="btn" data-mdp="${esc(c.id)}" title="Mot de passe oublié : en donner un provisoire">Mot de passe</button>` : "";
+    const boutons = !c.approved ? `${mdp}<button type="button" class="btn primaire" data-valider="${esc(c.id)}">Valider</button>`
       : c.id === moi || c.role === "concepteur" ? ""
-      : `${conc ? `<button type="button" class="btn" data-admin="${esc(c.id)}">${c.is_admin ? "Retirer admin" : "Nommer admin"}</button>` : ""}<button type="button" class="btn danger" data-retirer="${esc(c.id)}">Retirer l'accès</button>`;
+      : `${mdp}${conc ? `<button type="button" class="btn" data-admin="${esc(c.id)}">${c.is_admin ? "Retirer admin" : "Nommer admin"}</button>` : ""}<button type="button" class="btn danger" data-retirer="${esc(c.id)}">Retirer l'accès</button>`;
+    const ident = identifiantEquipe(c.email);
     return `<li><div class="corps"><div class="l1">${esc(nomCompte(c))}</div>
-      <div class="l2">${c.email ? esc(c.email) + " · " : ""}${c.approved ? etiquette : "En attente"} · créé le ${esc(fmtDate(c.created_at))}</div></div>
+      <div class="l2">${ident ? "identifiant " + esc(ident) + " · " : c.email ? esc(c.email) + " · " : ""}${c.approved ? etiquette : "En attente"} · créé le ${esc(fmtDate(c.created_at))}</div></div>
       <div class="boutons">${boutons}</div></li>`;
   }).join("") || `<li class="vide">Aucun compte.</li>`;
 
@@ -436,8 +442,9 @@ majDroits();
 
 $("#listeComptes").addEventListener("click", async (e) => {
   const b = e.target.closest("button"); if (!b) return;
-  const id = b.dataset.valider || b.dataset.admin || b.dataset.retirer;
+  const id = b.dataset.valider || b.dataset.admin || b.dataset.retirer || b.dataset.mdp;
   const c = comptes.find((x) => x.id === id); if (!c) return;
+  if (b.dataset.mdp) return ouvrirMdp(c);
   if (b.dataset.valider) return actionGestion("set_account_approved", { _id: id, _approved: true }, "Compte validé.");
   if (b.dataset.retirer) {
     if (await confirmer(`Retirer l'accès de ${nomCompte(c)} ?`, "Le compte pourra encore consulter les applis, mais plus rien modifier.", "Retirer l'accès")) actionGestion("set_account_approved", { _id: id, _approved: false }, "Accès retiré.");
@@ -518,7 +525,7 @@ function rendreApercu(acces) {
   const attente = acces === "attente";
   $("#apercu").classList.toggle("attente", attente);
   $("#apLead").textContent = attente
-    ? `Votre compte${s ? ` (${s.user?.email ?? ""})` : ""} attend la validation d'un administrateur. Dès qu'il est validé, rechargez la page : toutes les applis s'ouvriront.`
+    ? `Votre compte${s ? ` (${identifiantEquipe(s.user?.email) ?? s.user?.email ?? ""})` : ""} attend la validation d'un administrateur. Dès qu'il est validé, rechargez la page : toutes les applis s'ouvriront.`
     : "Fiches techniques, notes d'équipe, débits et calculs du quotidien, réunis au même endroit. L'accès se fait avec un compte de l'équipe.";
   $("#apActions").innerHTML = attente
     ? `<button type="button" class="btn primaire" data-ap="recharger">Recharger</button><button type="button" class="btn" data-ap="deconnexion">Se déconnecter</button>`
@@ -762,7 +769,7 @@ function lireSession() { try { const s = JSON.parse(localStorage.getItem(CLE_SES
 function ecrireSession(s) { try { if (s) localStorage.setItem(CLE_SESSION, JSON.stringify(s)); else localStorage.removeItem(CLE_SESSION); } catch { /* bloque */ } }
 function majCompte() {
   const s = lireSession();
-  $("#etatCompte").textContent = s ? (nomAffiche(s.user) || (s.user?.email ?? "")) : "";
+  $("#etatCompte").textContent = s ? (nomAffiche(s.user) || identifiantEquipe(s.user?.email) || (s.user?.email ?? "")) : "";
   $("#etatCompte").hidden = !s;
   $("#etatCompte").title = s ? (s.user?.email ?? "") : "";
   $("#etatCompte").classList.toggle("on", !!s);
@@ -781,13 +788,69 @@ $("#formConnexion").addEventListener("submit", async (e) => {
   e.preventDefault();
   const f = new FormData(e.target);
   try {
-    const s = await api("/auth/v1/token?grant_type=password", { methode: "POST", corps: { email: String(f.get("email")).trim(), password: f.get("mdp") } });
+    const s = await api("/auth/v1/token?grant_type=password", { methode: "POST", corps: { email: adresseConnexion(f.get("email")), password: f.get("mdp") } });
     ecrireSession({ ...s, expires_at: s.expires_at ?? Math.floor(Date.now() / 1000) + (s.expires_in ?? 3600) });
     $("#cErreur").textContent = ""; dC.close(); majCompte();
   } catch (err) {
-    $("#cErreur").textContent = err.status === 400 ? "Email ou mot de passe incorrect." : horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message;
+    $("#cErreur").textContent = err.status === 400 ? "Identifiant ou mot de passe incorrect." : horsLigne(err) ? "Base injoignable." : "Erreur : " + err.message;
   }
 });
+// ---------- Premiere connexion d'un compte collegue : il choisit son mot de passe (et son nom) ----------
+const dP = $("#dPremiere");
+dP.addEventListener("cancel", (e) => e.preventDefault()); // Echap ne contourne pas l'etape
+function ouvrirPremiere(s) {
+  if (dP.open) return;
+  const f = $("#formPremiere"); f.reset(); $("#pErreur").textContent = "";
+  const m = s?.user?.user_metadata ?? {};
+  f.prenom.value = m.first_name ?? ""; f.nom.value = m.last_name ?? "";
+  if (dC.open) dC.close();
+  dP.showModal();
+}
+$("#pDeconnexion").addEventListener("click", () => { dP.close(); ecrireSession(null); majCompte(); toast("Déconnecté."); });
+$("#formPremiere").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const f = e.target, err = $("#pErreur");
+  const mdp = f.mdp.value, prenom = f.prenom.value.trim(), nom = f.nom.value.trim();
+  if (mdp !== f.mdp2.value) { err.textContent = "Les deux mots de passe ne sont pas identiques."; return; }
+  if (mdp.length < 8) { err.textContent = "8 caractères minimum."; return; }
+  $("#pValider").disabled = true; err.textContent = "";
+  try {
+    const s = await sessionFraiche();
+    const donnees = prenom || nom ? { first_name: prenom, last_name: nom, display_name: [prenom, nom].filter(Boolean).join(" ") } : undefined;
+    const u = await api("/auth/v1/user", { methode: "PUT", corps: { password: mdp, ...(donnees ? { data: donnees } : {}) }, jeton: s.access_token });
+    await rpc("premiere_connexion_faite", { _prenom: prenom, _nom: nom }, s.access_token);
+    if (u?.id) ecrireSession({ ...lireSession(), user: u });
+    dP.close(); toast("C'est fait ! Votre mot de passe est enregistré."); majCompte();
+  } catch (x) {
+    err.textContent = /same_password|different from the old/i.test(`${x.data?.error_code ?? ""} ${x.message}`) ? "Choisissez un mot de passe différent du provisoire."
+      : /weak|short|characters/i.test(x.message) ? "Mot de passe trop simple : allongez-le ou ajoutez des chiffres."
+      : horsLigne(x) ? "Base injoignable : réessayez dans un instant." : "Erreur : " + x.message;
+  } finally { $("#pValider").disabled = false; }
+});
+
+// ---------- Mot de passe oublie : le concepteur remet un mot de passe provisoire ----------
+const dM = $("#dMdp");
+let compteMdp = null;
+function ouvrirMdp(c) {
+  compteMdp = c;
+  const f = $("#formMdp"); f.reset(); $("#mErreur").textContent = "";
+  const ident = identifiantEquipe(c.email);
+  $("#mQui").textContent = `Pour ${nomCompte(c)}${ident ? ` (identifiant : ${ident})` : ""}.`;
+  f.mdp.value = mdpProvisoire();
+  dM.showModal(); f.mdp.select();
+}
+$("#formMdp").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const mdp = e.target.mdp.value.trim(), c = compteMdp; if (!c) return;
+  if (mdp.length < 6) { $("#mErreur").textContent = "6 caractères minimum."; return; }
+  try {
+    await rpc("reinitialiser_mdp", { _id: c.id, _mdp: mdp }, (await sessionFraiche())?.access_token);
+    dM.close(); toast(`Mot de passe provisoire de ${nomCompte(c)} : ${mdp}`);
+  } catch (x) {
+    $("#mErreur").textContent = /reinitialiser_mdp|PGRST202|does not exist/i.test(x.message) ? "La base n'est pas encore prête : lancez supabase/comptes-equipe.sql dans Supabase." : horsLigne(x) ? "Base injoignable." : x.message;
+  }
+});
+
 // Connexion ou deconnexion faite dans une autre appli / un autre onglet
 window.addEventListener("storage", (e) => { if (e.key === CLE_SESSION) majCompte(); });
 

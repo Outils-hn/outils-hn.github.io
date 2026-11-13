@@ -379,3 +379,6 @@ dialog.recherche .champ { width: 100%; font-size: 16px; padding: 10px 12px; }
 .d-part { color: #b45309; } .d-part::before { background: #b45309; }
 .d-non { color: var(--muted); } .d-non::before { border: 1.5px solid var(--input); }
 html.dark .d-part { color: #f59e0b; } html.dark .d-part::before { background: #f59e0b; } html.dark .d-oui::before { background: #34c38f; }
+
+.deux { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 480px) { .deux { grid-template-columns: 1fr; } }

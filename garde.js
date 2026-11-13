@@ -28,6 +28,16 @@
     headers: { apikey: CLE_PUBLIQUE, Authorization: "Bearer " + s.access_token, "Content-Type": "application/json" },
     body: "{}",
   }).then(function (r) { return r.ok ? r.json() : undefined; })
-    .then(function (role) { if (role === null) versAccueil(); })
+    .then(function (role) {
+      if (role === null) { versAccueil(); return; }
+      if (role === undefined) return;
+      // Compte collegue avec un mot de passe provisoire : l'Accueil lui fait choisir le sien d'abord
+      return fetch(BASE + "/rest/v1/rpc/mon_mdp_provisoire", {
+        method: "POST",
+        headers: { apikey: CLE_PUBLIQUE, Authorization: "Bearer " + s.access_token, "Content-Type": "application/json" },
+        body: "{}",
+      }).then(function (r) { return r.ok ? r.json() : false; })
+        .then(function (provisoire) { if (provisoire === true) versAccueil(); });
+    })
     .catch(function () { /* hors ligne : rien */ });
 })();

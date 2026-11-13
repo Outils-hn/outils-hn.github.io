@@ -174,3 +174,21 @@ export function nomAffiche(u) {
   }
   return prenom && nom ? `${maj(prenom)} ${nom.toLocaleUpperCase("fr")}` : "";
 }
+
+/** Comptes « collègue » : créés par le concepteur avec une adresse fictive, on s'y connecte avec un simple identifiant. */
+export const DOMAINE_EQUIPE = "equipe.invalid";
+/** Ce qui est tapé dans « Identifiant ou e-mail » → adresse de connexion (« jean.dupont » → « jean.dupont@equipe.invalid »). */
+export function adresseConnexion(saisie) {
+  const s = String(saisie ?? "").trim();
+  return s.includes("@") ? s : `${s.toLowerCase()}@${DOMAINE_EQUIPE}`;
+}
+/** Identifiant à afficher pour un compte collègue, sinon null. */
+export function identifiantEquipe(email) {
+  const e = String(email ?? "").toLowerCase();
+  return e.endsWith(`@${DOMAINE_EQUIPE}`) ? e.slice(0, -DOMAINE_EQUIPE.length - 1) : null;
+}
+/** Mot de passe provisoire facile à dicter : un mot + 2 chiffres (ex. « facade-27 »). */
+export function mdpProvisoire(alea = Math.random) {
+  const mots = ["facade", "profil", "joint", "vitrage", "isolant", "chantier", "atelier", "montage"];
+  return `${mots[Math.floor(alea() * mots.length)]}-${String(10 + Math.floor(alea() * 90))}`;
+}
