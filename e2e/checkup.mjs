@@ -78,6 +78,8 @@ async function brancher(ctx) {
     if (u.pathname === "/rest/v1/projects") return json(tok === "tok-admin" ? [{ id: "c1", numero: "24-118", nom: "Résidence Les Tilleuls" }, { id: "c2", numero: "25-004", nom: "Hôtel du Lac" }] : []);
     if (u.pathname === "/rest/v1/product_projects") return json(u.searchParams.get("project_id") === "eq.c1" ? [{ product_id: "p1" }] : []);
     if (u.pathname === "/rest/v1/products" && (u.searchParams.get("or") || "").includes("statut")) return json(tok === "tok-admin" ? etat.fiches : []);
+    if (u.pathname === "/rest/v1/access_fournisseurs") return json([{ id: "af1", nom: "Tilleul Façades SA", access_domaines: { nom: "Façades" } }]);
+    if (u.pathname === "/rest/v1/access_domaines") return json([]);
     if (u.pathname === "/rest/v1/products") return json([{ id: "p1", name: "SikaMembran Outdoor plus", supplier: "Sika", category: "Membranes & Étanchéité" }]);
     if (u.pathname === "/rest/v1/calculs" && u.searchParams.get("auteur")) return json(tok === "tok-admin" ? [{ id: "k1", app: "format", nom: "Façade Est", updated_at: "2026-11-10T08:00:00Z" }] : []);
     if (u.pathname === "/rest/v1/calculs") return json(u.searchParams.get("chantier_numero") === "eq.24-118" ? [{ id: "k1", app: "linear", nom: "Garde-corps R+2", auteur_email: "hugo@exemple.ch", updated_at: "2026-11-10T08:00:00Z" }] : []);
@@ -275,6 +277,8 @@ try {
   await p.locator("#rQ").fill("til"); await p.waitForTimeout(900);
   const rtxt = await p.locator("#rListe").innerText();
   ok(rtxt.includes("24-118") && rtxt.includes("SikaMembran") && rtxt.includes("Confirmer l'entraxe"), "Recherche : chantier, fiche Index et note Check trouvés d'un coup");
+  ok(/fournisseurs access/i.test(rtxt) && rtxt.includes("Tilleul Façades SA") && rtxt.includes("Façades"), "Recherche : un fournisseur d'Access est trouvé avec son domaine");
+  ok((await p.locator("#rListe [role=option]", { hasText: "Tilleul Façades SA" }).count()) === 1, "Recherche : le fournisseur est proposé une seule fois");
   await shot(p, "06d-recherche");
   await axe(p, "recherche");
   await p.locator("#rListe [role=option]", { hasText: "24-118" }).click(); await p.waitForTimeout(500);

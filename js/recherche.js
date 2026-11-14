@@ -20,3 +20,10 @@ export function chercherChantiers(q, chantiers) {
   if (!mots.length) return [];
   return chantiers.filter((c) => { const t = sansAccent(`${c.numero} ${c.nom}`); return mots.every((m) => t.includes(m)); });
 }
+
+/** Fournisseurs d'Access trouves par leur nom, leurs notes ou leur site, puis ceux dont le domaine correspond (sans doublon), au plus `max`. */
+export function fusionnerFournisseurs(parTexte, parDomaine, max = 6) {
+  const vus = new Set(), out = [];
+  for (const f of [...(parTexte ?? []), ...(parDomaine ?? [])]) { if (f && !vus.has(f.id)) { vus.add(f.id); out.push(f); } }
+  return out.slice(0, max);
+}
