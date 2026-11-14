@@ -104,7 +104,7 @@ test("dossier chantier : notes triees retard, urgent, echeance ; compteurs", () 
   assert.deepEqual(resumeChantier(n, [1, 2], "2026-11-10"), { retard: 2, urgentes: 1, notes: 4, fiches: 2 });
 });
 
-import { chercherApplis, chercherChantiers, nettoyerRequete } from "../js/recherche.js";
+import { chercherApplis, chercherChantiers, fusionnerFournisseurs, nettoyerRequete } from "../js/recherche.js";
 test("recherche Ctrl+K : requete nettoyee, applis et chantiers sans accents", () => {
   assert.equal(nettoyerRequete("  sika, (outdoor)* % "), "sika outdoor");
   assert.deepEqual(chercherApplis("debit pan", APPLIS).map((a) => a.nom), ["Format"]);
@@ -130,4 +130,11 @@ test("comptes collegue : identifiant sans @ -> adresse fictive, l'e-mail reste t
   assert.equal(identifiantEquipe("hugo@exemple.ch"), null);
   assert.match(mdpProvisoire(), /^[a-z]+-\d{2}$/);
   assert.equal(mdpProvisoire(() => 0), "facade-10");
+});
+
+test("Recherche Ctrl+K : fournisseurs d'Access fusionnes sans doublon et limites", () => {
+  const a = [{ id: "1" }, { id: "2" }], b = [{ id: "2" }, { id: "3" }];
+  assert.deepEqual(fusionnerFournisseurs(a, b).map((f) => f.id), ["1", "2", "3"]);
+  assert.deepEqual(fusionnerFournisseurs(a, b, 2).map((f) => f.id), ["1", "2"]);
+  assert.deepEqual(fusionnerFournisseurs(null, undefined), []);
 });

@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.42 — 14 novembre 2026
+
+- Nouveauté : la recherche Ctrl+K trouve aussi les fournisseurs d'Access (par nom, domaine, notes ou site) et ouvre Access directement sur le fournisseur.
+
 ## 2.41 — 13 novembre 2026
 
 - Nouvelle appli Maquette (maquettes IFC) ajoutée en aperçu : visible seulement pour le concepteur tant qu'elle n'est pas ouverte à l'équipe.

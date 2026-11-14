@@ -1,6 +1,6 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { creerZip } from "./zip.js?v=1";
-import { chercherApplis, chercherChantiers, nettoyerRequete } from "./recherche.js";
+import { chercherApplis, chercherChantiers, fusionnerFournisseurs, nettoyerRequete } from "./recherche.js";
 import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.11";
 
 const $ = (s) => document.querySelector(s);
@@ -1020,15 +1020,27 @@ async function lancerRecherche() {
   const jeton = s.access_token, motif = encodeURIComponent(`*${q}*`);
   try {
     if (!chantiersRecherche) chantiersRecherche = await api("/rest/v1/projects?select=id,numero,nom&order=numero.asc", { jeton }).catch(() => []);
-    const [fiches, notes] = await Promise.all([
+    // fournisseurs d'Access : nom, notes, site ou domaine ; jamais la table des identifiants
+    const fournisseursAccess = async () => {
+      const col = "id,nom,access_domaines(nom)";
+      const [t, doms] = await Promise.all([
+        api(`/rest/v1/access_fournisseurs?select=${col}&or=(nom.ilike.${motif},notes.ilike.${motif},site.ilike.${motif})&order=nom.asc&limit=6`, { jeton }).catch(() => []),
+        api(`/rest/v1/access_domaines?select=id&nom=ilike.${motif}&limit=10`, { jeton }).catch(() => []),
+      ]);
+      const d = doms.length ? await api(`/rest/v1/access_fournisseurs?select=${col}&domaine_id=in.(${doms.map((x) => x.id).join(",")})&order=nom.asc&limit=6`, { jeton }).catch(() => []) : [];
+      return fusionnerFournisseurs(t, d, 6);
+    };
+    const [fiches, notes, fournisseurs] = await Promise.all([
       api(`/rest/v1/products?select=id,name,supplier&deleted_at=is.null&or=(name.ilike.${motif},supplier.ilike.${motif})&order=name.asc&limit=6`, { jeton }).catch(() => []),
       api(`/rest/v1/check_notes?select=id,texte&texte=ilike.${motif}&supprime_le=is.null&archive=eq.false&order=created_at.desc&limit=6`, { jeton }).catch(() => []),
+      fournisseursAccess().catch(() => []),
     ]);
     if (no !== rNo) return;
     rResultats = [
       ...locaux,
       ...chercherChantiers(q, chantiersRecherche).slice(0, 6).map((c) => ({ groupe: "Chantiers", titre: `${c.numero} · ${c.nom}`, detail: "Dossier chantier", href: `#chantiers/${encodeURIComponent(c.id)}` })),
       ...fiches.map((f) => ({ groupe: "Fiches Index", titre: f.name, detail: f.supplier, href: `${lienApp("Index")}?fiche=${encodeURIComponent(f.id)}` })),
+      ...fournisseurs.map((f) => ({ groupe: "Fournisseurs Access", titre: f.nom, detail: f.access_domaines?.nom ?? "", href: `${lienApp("Access")}?fournisseur=${encodeURIComponent(f.id)}` })),
       ...notes.map((n) => ({ groupe: "Notes Check", titre: n.texte.length > 80 ? n.texte.slice(0, 80) + "…" : n.texte, detail: "", href: `${lienApp("Check")}?note=${encodeURIComponent(n.id)}` })),
     ];
     rendreResultats();
