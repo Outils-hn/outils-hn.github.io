@@ -6,7 +6,7 @@ export const BASE_KEY =
   "sb_publishable_yEWGxFFSLTE1lJRXnFUmpg_dMwa6LxW";
 
 /** Les applis de la famille, dans l'ordre alphabetique (meme liste que les selecteurs).
- *  apercu: true = appli en preparation, visible seulement pour le concepteur (voir « apercu » dans app.js). */
+ *  apercu: true (aucune pour l'instant) = appli en preparation, visible seulement pour le concepteur (voir « apercu » dans app.js). */
 export const APPLIS = [
   { nom: "Access", role: "Annuaire fournisseurs", url: "https://outils-hn.github.io/Access/", couleur: "#C2255C",
     texte: "Sites des fournisseurs, par domaine.", points: ["Liens vers les sites et portails CAO des fournisseurs", "Classés par domaine", "Identifiants du bureau à portée de clic"] },
@@ -20,7 +20,7 @@ export const APPLIS = [
     texte: "Espace à laisser entre deux éléments selon la dilatation.", points: ["Espace à laisser selon la dilatation", "Par matériau et écart de température"] },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
     texte: "Débit de profilés en barres, avec le minimum de chutes.", points: ["Mise en barre avec le minimum de chutes", "Longueurs du commerce et stock de barres", "Liste de débit prête à imprimer"] },
-  { nom: "Maquette", role: "Maquettes IFC", url: "https://outils-hn.github.io/Maquette/", couleur: "#4D7C0F", apercu: true,
+  { nom: "Maquette", role: "Maquettes IFC", url: "https://outils-hn.github.io/Maquette/", couleur: "#4D7C0F",
     texte: "Ouvrir les maquettes IFC des architectes, sans logiciel.", points: ["3D, plans, élévations et coupes", "Listes des fenêtres et des murs pour Excel", "Coupes DXF pour AutoCAD"] },
   { nom: "Masse", role: "Poids des éléments", url: "https://outils-hn.github.io/Masse/", couleur: "#9A4A3A",
     texte: "Poids des éléments de façade à partir de leurs composants.", points: ["Poids d'un élément à partir de ses composants", "Bibliothèque de matériaux commune", "Listes de livraison avec poids total"] },

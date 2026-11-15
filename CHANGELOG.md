@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.46 — 15 novembre 2026
+
+- Nouveauté : Maquette (la visionneuse de maquettes IFC) est maintenant ouverte à tous les comptes validés. Elle apparaît dans « Autres outils » avec son pictogramme, sur la page de présentation sans connexion, et dans la recherche.
+
 ## 2.45 — 15 novembre 2026
 
 - Nouveauté : sur l'Accueil, la pastille « 1 en cours » ne se coupe plus sur deux lignes à côté du numéro de version.
