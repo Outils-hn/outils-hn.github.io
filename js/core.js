@@ -141,29 +141,6 @@ export function fusionnerJournaux(journaux, app = "toutes") {
 const milliers = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "'");
 export const texteCompteur = (n, max) => `${milliers(n)} / ${milliers(max)}`;
 
-// ---------- Dossier chantier ----------
-const norm = (s) => String(s ?? "").trim().toLowerCase();
-
-/** Projets de Check qui correspondent a un chantier d'Index : meme numero, ou a defaut meme nom. */
-export function projetsCheckDuChantier(chantier, projetsCheck) {
-  if (!chantier) return [];
-  const num = norm(chantier.numero), nom = norm(chantier.nom);
-  const parNumero = projetsCheck.filter((p) => num && norm(p.numero) === num);
-  if (parNumero.length) return parNumero;
-  return projetsCheck.filter((p) => nom && norm(p.nom) === nom);
-}
-
-/** Notes ouvertes d'un chantier : en retard d'abord, puis urgentes, puis par echeance. `jour` = AAAA-MM-JJ. */
-export function trierNotes(notes, jour) {
-  const retard = (n) => (n.echeance && n.echeance < jour ? 1 : 0);
-  return [...notes].sort((a, b) => retard(b) - retard(a) || (b.flash ? 1 : 0) - (a.flash ? 1 : 0) || String(a.echeance ?? "9").localeCompare(String(b.echeance ?? "9")));
-}
-
-/** Compteurs de l'en-tete du dossier. */
-export function resumeChantier(notes, fiches, jour) {
-  return { retard: notes.filter((n) => n.echeance && n.echeance < jour).length, urgentes: notes.filter((n) => n.flash).length, notes: notes.length, fiches: fiches.length };
-}
-
 /** « Prénom NOM » d'apres les infos du compte (prenom et nom saisis a la creation), sinon vide : on affiche alors l'email. */
 export function nomAffiche(u) {
   const m = (u && u.user_metadata) || {};

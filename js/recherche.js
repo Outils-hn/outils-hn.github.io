@@ -14,13 +14,6 @@ export function chercherApplis(q, applis) {
   return applis.filter((a) => { const t = sansAccent(`${a.nom} ${a.role} ${a.texte}`); return mots.every((m) => t.includes(m)); });
 }
 
-/** Chantiers dont le numero ou le nom contient tous les mots tapes. */
-export function chercherChantiers(q, chantiers) {
-  const mots = sansAccent(nettoyerRequete(q)).split(" ").filter(Boolean);
-  if (!mots.length) return [];
-  return chantiers.filter((c) => { const t = sansAccent(`${c.numero} ${c.nom}`); return mots.every((m) => t.includes(m)); });
-}
-
 /** Fournisseurs d'Access trouves par leur nom, leurs notes ou leur site, puis ceux dont le domaine correspond (sans doublon), au plus `max`. */
 export function fusionnerFournisseurs(parTexte, parDomaine, max = 6) {
   const vus = new Set(), out = [];

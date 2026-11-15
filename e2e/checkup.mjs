@@ -260,30 +260,19 @@ try {
   const zip = readFileSync(await dlZip.path()).toString("latin1");
   ok(/^sauvegarde-fichiers-.*\.zip$/.test(dlZip.suggestedFilename()) && zip.startsWith("PK") && ["technical-sheets/racine.pdf", "technical-sheets/sika/fiche", "check-images/n1/img.png"].every((n) => zip.includes(n)), "Sauvegarde : zip des fichiers, sous-dossiers compris");
   await axe(p, "tableau de bord");
-  // Dossier chantier
-  ok(await p.locator("#navChantiers").isVisible(), "Chantiers : onglet visible pour un compte valide");
-  await p.locator("#navChantiers").click(); await p.waitForTimeout(400);
-  await p.locator("#fChantier").selectOption("c1"); await p.waitForTimeout(700);
-  const dos = await p.locator("#dossier").innerText();
-  ok(dos.includes("Confirmer l'entraxe") && dos.includes("en retard") && dos.includes("SikaMembran Outdoor plus"), "Chantiers : notes Check (en retard) et fiches Index du chantier affichées");
-  ok((await p.locator("#dossier a", { hasText: "Noter dans Check" }).getAttribute("href")).includes("noter=%2324-118"), "Chantiers : « Noter dans Check » préremplit le numéro de chantier");
-  ok((await p.evaluate(() => localStorage.getItem("outils-chantier-info"))) === JSON.stringify({ numero: "24-118", nom: "Résidence Les Tilleuls" }), "Chantiers : le chantier choisi est retenu pour les autres applis");
-  ok((await p.locator("#dossier a", { hasText: "SikaMembran" }).getAttribute("href")).includes("Index/?fiche=p1") && (await p.locator("#dossier a", { hasText: "Confirmer l'entraxe" }).getAttribute("href")).includes("Check/?note=n3"), "Chantiers : une fiche et une note s'ouvrent directement");
-  ok((await p.locator("#dossier a", { hasText: "Garde-corps R+2" }).getAttribute("href")).includes("Linear/?calcul=k1"), "Chantiers : un calcul partagé s'ouvre directement dans son appli");
-  await shot(p, "06c-chantiers");
+  ok((await p.locator("#navChantiers").count()) === 0, "Plus d'onglet Chantiers dans le menu");
   // Recherche Ctrl+K
   await p.keyboard.press("Control+k"); await p.waitForTimeout(300);
   ok(await p.locator("#dRecherche").evaluate((d) => d.open), "Recherche : Ctrl+K ouvre la barre");
   await p.locator("#rQ").fill("til"); await p.waitForTimeout(900);
   const rtxt = await p.locator("#rListe").innerText();
-  ok(rtxt.includes("24-118") && rtxt.includes("SikaMembran") && rtxt.includes("Confirmer l'entraxe"), "Recherche : chantier, fiche Index et note Check trouvés d'un coup");
+  ok(rtxt.includes("SikaMembran") && rtxt.includes("Confirmer l'entraxe") && !rtxt.includes("24-118"), "Recherche : fiche Index et note Check trouvées d'un coup, plus de chantiers");
   ok(/fournisseurs access/i.test(rtxt) && rtxt.includes("Tilleul Façades SA") && rtxt.includes("Façades"), "Recherche : un fournisseur d'Access est trouvé avec son domaine");
   ok((await p.locator("#rListe [role=option]", { hasText: "Tilleul Façades SA" }).count()) === 1, "Recherche : le fournisseur est proposé une seule fois");
   await shot(p, "06d-recherche");
   await axe(p, "recherche");
-  await p.locator("#rListe [role=option]", { hasText: "24-118" }).click(); await p.waitForTimeout(500);
-  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)) && p.url().includes("#chantiers/c1"), "Recherche : un clic sur un chantier ouvre son dossier et ferme la barre");
-  await axe(p, "chantiers");
+  await p.keyboard.press("Escape"); await p.waitForTimeout(300);
+  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)), "Recherche : Échap ferme la barre");
   await p.locator("#navTableau").click(); await p.waitForTimeout(300);
   await p.locator("[data-valider=c2]").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c2" && a[1]._approved === true), "Comptes : Valider appelle la base");

@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.48 — 15 novembre 2026
+
+- Nouveauté : l'onglet « Chantiers » disparaît de l'Accueil (dossier chantier, et chantiers dans la recherche Ctrl+K). Les chantiers et leurs données restent dans Index et dans les autres applis.
+
 ## 2.47 — 15 novembre 2026
 
 - Nouveauté : sur la page de présentation (sans connexion), les deux dernières cartes de « Autres outils » sont centrées sous les trois premières.

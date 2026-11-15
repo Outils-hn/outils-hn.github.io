@@ -1,7 +1,7 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { creerZip } from "./zip.js?v=1";
-import { chercherApplis, chercherChantiers, fusionnerFournisseurs, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.46";
+import { chercherApplis, fusionnerFournisseurs, nettoyerRequete } from "./recherche.js";
+import { APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.48";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -109,7 +109,7 @@ function adresseRetour() {
 }
 
 // ---------- Vues ----------
-function vue() { if (location.hash.startsWith("#chantiers") && role) return "chantiers"; return (location.hash === "#tableau" || location.hash === "#statistiques") && role ? "tableau" : location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
+function vue() { return (location.hash === "#tableau" || location.hash === "#statistiques") && role ? "tableau" : location.hash === "#retours" ? "retours" : location.hash === "#nouveautes" ? "nouveautes" : "applis"; }
 
 function rendre() {
   const acces = etatAcces();
@@ -118,7 +118,7 @@ function rendre() {
   $("#rechercheBtn").hidden = !ouvert;
   $("#apercu").hidden = acces !== "invite" && acces !== "attente";
   if (!ouvert) {
-    for (const id of ["#applis", "#retours", "#tableau", "#chantiers", "#nouveautes"]) $(id).hidden = true;
+    for (const id of ["#applis", "#retours", "#tableau", "#nouveautes"]) $(id).hidden = true;
     document.title = "Accueil — les outils du bureau d'études";
     rendreApercu(acces);
     return;
@@ -127,9 +127,7 @@ function rendre() {
   $("#applis").hidden = v !== "applis";
   $("#retours").hidden = v !== "retours";
   $("#tableau").hidden = v !== "tableau";
-  $("#chantiers").hidden = v !== "chantiers";
   $("#navTableau").hidden = !role;
-  $("#navChantiers").hidden = !role;
   const attente = comptes.filter((c) => !c.approved).length;
   const aValider = attente + (role === "concepteur" && fiches ? fiches.length : 0);
   $("#navAttente").textContent = estAdmin() && aValider ? `· ${aValider}` : "";
@@ -138,9 +136,7 @@ function rendre() {
   const c = compter(retours);
   $("#navCompte").textContent = charge && c.ouverts ? `· ${c.ouverts}` : "";
   document.title = v === "retours" ? "Idées & bugs — Accueil" : v === "nouveautes" ? "Nouveautés — Accueil" : "Accueil — les outils du bureau d'études";
-  document.title = v === "chantiers" ? "Chantiers — Accueil" : document.title;
   document.title = v === "tableau" ? "Tableau de bord — Accueil" : document.title;
-  if (v === "chantiers") chargerChantiers();
   rendreApplis();
   rendreStats();
   rendreGestion();
@@ -931,91 +927,14 @@ charger().then(() => {
 });
 
 
-// ---------- Dossier chantier : tout ce qui touche a un chantier (liste des chantiers = celle d'Index) ----------
-let chantiers = null; // liste des chantiers d'Index (null = pas encore chargee)
-let dossier = null; // { id, notes, fiches, erreur } du chantier affiche
-const CLE_CHANTIER = "outils-chantier";
-const idChantier = () => decodeURIComponent((location.hash.match(/^#chantiers\/(.+)$/) || [])[1] || "") || (() => { try { return localStorage.getItem(CLE_CHANTIER) || ""; } catch { return ""; } })();
-const jourIso = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 const lienApp = (nom) => APPLIS.find((a) => a.nom === nom)?.url ?? "#";
 
-async function chargerChantiers() {
-  const s = await sessionFraiche();
-  if (!s) return;
-  if (!chantiers) {
-    try { chantiers = await api("/rest/v1/projects?select=id,numero,nom&order=numero.asc", { jeton: s.access_token }); } catch { chantiers = []; }
-    const sel = $("#fChantier");
-    sel.innerHTML = `<option value="">Choisir un chantier…</option>` + chantiers.map((c) => `<option value="${esc(c.id)}">${esc(c.numero)} · ${esc(c.nom)}</option>`).join("");
-    sel.onchange = () => { try { localStorage.setItem(CLE_CHANTIER, sel.value); } catch { /* bloque */ } location.hash = sel.value ? `#chantiers/${encodeURIComponent(sel.value)}` : "#chantiers"; };
-  }
-  const id = idChantier();
-  $("#fChantier").value = chantiers.some((c) => c.id === id) ? id : "";
-  const c = chantiers.find((x) => x.id === id);
-  if (!c) { dossier = null; rendreDossier(); return; }
-  if (dossier?.id === id && !dossier.erreur) { rendreDossier(); return; }
-  dossier = { id, notes: [], fiches: [], chargement: true };
-  rendreDossier();
-  try {
-    const jeton = s.access_token;
-    const [liens, projetsCheck] = await Promise.all([
-      api(`/rest/v1/product_projects?select=product_id&project_id=eq.${encodeURIComponent(id)}&limit=200`, { jeton }),
-      api("/rest/v1/check_projets?select=id,numero,nom&archive=eq.false", { jeton }).catch(() => []),
-    ]);
-    const ids = projetsCheckDuChantier(c, projetsCheck).map((p) => p.id);
-    const prods = liens.map((l) => l.product_id);
-    const [notes, fiches, calculs] = await Promise.all([
-      ids.length ? api(`/rest/v1/check_notes?select=id,texte,statut,flash,echeance,pour&projet_id=in.(${ids.join(",")})&statut=neq.done&archive=eq.false&supprime_le=is.null&limit=200`, { jeton }).catch(() => []) : [],
-      prods.length ? api(`/rest/v1/products?select=id,name,supplier,category&id=in.(${prods.join(",")})&deleted_at=is.null&order=supplier.asc,name.asc`, { jeton }) : [],
-      // Calculs partages (table facultative : absente tant que le script SQL n'est pas lance)
-      api(`/rest/v1/calculs?select=id,app,nom,auteur_email,updated_at&chantier_numero=eq.${encodeURIComponent(c.numero)}&supprime_le=is.null&order=updated_at.desc&limit=30`, { jeton }).catch(() => []),
-    ]);
-    if (dossier?.id === id) dossier = { id, notes: trierNotes(notes, jourIso()), fiches, calculs, projetsCheck: ids.length };
-  } catch (e) { if (dossier?.id === id) dossier = { id, notes: [], fiches: [], erreur: horsLigne(e) ? "Base injoignable : réessayez dans un instant." : "Lecture impossible." }; }
-  rendreDossier();
-}
 
-function rendreDossier() {
-  const c = chantiers?.find((x) => x.id === idChantier());
-  const zone = $("#dossier");
-  if (!c) { $("#resumeChantier").textContent = chantiers ? "Choisissez un chantier pour tout voir au même endroit." : "Chargement…"; zone.innerHTML = ""; return; }
-  $("#resumeChantier").textContent = `${c.numero} · ${c.nom}`;
-  try { localStorage.setItem("outils-chantier-info", JSON.stringify({ numero: c.numero, nom: c.nom })); } catch { /* stockage bloque */ }
-  if (dossier?.chargement) { zone.innerHTML = `<p class="aide">Chargement…</p>`; return; }
-  if (dossier?.erreur) { zone.innerHTML = `<p class="erreur">${esc(dossier.erreur)}</p>`; return; }
-  const jour = jourIso();
-  const r = resumeChantier(dossier.notes, dossier.fiches, jour);
-  const pastille = (n, un, plur, cls = "") => `<span class="pastille ${cls}">${n} ${n > 1 ? plur : un}</span>`;
-  const noter = lienApp("Check") + "?noter=" + encodeURIComponent(`#${c.numero} `);
-  const notes = dossier.notes.length
-    ? dossier.notes.slice(0, 8).map((n) => `<li><a class="lien-ligne" href="${esc(lienApp("Check"))}?note=${encodeURIComponent(n.id)}">${esc(n.texte)}</a><span class="aide">${n.echeance && n.echeance < jour ? "en retard · " : ""}${n.flash ? "urgent" : n.echeance ? esc(fmtDate(n.echeance)) : ""}</span></li>`).join("")
-    : `<li class="aide">${dossier.projetsCheck ? "Aucune note ouverte." : "Pas de notes visibles : vous n’êtes pas membre du projet dans Check."}</li>`;
-  const fiches = dossier.fiches.length
-    ? dossier.fiches.slice(0, 10).map((f) => `<li><a class="lien-ligne" href="${esc(lienApp("Index"))}?fiche=${encodeURIComponent(f.id)}">${esc(f.supplier)} · ${esc(f.name)}</a><span class="aide">${esc(f.category)}</span></li>`).join("")
-    : `<li class="aide">Aucune fiche liée à ce chantier.</li>`;
-  const calculs = (dossier.calculs ?? []).length
-    ? dossier.calculs.map((x) => { const a = x.app === "linear" ? "Linear" : x.app === "format" ? "Format" : "Trame"; return `<li><a class="lien-ligne" href="${esc(lienApp(a))}?calcul=${encodeURIComponent(x.id)}">${esc(x.nom || "Sans nom")}</a><span class="aide">${a} · ${esc(String(x.auteur_email).split("@")[0])} · ${esc(fmtDate(String(x.updated_at).slice(0, 10)))}</span></li>`; }).join("")
-    : `<li class="aide">Aucun calcul partagé : dans l’appli, « Mes projets » puis l’icône Partager.</li>`;
-  const outils = ["Linear", "Format", "Membrane", "Masse", "Trame"].map((n) => `<a class="btn" href="${esc(lienApp(n))}">${n}</a>`).join("");
-  zone.innerHTML = `
-    <div class="pastilles">${pastille(r.retard, "note en retard", "notes en retard", r.retard ? "rouge" : "")}${pastille(r.urgentes, "urgente", "urgentes", r.urgentes ? "orange" : "")}${pastille(r.notes, "note ouverte", "notes ouvertes")}${pastille(r.fiches, "fiche", "fiches")}</div>
-    <div class="dossier-grille">
-      <div class="panel"><h3 class="dossier-titre">Notes Check <span class="aide">${r.notes} ouverte${r.notes > 1 ? "s" : ""}</span></h3><ul class="gestion">${notes}</ul>
-        <p class="dossier-actions"><a class="btn" href="${esc(noter)}">+ Noter dans Check</a><a class="btn" href="${esc(lienApp("Check"))}">Ouvrir Check</a></p></div>
-      <div class="panel"><h3 class="dossier-titre">Fiches Index <span class="aide">${r.fiches}</span></h3><ul class="gestion">${fiches}</ul>
-        <p class="dossier-actions"><a class="btn" href="${esc(lienApp("Index"))}">Ouvrir Index</a></p></div>
-      <div class="panel dossier-large"><h3 class="dossier-titre">Calculs partagés <span class="aide">${(dossier.calculs ?? []).length}</span></h3><ul class="gestion">${calculs}</ul></div>
-      <div class="panel dossier-large"><h3 class="dossier-titre">Calculer pour ce chantier</h3><p class="dossier-actions">${outils}</p></div>
-    </div>`;
-}
-window.addEventListener("hashchange", () => { if (location.hash.startsWith("#chantiers")) rendre(); });
-
-
-// ---------- Recherche Ctrl+K : applis, chantiers, fiches Index, notes Check ----------
+// ---------- Recherche Ctrl+K : applis, fiches Index, fournisseurs Access, notes Check ----------
 const dR = $("#dRecherche"), rQ = $("#rQ"), rListe = $("#rListe");
 let rResultats = []; // [{ groupe, titre, detail, href }]
 let rActif = 0;
 let rNo = 0; // pour ignorer les reponses d'une frappe depassee
-let chantiersRecherche = null;
 
 function rendreResultats() {
   const q = rQ.value.trim();
@@ -1040,7 +959,6 @@ async function lancerRecherche() {
   if (!s || no !== rNo) return;
   const jeton = s.access_token, motif = encodeURIComponent(`*${q}*`);
   try {
-    if (!chantiersRecherche) chantiersRecherche = await api("/rest/v1/projects?select=id,numero,nom&order=numero.asc", { jeton }).catch(() => []);
     // fournisseurs d'Access : nom, notes, site ou domaine ; jamais la table des identifiants
     const fournisseursAccess = async () => {
       const col = "id,nom,access_domaines(nom)";
@@ -1059,7 +977,6 @@ async function lancerRecherche() {
     if (no !== rNo) return;
     rResultats = [
       ...locaux,
-      ...chercherChantiers(q, chantiersRecherche).slice(0, 6).map((c) => ({ groupe: "Chantiers", titre: `${c.numero} · ${c.nom}`, detail: "Dossier chantier", href: `#chantiers/${encodeURIComponent(c.id)}` })),
       ...fiches.map((f) => ({ groupe: "Fiches Index", titre: f.name, detail: f.supplier, href: `${lienApp("Index")}?fiche=${encodeURIComponent(f.id)}` })),
       ...fournisseurs.map((f) => ({ groupe: "Fournisseurs Access", titre: f.nom, detail: f.access_domaines?.nom ?? "", href: `${lienApp("Access")}?fournisseur=${encodeURIComponent(f.id)}` })),
       ...notes.map((n) => ({ groupe: "Notes Check", titre: n.texte.length > 80 ? n.texte.slice(0, 80) + "…" : n.texte, detail: "", href: `${lienApp("Check")}?note=${encodeURIComponent(n.id)}` })),
