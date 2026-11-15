@@ -271,8 +271,8 @@ try {
   ok((await p.locator("#rListe [role=option]", { hasText: "Tilleul Façades SA" }).count()) === 1, "Recherche : le fournisseur est proposé une seule fois");
   await shot(p, "06d-recherche");
   await axe(p, "recherche");
-  await p.keyboard.press("Escape"); await p.waitForTimeout(300);
-  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)), "Recherche : Échap ferme la barre");
+  await p.mouse.click(5, 5); await p.waitForTimeout(300);
+  ok(!(await p.locator("#dRecherche").evaluate((d) => d.open)), "Recherche : un clic hors de la barre la ferme");
   await p.locator("#navTableau").click(); await p.waitForTimeout(300);
   await p.locator("[data-valider=c2]").click(); await p.waitForTimeout(500);
   ok(etat.actions.some((a) => a[0] === "approved" && a[1]._id === "c2" && a[1]._approved === true), "Comptes : Valider appelle la base");
