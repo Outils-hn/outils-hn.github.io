@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.45 — 15 novembre 2026
+
+- Nouveauté : sur l'Accueil, la pastille « 1 en cours » ne se coupe plus sur deux lignes à côté du numéro de version.
+
 ## 2.44 — 15 novembre 2026
 
 - Nouveauté : dans l'historique, les modifications d'un matériau de Format sont lisibles (par exemple « Format unique 2070 × 2800 mm » ou « Catalogue de 2 formats : … ») au lieu de codes techniques.
