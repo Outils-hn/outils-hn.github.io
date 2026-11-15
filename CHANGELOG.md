@@ -2,6 +2,10 @@
 
 Chaque version qui change quelque chose de visible pour l'équipe a une puce « Nouveauté : … », écrite en langage courant : c'est la seule phrase affichée sur la page « Nouveautés » de l'Accueil. Les versions sans cette puce (travail technique) n'y apparaissent pas.
 
+## 2.50 — 15 novembre 2026
+
+- Nouveauté : dans le menu des applis, Maquette passe en dernier.
+
 ## 2.49 — 15 novembre 2026
 
 - Nouveauté : les polices de l'appli sont maintenant embarquées : l'aspect ne dépend plus d'un site extérieur et l'appli s'affiche pareil même avec un réseau très lent.

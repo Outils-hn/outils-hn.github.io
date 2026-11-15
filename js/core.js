@@ -36,7 +36,7 @@ export const APPLIS = [
 export const NIVEAUX = [
   { cle: "jour", titre: "Au quotidien", noms: ["Check", "Index", "Access"] },
   { cle: "parfois", titre: "Occasionnels", noms: ["Trame", "Linear", "Format"] },
-  { cle: "rare", titre: "Autres outils", noms: ["Joint", "Maquette", "Masse", "Membrane", "Strate"] },
+  { cle: "rare", titre: "Autres outils", noms: ["Joint", "Masse", "Membrane", "Strate", "Maquette"] },
 ];
 
 export const TYPES = { idee: "Idée", bug: "Bug" };
