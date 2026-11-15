@@ -211,11 +211,31 @@ const CHAMPS = {
   pdf_filename: "PDF", pdf_path: "PDF", verified_at: "Vérifiée le", domain: "Domaine", website: "Site", cad_website: "Site CAO",
   contact_name: "Contact", contact_email: "E-mail", contact_phone: "Téléphone", mode: "Mode", value: "Valeur", source: "Source",
   description: "Description", height_mm: "Hauteur (mm)", length_mm: "Longueur (mm)", markup_pct: "Majoration (%)", deleted_at: "Supprimée le",
+  // Format · matériau
+  thickness: "Épaisseur (mm)", kerf: "Trait de coupe (mm)", trim: "Délignage (mm)", grainLocked: "Sens imposé", cutType: "Découpe",
+  reuseMin: "Chute réutilisable dès (mm)", mixMinGain: "Gain mini pour mélanger (%)", supply: "Format du panneau", orderType: "Commande", indexFiche: "Fiche Index",
 };
-const CHAMPS_TECHNIQUES = new Set(["id", "created_at", "created_by", "updated_at"]);
+// supplyValues : brouillons des modes inactifs de Format, sans interet pour l'equipe
+const CHAMPS_TECHNIQUES = new Set(["id", "created_at", "created_by", "updated_at", "supplyValues"]);
 const champNom = (k) => CHAMPS[k] ?? k.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+// Dimensions de Format en clair (au lieu du JSON brut)
+const dim = (f) => `${f.width} × ${f.length}`;
+function formatSupply(v) {
+  if (v.mode === "single") return `Format unique ${dim(v)} mm`;
+  if (v.mode === "catalog") {
+    const l = Array.isArray(v.formats) ? v.formats : [];
+    return l.length ? `Catalogue de ${l.length} format${l.length > 1 ? "s" : ""} : ${l.map(dim).join(", ")} mm` : "Catalogue (aucun format)";
+  }
+  if (v.mode === "fixedWidth") return `Largeur ${v.width} mm, longueur de ${v.minLength} à ${v.maxLength} mm (par pas de ${v.step})`;
+  return null;
+}
+const MOTS = { guillotine: "Scie à panneaux", free: "CNC (découpe libre)", panels: "Panneaux entiers", cut: "Pièces débitées par le fournisseur" };
 const valeur = (k, v) => {
   if (v === null || v === undefined || v === "" || (Array.isArray(v) && !v.length)) return null;
+  if (typeof v === "boolean") return v ? "Oui" : "Non";
+  if (k === "supply" && typeof v === "object") { const t = formatSupply(v); if (t) return t; }
+  if (k === "indexFiche" && v && v.name) return v.name;
+  if ((k === "cutType" || k === "orderType") && MOTS[v]) return MOTS[v];
   let t = Array.isArray(v) ? v.join(", ") : typeof v === "object" ? JSON.stringify(v) : String(v);
   if (k === "pdf_path") t = t.split("/").pop();
   if (/_at$/.test(k) && !isNaN(Date.parse(t))) t = fmtDate(t);
