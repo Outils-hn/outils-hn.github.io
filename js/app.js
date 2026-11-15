@@ -1,7 +1,7 @@
 // Accueil : affichage des applis et des retours (idees & bugs).
 import { creerZip } from "./zip.js?v=1";
 import { chercherApplis, chercherChantiers, fusionnerFournisseurs, nettoyerRequete } from "./recherche.js";
-import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.11";
+import { projetsCheckDuChantier, resumeChantier, trierNotes, APPLIS, NIVEAUX, BASE_KEY, BASE_URL, STATUTS, TYPES, adresseJournal, compter, filtrerRetours, fmtDate, fusionnerJournaux, lireJournal, lireLien, nomAffiche, termine, texteCompteur, adresseConnexion, identifiantEquipe, mdpProvisoire } from "./core.js?v=2.46";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -533,6 +533,7 @@ const PICTOS = {
   Format: '<rect x="3.5" y="3.5" width="17" height="17" rx="1.5"/><path d="M3.5 11h17M12 11v9.5"/>',
   Joint: '<rect x="3" y="8" width="6.5" height="8" rx="1"/><rect x="14.5" y="8" width="6.5" height="8" rx="1"/>',
   Masse: '<path d="M6.5 9h11l2 11h-15z"/><circle cx="12" cy="5.8" r="2.3"/>',
+  Maquette: '<path d="M12 2.5 21 7.5v9L12 21.5 3 16.5v-9z"/><path d="M12 12 21 7.5M12 12 3 7.5M12 12v9.5"/>',
   Membrane: '<path d="M3 8c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/>',
   Strate: '<path d="M4 6h16M4 12h16M4 18h16"/>',
 };

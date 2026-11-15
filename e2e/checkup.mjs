@@ -148,8 +148,8 @@ const axe = async (p, nom) => {
 try {
   let p = await page();
   await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
-  ok((await p.locator(".carte").count()) === 10, "10 applis sur l'accueil");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Masse,Membrane,Strate", "classées par fréquence d'usage (quotidien, occasionnels, autres)");
+  ok((await p.locator(".carte").count()) === 11, "11 applis sur l'accueil");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Maquette,Masse,Membrane,Strate", "classées par fréquence d'usage (quotidien, occasionnels, autres)");
   ok(await p.locator(".carte", { hasText: "Masse" }).getByText("1 en cours").isVisible(), "carte Masse : « 1 en cours »");
   ok((await p.locator(".carte", { hasText: "Strate" }).getAttribute("href")) === "https://outils-hn.github.io/Strate/", "lien Strate");
   ok((await p.locator("#navCompte").textContent()).includes("2"), "menu : 2 retours ouverts");
@@ -227,7 +227,7 @@ try {
   // Compte obligatoire : sans compte, page d'apercu (aucune appli ouvrable, pas de menu ni de recherche)
   p = await page({ connecte: false });
   await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
-  ok(await p.locator("#apercu").isVisible() && (await p.locator(".ap-carte").count()) === 10 && !(await p.locator("#applis").isVisible()), "Sans compte : page d'aperçu des 10 applis, aucune appli ouvrable");
+  ok(await p.locator("#apercu").isVisible() && (await p.locator(".ap-carte").count()) === 11 && !(await p.locator("#applis").isVisible()), "Sans compte : page d'aperçu des 11 applis, aucune appli ouvrable");
   ok(!(await p.locator("#nav").isVisible()) && !(await p.locator("#rechercheBtn").isVisible()), "Sans compte : ni menu ni recherche");
   ok((await p.locator(".ap-carte", { hasText: "Index" }).locator("li").count()) === 3, "Aperçu : ce que fait chaque appli (3 points pour Index)");
   ok((await p.locator("#apActions a", { hasText: "Créer un compte" }).getAttribute("href")) === "https://outils-hn.github.io/Index/auth", "Aperçu : lien « Créer un compte »");
@@ -334,7 +334,7 @@ try {
   ok(await p.locator("#apercu").isVisible() && !(await p.locator("#applis").isVisible()), "Déconnexion : retour à la page d'aperçu");
   ok(!(await p.locator("#navTableau").isVisible()), "Tableau de bord : onglet cache sans connexion");
   // Joint (en preparation) : visible seulement pour le concepteur, et le drapeau partage avec les menus des applis retombe a la deconnexion
-  ok((await p.locator(".ap-carte").count()) === 10, "Sans compte : les 10 applis restent présentées dans l'aperçu");
+  ok((await p.locator(".ap-carte").count()) === 11, "Sans compte : les 11 applis restent présentées dans l'aperçu");
   // Compte pas encore valide : ecran d'attente
   const pAtt = await page({ connecte: false });
   await pAtt.goto(URL0); await pAtt.evaluate(() => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-attente", refresh_token: "ref-x", expires_at: Math.floor(Date.now() / 1000) + 3000, user: { id: "u3", email: "nouveau@exemple.ch" } })));
@@ -353,7 +353,7 @@ try {
   await p.evaluate((u) => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
   ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : session expirée renouvelée, onglet visible");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Maquette,Masse,Membrane,Strate", "Concepteur : Maquette (en aperçu) visible en plus des autres cartes ; Joint et Membrane : cartes visibles aussi pour le concepteur");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Maquette,Masse,Membrane,Strate", "Concepteur : toutes les cartes dont Maquette ; Joint et Membrane : cartes visibles aussi pour le concepteur");
   ok((await p.evaluate(() => localStorage.getItem("outils-apercu"))) === "1", "Joint : drapeau d'apercu pose pour les menus des autres applis");
   ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");
   await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
