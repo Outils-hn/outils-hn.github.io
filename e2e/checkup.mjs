@@ -149,7 +149,7 @@ try {
   let p = await page();
   await p.goto(URL0); await p.waitForLoadState("networkidle"); await p.waitForTimeout(400);
   ok((await p.locator(".carte").count()) === 11, "11 applis sur l'accueil");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Maquette,Masse,Membrane,Strate", "classées par fréquence d'usage (quotidien, occasionnels, autres)");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Masse,Membrane,Strate,Maquette", "classées par fréquence d'usage (quotidien, occasionnels, autres)");
   ok(await p.locator(".carte", { hasText: "Masse" }).getByText("1 en cours").isVisible(), "carte Masse : « 1 en cours »");
   ok((await p.locator(".carte", { hasText: "Strate" }).getAttribute("href")) === "https://outils-hn.github.io/Strate/", "lien Strate");
   ok((await p.locator("#navCompte").textContent()).includes("2"), "menu : 2 retours ouverts");
@@ -342,7 +342,7 @@ try {
   await p.evaluate((u) => localStorage.setItem("sb-dtxgvwaqjmmffiiohika-auth-token", JSON.stringify({ access_token: "tok-vieux", refresh_token: "ref-ok", expires_at: 1000, user: u })), { id: ADMIN.id, email: ADMIN.email });
   await p.reload(); await p.waitForTimeout(800);
   ok(await p.locator("#navTableau").isVisible(), "Tableau de bord : session expirée renouvelée, onglet visible");
-  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Maquette,Masse,Membrane,Strate", "Concepteur : toutes les cartes dont Maquette ; Joint et Membrane : cartes visibles aussi pour le concepteur");
+  ok((await p.locator(".carte .nom").allTextContents()).join(",") === "Check,Index,Access,Trame,Linear,Format,Joint,Masse,Membrane,Strate,Maquette", "Concepteur : toutes les cartes dont Maquette ; Joint et Membrane : cartes visibles aussi pour le concepteur");
   ok((await p.evaluate(() => localStorage.getItem("outils-apercu"))) === "1", "Joint : drapeau d'apercu pose pour les menus des autres applis");
   ok((await p.locator("#nApp option").allTextContents()).includes("Joint"), "Joint : proposé dans le formulaire de retour");
   await p.evaluate(() => localStorage.removeItem("sb-dtxgvwaqjmmffiiohika-auth-token")); await p.reload(); await p.waitForTimeout(400);
