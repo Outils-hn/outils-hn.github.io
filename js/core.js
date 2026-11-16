@@ -15,7 +15,7 @@ export const APPLIS = [
   { nom: "Format", role: "Débit de panneaux", url: "https://outils-hn.github.io/Format/", couleur: "#FF4D00",
     texte: "Calepinage de panneaux pour estimer la matière.", points: ["Calepinage sur les formats des fournisseurs", "Estimation de la matière à commander", "Bibliothèque de matériaux commune"] },
   { nom: "Index", role: "Fiches techniques", url: "https://outils-hn.github.io/Index/", couleur: "#6D4AFF",
-    texte: "Fiches techniques fournisseurs.", points: ["Fiches techniques PDF par fournisseur et famille", "Recherche instantanée et comparaison", "Fiches reliées aux chantiers"] },
+    texte: "Fiches techniques fournisseurs.", points: ["Fiches techniques PDF par fournisseur et famille", "Recherche et comparaison instantanées", "Fiches reliées aux chantiers"] },
   { nom: "Joint", role: "Dilatation et joints", url: "https://outils-hn.github.io/Joint/", couleur: "#0B7285",
     texte: "Espace à laisser entre deux éléments selon la dilatation.", points: ["Espace à laisser selon la dilatation", "Par matériau et écart de température"] },
   { nom: "Linear", role: "Mise en barre", url: "https://outils-hn.github.io/Linear/", couleur: "#2B50FF",
