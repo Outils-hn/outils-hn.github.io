@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 // Usage : node e2e/checkup.mjs <dossier de sortie> [adresse]   (axe-core facultatif)
 import { chromium } from "playwright";
 import fs from "node:fs";
+import { detailsVisuels } from "./details.mjs";
 
 const out = process.argv[2] || "out";
 const URL0 = process.argv[3] || "http://127.0.0.1:8091/";
@@ -138,7 +139,7 @@ async function page({ dark = false, connecte = true } = {}) {
   p.on("pageerror", (e) => { if (!/ViewTransition|Transition was aborted/.test(e.message)) ok(false, `erreur JS : ${e.message}`); });
   return p;
 }
-const shot = async (p, n) => { await p.waitForTimeout(400); await p.screenshot({ path: `${out}/${n}.png`, fullPage: true }); };
+const shot = async (p, n) => { await p.waitForTimeout(400); await p.screenshot({ path: `${out}/${n}.png`, fullPage: true }); await detailsVisuels(p, n, lignes); };
 const axe = async (p, nom) => {
   if (!AxeBuilder) return;
   const a = await new AxeBuilder({ page: p }).withTags(["wcag2a", "wcag2aa"]).analyze();
